@@ -53,3 +53,6 @@ Channel.json 파일을 텍스트 편집기로 열어보면 각채널별 정보�
 --icon : 채널 icon 위치 URL ex) --icon http://www.example.com
 --verobse : EPG 정보 상세하게 표기 ex) --verbose y
 </pre>
+
+## 라이센스
+BSD

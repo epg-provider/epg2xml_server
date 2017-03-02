@@ -16,7 +16,7 @@ import argparse
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.0.9'
+__version__ = '1.1.0'
 
 # Set My Configuration
 default_icon_url = '' # TV channel icon url (ex : http://www.example.com/Channels)
@@ -33,6 +33,9 @@ ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36
 CHANNEL_ERROR = ' 존재하지 않는 채널입니다.'
 CONTENT_ERROR = ' EPG 정보가 없습니다.'
 HTTP_ERROR = ' EPG 정보를 가져오는데 문제가 있습니다.'
+SOCKET_ERROR = 'xmltv.sock 파일을 찾을 수 없습니다.'
+JSON_FILE_ERROR = 'Channel.json 파일을 읽을 수 없습니다.'
+JSON_SYNTAX_ERROR = 'Channel.json 파일 형식이 잘못되었습니다.'
 
 # Get epg data
 def getEpg():
@@ -43,16 +46,15 @@ def getEpg():
         with open(Channelfile) as f: # Read Channel Information file
             Channeldatas = json.load(f)
     except EnvironmentError:
-        printError('Channel.json 파일을 읽을 수 없습니다.')
+        printError(JSON_FILE_ERROR)
         sys.exit()
     except ValueError:
-        printError('Channel.json 파일 형식이 잘못되었습니다.')
+        printError(JSON_SYNTAX_ERROR)
         sys.exit()
-
 
     print('<?xml version="1.0" encoding="UTF-8"?>')
     print('<!DOCTYPE tv SYSTEM "xmltv.dtd">\n')
-    print('<tv generator-info-name="epg2xml.py">')
+    print('<tv generator-info-name="epg2xml.py ' + __version__ + '">')
 
     for Channeldata in Channeldatas: #Get Channel & Print Channel info
         if Channeldata['Enabled'] == 1:
@@ -60,14 +62,17 @@ def getEpg():
             ChannelName = escape(Channeldata['Name'])
             ChannelSource = Channeldata['Source']
             ChannelServiceId = Channeldata['ServiceId']
-            ChannelNumber = Channeldata[MyISP+'Ch']
+            ChannelISPName = '[' + str(Channeldata[MyISP+'Ch']) + '] ' + escape(Channeldata[MyISP+' Name'])
+            ChannelIconUrl = escape(Channeldata['Icon_url'])
             if not (Channeldata[MyISP+'Ch'] is None):
                 ChannelInfos.append([ChannelId,  ChannelName, ChannelSource, ChannelServiceId])
                 print('  <channel id="%s">' % (ChannelId))
                 print('    <display-name>%s</display-name>' % (ChannelName))
-                print('    <display-name>%s</display-name>' % (ChannelNumber))
+                print('    <display-name>%s</display-name>' % (ChannelISPName))
                 if IconUrl:
                     print('    <icon src="%s/%s.png" />' % (IconUrl, ChannelId))
+                else :
+                    print('    <icon src="%s" />' % (ChannelIconUrl))
                 print('  </channel>')
 
     # Print Program Information
@@ -531,7 +536,7 @@ elif args.socket:
         sockfile = sock.makefile('w+')
         sys.stdout = sockfile
     except socket.error:
-        printError("xmltv.sock 파일을 찾을 수 없습니다.")
+        printError(SOCKET_ERROR)
         sys.exit()
 
 getEpg()

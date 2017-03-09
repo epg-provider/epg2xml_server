@@ -309,4 +309,6 @@
 {"Id":410,"Name":"메디컬TV","KT Name":"메디컬TV","KTCh":254,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/S73ArUy.png","Source":"KT","ServiceId":254,"Enabled":1},
 {"Id":411,"Name":"CGTN","KT Name":"CGTN","KTCh":194,"LG Name":"CGTN","LGCh":119,"SK Name":"CGTN","SKCh":161,"Icon_url":"http://i.imgur.com/rhZf4Zx.png","Source":"SK","ServiceId":771,"Enabled":1},
 {"Id":412,"Name":"C Music TV","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"C Music TV","SKCh":237,"Icon_url":"http://i.imgur.com/hV270KM.png","Source":"SK","ServiceId":672,"Enabled":1},
-{"Id":413,"Name":"Tvis","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"Tvis","SKCh":250,"Icon_url":"http://i.imgur.com/7jq2VMs.png","Source":"SK","ServiceId":260,"Enabled":1}]
+{"Id":413,"Name":"Tvis","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"Tvis","SKCh":250,"Icon_url":"http://i.imgur.com/7jq2VMs.png","Source":"SK","ServiceId":260,"Enabled":1},
+{"Id":414,"Name":"SPOTV ON","KT Name":null,"KTCh":null,"LG Name":null,"LGCh":null,"SK Name":"SPOTV ON","SKCh":118,"Icon_url":"http://i.imgur.com/Y3eYOc2.png","Source":"SK","ServiceId":136,"Enabled":1},
+{"Id":415,"Name":"SPOTV ON2","KT Name":null,"KTCh":null,"LG Name":null,"LGCh":null,"SK Name":"SPOTV ON2","SKCh":119,"Icon_url":"http://i.imgur.com/jbdurz4.png","Source":"SK","ServiceId":137,"Enabled":1}]

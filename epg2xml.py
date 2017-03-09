@@ -16,7 +16,7 @@ import argparse
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 # Set My Configuration
 default_icon_url = '' # TV channel icon url (ex : http://www.example.com/Channels)
@@ -307,7 +307,10 @@ def GetEPGFromSK(ChannelInfo):
                         desc = ''
                         actors = ''
                         producers = ''
-                    category = program['mainGenreName']
+                    if not (program['mainGenreName'] is None) :
+                        category = program['mainGenreName']
+                    else:
+                        category = ''
                     rating = int(program['ratingCd']) if program['programName'] else 0
                     desc = ''
                     if program['synopsis'] : desc = program['synopsis']

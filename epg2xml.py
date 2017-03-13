@@ -438,7 +438,7 @@ def writeProgram(programdata):
     category = escape(programdata['category'])
     episode = programdata['episode']
     rebroadcast = programdata['rebroadcast']
-	if addepisode  == 'y': programName = programName + '('+ episode + ')'
+    if addepisode  == 'y': programName = programName + '('+ episode + ')'
     if rebroadcast  == True and addrebrocast == 'y' : programName = programName + ' (재)'
     if programdata['rating'] == 0 :
         rating = '전체 관람가'

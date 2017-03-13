@@ -313,8 +313,6 @@ def GetEPGFromSK(ChannelInfo):
                     else:
                         category = ''
                     rating = int(program['ratingCd']) if program['programName'] else 0
-                    desc = ''
-                    if program['synopsis'] : desc = program['synopsis']
                     programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
                     writeProgram(programdata)
         except ValueError:
@@ -439,7 +437,7 @@ def writeProgram(programdata):
     episode = programdata['episode']
     rebroadcast = programdata['rebroadcast']
     if addepisode  == 'y': programName = programName + '('+ episode + ')'
-    if rebroadcast  == True and addrebrocast == 'y' : programName = programName + ' (재)'
+    if rebroadcast  == True and addrebroadcast == 'y' : programName = programName + ' (재)'
     if programdata['rating'] == 0 :
         rating = '전체 관람가'
     else :
@@ -460,10 +458,7 @@ def writeProgram(programdata):
     for key, value in contentTypeDict.iteritems():
         if category.startswith(key):
             contentType = value
-    if endTime :
-        print('  <programme start="%s +0900" stop="%s +0900" channel="%s">' % (startTime, endTime, ChannelId))
-    else :
-        print('  <programme start="%s +0900" channel="%s">' % (startTime, ChannelId))
+    print('  <programme start="%s +0900" stop="%s +0900" channel="%s">' % (startTime, endTime, ChannelId))
     print('    <title lang="kr">%s</title>' % (programName))
     if subprogramName :
         print('    <sub-title lang="kr">%s</sub-title>' % (subprogramName))
@@ -507,7 +502,7 @@ argu2.add_argument('-s', '--socket', metavar = default_xml_socket, nargs = '?', 
 argu3 = parser.add_argument_group('추가옵션')
 argu3.add_argument('-l', '--limit', dest = 'limit', type = int, metavar = "1-7", choices = range(1,8), help = 'EPG 정보를 가져올 기간, 기본값: '+ str(default_fetch_limit), default = default_fetch_limit)
 argu3.add_argument('--icon', dest = 'icon', metavar = "http://www.example.com/icon", help = '채널 아이콘 URL, 기본값: '+ default_icon_url, default = default_icon_url)
-argu3.add_argument('--rebroadecast', dest = 'rebroadecast', metavar = 'y, n', choices = 'yn', help = '제목에 재방송 정보 출력', default = default_rebroadecast)
+argu3.add_argument('--rebroadcast', dest = 'rebroadcast', metavar = 'y, n', choices = 'yn', help = '제목에 재방송 정보 출력', default = default_rebroadcast)
 argu3.add_argument('--episode', dest = 'episode', metavar = 'y, n', choices = 'yn', help = '제목에 회차 정보 출력', default = default_episode)
 argu3.add_argument('--verbose', dest = 'verbose', metavar = 'y, n', choices = 'yn', help = 'EPG 정보 추가 출력', default = default_verbose)
 
@@ -529,8 +524,8 @@ if args.icon:
 else:
     IconUrl = default_icon_url
 
-if args.rebroadecast:
-    addrebroadecast = args.rebroadecast
+if args.rebroadcast:
+    addrebroadcast = args.rebroadcast
 else:
     addrebroadecast = default_rebroadecast
 

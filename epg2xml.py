@@ -16,10 +16,12 @@ import argparse
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 # Set My Configuration
 default_icon_url = '' # TV channel icon url (ex : http://www.example.com/Channels)
+default_rebroadcast = 'y' # 제목에 재방송 정보 출력
+default_episode = 'n' # 제목에 회차정보 출력
 default_verbose = 'n' # 자세한 epg 데이터 출력
 default_fetch_limit = 2 # epg 데이터 가져오는 기간
 default_xml_filename = 'xmltv.xml' # epg 저장시 기본 저장 이름 (ex: /home/tvheadend/xmltv.xml)
@@ -41,7 +43,6 @@ JSON_SYNTAX_ERROR = 'Channel.json 파일 형식이 잘못되었습니다.'
 def getEpg():
     Channelfile = os.path.dirname(os.path.abspath(__file__)) + '/Channel.json'
     ChannelInfos = []
-    SiteEPG = [] #For epg.co.kr
     try:
         with open(Channelfile) as f: # Read Channel Information file
             Channeldatas = json.load(f)
@@ -81,7 +82,7 @@ def getEpg():
         ChannelName =  ChannelInfo[1]
         ChannelSource =  ChannelInfo[2]
         ChannelServiceId =  ChannelInfo[3]
-        if(debug) : printLog(ChannelName + ' 채널 EPG 데이터 가져오고 있습니다')
+        if(debug) : printLog(ChannelName + ' 채널 EPG 데이터를 가져오고 있습니다')
         if ChannelSource == 'EPG':
             GetEPGFromEPG(ChannelInfo)
         elif ChannelSource == 'KT':
@@ -437,7 +438,8 @@ def writeProgram(programdata):
     category = escape(programdata['category'])
     episode = programdata['episode']
     rebroadcast = programdata['rebroadcast']
-    if rebroadcast == True: programName = programName + ' (재방송)'
+	if addpeiosde  == 'y': programName = programName + '('+ episode + ')'
+    if rebroadcast  == True and addrebrocast == 'y' : programName = programName + ' (재)'
     if programdata['rating'] == 0 :
         rating = '전체 관람가'
     else :
@@ -458,7 +460,7 @@ def writeProgram(programdata):
     for key, value in contentTypeDict.iteritems():
         if category.startswith(key):
             contentType = value
-    if(endTime) :
+    if endTime :
         print('  <programme start="%s +0900" stop="%s +0900" channel="%s">' % (startTime, endTime, ChannelId))
     else :
         print('  <programme start="%s +0900" channel="%s">' % (startTime, ChannelId))
@@ -492,7 +494,7 @@ def printLog(*args):
     print(*args, file=sys.stderr)
 
 def printError(*args):
-    print("Error:", *args, file=sys.stderr)
+    print("Error : ", *args, file=sys.stderr)
 
 parser = argparse.ArgumentParser(description = 'EPG 정보를 출력하는 방법을 선택한다')
 argu1 = parser.add_argument_group(description = 'IPTV 선택')
@@ -505,6 +507,8 @@ argu2.add_argument('-s', '--socket', metavar = default_xml_socket, nargs = '?', 
 argu3 = parser.add_argument_group('추가옵션')
 argu3.add_argument('-l', '--limit', dest = 'limit', type = int, metavar = "1-7", choices = range(1,8), help = 'EPG 정보를 가져올 기간, 기본값: '+ str(default_fetch_limit), default = default_fetch_limit)
 argu3.add_argument('--icon', dest = 'icon', metavar = "http://www.example.com/icon", help = '채널 아이콘 URL, 기본값: '+ default_icon_url, default = default_icon_url)
+argu3.add_argument('--rebroadecast', dest = 'rebroadecast', metavar = 'y, n', choices = 'yn', help = '제목에 재방송 정보 출력', default = default_rebroadecast)
+argu3.add_argument('--episode', dest = 'episode', metavar = 'y, n', choices = 'yn', help = '제목에 회차 정보 출력', default = default_episode)
 argu3.add_argument('--verbose', dest = 'verbose', metavar = 'y, n', choices = 'yn', help = 'EPG 정보 추가 출력', default = default_verbose)
 
 args = parser.parse_args()
@@ -525,6 +529,17 @@ if args.icon:
 else:
     IconUrl = default_icon_url
 
+if args.rebroadecast:
+    addrebroadecast = args.rebroadecast
+else:
+    addrebroadecast = default_rebroadecast
+
+
+if args.episode:
+    addepisode = args.episode
+else:
+    addepisode = default_episode
+
 if args.verbose:
     verbose = args.verbose
 else:
@@ -543,4 +558,3 @@ elif args.socket:
         sys.exit()
 
 getEpg()
-

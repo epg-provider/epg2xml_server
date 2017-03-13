@@ -11,13 +11,13 @@
 9. 저작권
 
 0. 버전
- 1.1.1
+ 1.1.2
 1. 소개
  이 프로그램은 EPG(Electronic Program Guide)를 웹상의 여러 소스에서 가져와서 XML로 출력하는 프로그램으로 python2에서 사용 가능하도록 제작되었다.
  기본적으로 외부의 소스를 분석하여 출력하므로 외부 소스 사이트가 변경되거나 삭제되면 문제가 발생할 수 있다.
 
 2. 설치전 확인 사항
- BeautifulSoup(b4), lxml 모듈이 추가로 필요하다.
+ BeautifulSoup(bs4), lxml 모듈이 추가로 필요하다.
  설치 OS별로 모듈을 설치하기 위한 사전 설치 방법이 다를 수도 있으므로 검색해서 설치하도록 한다.
  synology의 경우 파이썬 모듈을 설치하면  easy_install beautifulsoup, easy_install lxml 이다
 
@@ -57,11 +57,13 @@
   -s --socket  : EPG 정보를 xmltv.sock로 전송한다. ex) -s /var/run/xmltv.sock
   -l --limit : EPG 정보 가져올 기간으로 기본값은 2일이며 최대 7일까지 설정 가능하다. ex) -l 2
   --icon : 채널 icon 위치 URL ex) --icon http://www.example.com
-  --verobse : EPG 정보 상세하게 표기 ex) --verbose y
+  --rebroadcast : 제목에 재방송정보 표기 ex) --rebroadcast y
+  --episode : 제목에 회차정보 표기 ex) --episode y
+  --verbose : EPG 정보 상세하게 표기 ex) --verbose y
 
 6. 변경사항
-  - sk 카데고리 오류 수정 
-  
+  - 재방송정보, 회차정보 옵션 추가
+
  7. 개선사항
   - 코드 최적화
   - 속도 개선

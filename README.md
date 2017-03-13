@@ -51,6 +51,8 @@ Channel.json 파일을 텍스트 편집기로 열어보면 각채널별 정보�
 -s --socket  : EPG 정보를 xmltv.sock로 전송한다. ex) -s /var/run/xmltv.sock
 -l --limit : EPG 정보 가져올 기간으로 기본값은 2일이며 최대 7일까지 설정 가능하다. ex) -l 2
 --icon : 채널 icon 위치 URL ex) --icon http://www.example.com
+--rebroadcast : 제목에 재방송정보 표기 ex) --rebroadcast y
+--episode : 제목에 회차정보 표기 ex) --episode y
 --verbose : EPG 정보 상세하게 표기 ex) --verbose y
 </pre>
 

@@ -5,7 +5,7 @@
 
 ## 필요 모듈
 
-BeautifulSoup(b4), lxml, requests 모듈이 추가로 필요하다.
+BeautifulSoup(bs4), lxml, requests 모듈이 추가로 필요하다.
 설치 OS별로 모듈을 설치하기 위한 사전 설치 방법이 다를 수도 있으므로 검색해서 설치하도록 한다.
 synology의 경우 파이썬 모듈을 설치하면 easy_install beautifulsoup, easy_install lxml, easy_install requests 로 추가할 수 있다.
 
@@ -14,12 +14,12 @@ synology의 경우 파이썬 모듈을 설치하면 easy_install beautifulsoup, 
 tv_grab_file 사용시 (https://github.com/neo365/tvheadend-for-Korea)
 tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을
 <pre>
-/usr/local/bin/python /home/hts/epg2xml.py -i KT(SK, LG) -d 또는
+/usr/bin/python /home/hts/epg2xml.py -i KT(SK, LG) -d 또는
 /home/hts/epg2xml.py -i KG(SK, LG) -d
 </pre>
 XMLTV 사용시
 <pre>
-/usr/local/bin/python /home/hts/epg2xml.py -i KT(SK, LG) -s xmltv.sock경로 또는
+/usr/bin/python /home/hts/epg2xml.py -i KT(SK, LG) -s xmltv.sock경로 또는
 /home/hts/epg2xml.py -i KT(SK, LG) -s xmltv.sock 경로
 </pre>
 
@@ -28,6 +28,8 @@ Set My Configuratoin 안의 항목이 설정 가능한 항목이다. 인수로 �
 이 부분을 직접 수정하는 것보다는 향후 업그레이드시 변경될 수 있으므로 인수로 처리하기를 권장한다.
 <pre>
 default_icon_url : 채널별 아이콘이 있는 url을 설정할 수 있다. 아이콘의 이름은 json 파일에 있는 Id.png로 기본설정되어 있다.
+default_rebroadcast : 제목에 재방송 정보 출력
+default_episode : 제목에 회차정보 출력
 default_verbose : EPG 정보 상세 출력
 default_fetch_limit : EPG 데이터 가져오는 기간이다.
 default_xml_filename : EPG 저장시 기본 저장 이름으로 tvheadend 서버가 쓰기가 가능한 경로로 설정해야 한다.

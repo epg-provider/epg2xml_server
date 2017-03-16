@@ -239,13 +239,13 @@ function getEPG() {
         $ChannelServiceId =  $ChannelInfo[3];
         if($GLOBALS['debug']) printLog($ChannelName.' 채널 EPG 데이터를 가져오고 있습니다');
         if($ChannelSource == 'EPG') :
-            GetEPGFromEPG($ChannelInfo);
+            //GetEPGFromEPG($ChannelInfo);
         elseif($ChannelSource == 'KT') :
             GetEPGFromKT($ChannelInfo);
         elseif($ChannelSource == 'LG') :
             GetEPGFromLG($ChannelInfo);
         elseif($ChannelSource == 'SK') :
-            GetEPGFromSK($ChannelInfo);
+            //GetEPGFromSK($ChannelInfo);
         elseif($ChannelSource == 'SKY') :
             GetEPGFromSKY(ChannelInfo);
         elseif($ChannelSource == 'NAVER') :
@@ -265,7 +265,6 @@ function GetEPGFromEPG($ChannelInfo) {
             'user-agent' => $GLOBALS['ua']
     ));
     $context  = stream_context_create($options);
-
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://www.epg.co.kr/epg-cgi/extern/cnm_guide_type_v070530.cgi";
         $day = date("Ymd", strtotime("+".($k - 1)." days"));
@@ -275,7 +274,6 @@ function GetEPGFromEPG($ChannelInfo) {
             'select_group' => '100',
             'start_date' => $day
         );
-
         $params = http_build_query($params);
         $url = $url."?".$params;
         try {
@@ -315,7 +313,6 @@ function GetEPGFromEPG($ChannelInfo) {
                         endswitch;
                         $startTime = date("YmdHis", strtotime($thisday." ".$hour));
                         preg_match('/<td height="25" valign="top">?(.*<a.*?">)?(.*?)\s*(&lt;(.*)&gt;)?\s*(\(재\))?\s*(\(([\d,]+)회\))?(<img.*?)?(<\/a>)?\s*<\/td>/', trim($dom->saveHTML($program)), $matches);
-                        //var_dump($matches);
                         if ($matches != NULL) :
                             $image = $matches[8] ? $matches[8] : "";
                             preg_match('/.*schedule_([\d,]+)?.*/', $image, $grade);
@@ -375,6 +372,71 @@ function GetEPGFromKT($ChannelInfo) {
             'user-agent' => $GLOBALS['ua']
     ));
     $context  = stream_context_create($options);
+    foreach(range(1, $GLOBALS['period']) as $k) :
+        $url = "http://tv.olleh.com/renewal_sub/liveTv/pop_schedule_week.asp";
+        $day = date("Ymd", strtotime("+".($k - 1)." days"));
+        $params = array(
+            'ch_name' => '',
+            'ch_no' => $ServiceId,
+            'nowdate'=> $day,
+            'seldatie' => $day,
+            'tab_no' => '1'
+        );
+        $params = http_build_query($params);
+        $url = $url."?".$params;
+        try {
+            $response = @file_get_contents($url, False, $context);
+            if ($response === False) :
+                throw new Exception ($ChannelName.HTTP_ERROR);
+            else :
+                $response = str_replace("charset=euc-kr", "charset=utf-8", $response);
+                $dom = new DomDocument;
+                libxml_use_internal_errors(true);
+                $dom->loadHTML(mb_convert_encoding($response, 'UTF-8', 'EUC-KR'));
+                $xpath = new DomXPath($dom);
+                $query = "//table[@id='pop_day']/tbody/tr";
+                $rows = $xpath->query($query);
+                foreach($rows as $row) :
+                    $cells = $row->getElementsByTagName('td');
+                    #programName, startTime, rating, category
+                    $startTime = date("YmdHis", strtotime($day." ".trim($cells[0]->nodeValue)));
+                    $rating = str_replace("all", 0, str_replace("세 이상", "", trim($cells[2]->nodeValue)));
+                    $epginfo[]= array(trim($cells[1]->nodeValue), $startTime, $rating, trim($cells[4]->nodeValue));
+                endforeach;
+                $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
+                foreach($zipped as $epg) :
+                    $programName = $epg[0][0] ?: "";
+                    $subprogramName = "";
+                    $startTime = $epg[0][1] ?: "";
+                    $endTime = $epg[1][1] ?: "";
+                    $desc = "";
+                    $actors = "";
+                    $producers = "";
+                    $category = $epg[0][3] ?: "";
+                    $rebroadcast = False;
+                    $episode = "";
+                    $rating = $epg[0][2] ?: 0;
+                    $programdata = array(
+                        'channelId'=> $ChannelId,
+                        'startTime' => $startTime,
+                        'endTime' => $endTime,
+                        'programName' => $programName,
+                        'subprogramName'=> $subprogramName,
+                        'desc' => $desc,
+                        'actors' => $actors,
+                        'producers' => $producers,
+                        'category' => $category,
+                        'episode' => $episode,
+                        'rebroadcast' => $rebroadcast,
+                        'rating' => $rating
+                    );
+                    writeProgram($programdata);
+                endforeach;
+            endif;
+        } catch (Exception $e) {
+            printError($e->getMessage());
+        }
+    endforeach;
 }
 function GetEPGFromLG($ChannelInfo) {
 }
@@ -480,7 +542,7 @@ function writeProgram($programdata) {
     $category = $programdata['category'];
     $episode = $programdata['episode'];
     $rebroadcast = $programdata['rebroadcast'];
-    if($GLOBALS['addepisode'] == 'y') $programName = $programName." (".$episode."회)";
+    if($episode && $GLOBALS['addepisode'] == 'y') $programName = $programName." (".$episode."회)";
     if($rebroadcast == True && $GLOBALS['addrebroadcast'] == 'y') $programName = $programName." (재)";
     if($programdata['rating'] == 0) :
         $rating = "전체 관람가";

@@ -15,7 +15,7 @@ PHP의 내장함수를 이용하므로 특별한 모듈은 필요없다.
 
 ## 설치방법
 
-###tv_grab_file 사용시 (https://github.com/neo365/tvheadend-for-Korea)
+### tv_grab_file 사용시 (https://github.com/neo365/tvheadend-for-Korea)
 tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을
 
 #### PYTHON의 경우

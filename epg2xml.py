@@ -16,7 +16,7 @@ import argparse
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 # Set My Configuration
 default_icon_url = '' # TV channel icon url (ex : http://www.example.com/Channels)
@@ -95,7 +95,6 @@ def getEpg():
            GetEPGFromSKY(ChannelInfo)
         elif ChannelSource == 'NAVER':
            GetEPGFromNaver(ChannelInfo)
-
     print('</tv>')
 
 # Get EPG data from epg.co.kr
@@ -104,8 +103,7 @@ def GetEPGFromEPG(ChannelInfo):
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
     epginfo = []
-    url = 'http://www.epg.co.kr/epg-cgi/extern/cnm_guide_type_v070530.cgi'
-    contenturl = 'http://www.epg.co.kr/epg-cgi/guide_schedule_content.cgi'
+    url = 'http://www.epg.co.kr/epg-cgi/extern/cnm_guide_type_v070530.cgi' 
     for k in range(period):
         day = today + datetime.timedelta(days=k)
         params = {'beforegroup':'100', 'checkchannel':ServiceId, 'select_group':'100', 'start_date':day.strftime('%Y%m%d')}
@@ -116,11 +114,11 @@ def GetEPGFromEPG(ChannelInfo):
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
             strainer = SoupStrainer('table', {'style':'margin-bottom:30'})
             soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
-            table = soup.find_all('table', {'style':'margin-bottom:30'})
+            tables = soup.find_all('table', {'style':'margin-bottom:30'})
 
             for i in range(1,4):
                 thisday = day
-                row = table[i].find_all('td', {'colspan':'2'})
+                row = tables[i].find_all('td', {'colspan':'2'})
                 for j, cell in enumerate(row):
                     hour = int(cell.text.strip().strip('시'))
                     if(i == 1) : hour = 'AM ' + str(hour)
@@ -436,14 +434,14 @@ def writeProgram(programdata):
     category = escape(programdata['category'])
     episode = programdata['episode']
     rebroadcast = programdata['rebroadcast']
-    if addepisode  == 'y': programName = programName + '('+ episode + ')'
+    if episode and addepisode  == 'y': programName = programName + ' ('+ str(episode) + '회)'
     if rebroadcast  == True and addrebroadcast == 'y' : programName = programName + ' (재)'
     if programdata['rating'] == 0 :
         rating = '전체 관람가'
     else :
         rating = '%s세 이상 관람가' % (programdata['rating'])
     if verbose == 'y':
-        desc = programName
+        desc = escape(programdata['programName'])
         if subprogramName : desc = desc + '\n부제 : ' + subprogramName
         if episode : desc = desc + '\n회차 : ' + str(episode) + '회'
         if category : desc = desc + '\n장르 : ' + category

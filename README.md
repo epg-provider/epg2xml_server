@@ -5,38 +5,39 @@
 
 ## 필요 모듈
 
-# EPG2XML.PY
+### EPG2XML.PY
 BeautifulSoup(bs4), lxml, requests 모듈이 추가로 필요하다.
 설치 OS별로 모듈을 설치하기 위한 사전 설치 방법이 다를 수도 있으므로 검색해서 설치하도록 한다.
 synology의 경우 파이썬 모듈을 설치하면 easy_install beautifulsoup, easy_install lxml, easy_install requests 로 추가할 수 있다.
 
-# EPG2XML.php
+### EPG2XML.php
 PHP의 내장함수를 이용하므로 특별한 모듈은 필요없다. 
 
 ## 설치방법
 
-tv_grab_file 사용시 (https://github.com/neo365/tvheadend-for-Korea)
+###tv_grab_file 사용시 (https://github.com/neo365/tvheadend-for-Korea)
 tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을
 
-PYTHON의 경우
+#### PYTHON의 경우
 <pre>
 /usr/bin/python /home/hts/epg2xml.py -i KT(SK, LG) -d 또는
 /home/hts/epg2xml.py -i KG(SK, LG) -d
 </pre>
 
-PHP의 경우
+#### PHP의 경우
 <pre>
 /usr/bin/php /home/hts/epg2xml.php -i KT(SK, LG) -d 또는
 /home/hts/epg2xml.php -i KG(SK, LG) -d
 </pre>
 
-XMLTV 사용시
-PYTHON의 경우
+### XMLTV 사용시
+#### PYTHON의 경우
 <pre>
 /usr/bin/python /home/hts/epg2xml.py -i KT(SK, LG) -s xmltv.sock경로 또는
 /home/hts/epg2xml.py -i KT(SK, LG) -s xmltv.sock 경로
 </pre>
-PHP의 경우
+
+#### PHP의 경우
 <pre>
 /usr/bin/php /home/hts/epg2xml.php -i KT(SK, LG) -s xmltv.sock경로 또는
 /home/hts/epg2xml.php -i KT(SK, LG) -s xmltv.sock 경로

@@ -239,13 +239,13 @@ function getEPG() {
         $ChannelServiceId =  $ChannelInfo[3];
         if($GLOBALS['debug']) printLog($ChannelName.' 채널 EPG 데이터를 가져오고 있습니다');
         if($ChannelSource == 'EPG') :
-            //GetEPGFromEPG($ChannelInfo);
+            GetEPGFromEPG($ChannelInfo);
         elseif($ChannelSource == 'KT') :
-            //GetEPGFromKT($ChannelInfo);
+            GetEPGFromKT($ChannelInfo);
         elseif($ChannelSource == 'LG') :
             GetEPGFromLG($ChannelInfo);
         elseif($ChannelSource == 'SK') :
-            //GetEPGFromSK($ChannelInfo);
+            GetEPGFromSK($ChannelInfo);
         elseif($ChannelSource == 'SKY') :
             GetEPGFromSKY(ChannelInfo);
         elseif($ChannelSource == 'NAVER') :

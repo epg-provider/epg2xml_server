@@ -241,7 +241,7 @@ function getEPG() {
         if($ChannelSource == 'EPG') :
             //GetEPGFromEPG($ChannelInfo);
         elseif($ChannelSource == 'KT') :
-            GetEPGFromKT($ChannelInfo);
+            //GetEPGFromKT($ChannelInfo);
         elseif($ChannelSource == 'LG') :
             GetEPGFromLG($ChannelInfo);
         elseif($ChannelSource == 'SK') :
@@ -284,7 +284,7 @@ function GetEPGFromEPG($ChannelInfo) {
                 $response = str_replace("charset=euc-kr", "charset=utf-8", $response);
                 $dom = new DomDocument;
                 libxml_use_internal_errors(true);
-                $dom->loadHTML(mb_convert_encoding($response, 'UTF-8', 'EUC-KR'));
+                $dom->loadHTML(mb_convert_encoding($response, "UTF-8", "EUC-KR"));
                 $xpath = new DomXPath($dom);
                 for($i = 2; $i < 5; $i++) :
                     $thisday = $day;
@@ -392,7 +392,7 @@ function GetEPGFromKT($ChannelInfo) {
                 $response = str_replace("charset=euc-kr", "charset=utf-8", $response);
                 $dom = new DomDocument;
                 libxml_use_internal_errors(true);
-                $dom->loadHTML(mb_convert_encoding($response, 'UTF-8', 'EUC-KR'));
+                $dom->loadHTML(mb_convert_encoding($response, "UTF-8", "EUC-KR"));
                 $xpath = new DomXPath($dom);
                 $query = "//table[@id='pop_day']/tbody/tr";
                 $rows = $xpath->query($query);
@@ -439,6 +439,87 @@ function GetEPGFromKT($ChannelInfo) {
     endforeach;
 }
 function GetEPGFromLG($ChannelInfo) {
+    $ChannelId = $ChannelInfo[0];
+    $ChannelName = $ChannelInfo[1];
+    $ServiceId =  $ChannelInfo[3];
+    $epginfo = array();
+    $options = array(
+        'http' => array(
+            'method' => 'GET',
+            'user-agent' => $GLOBALS['ua']
+    ));
+    $context  = stream_context_create($options);
+    foreach(range(1, $GLOBALS['period']) as $k) :
+        $url = "http://www.uplus.co.kr/css/chgi/chgi/RetrieveTvSchedule.hpi";
+        $day = date("Ymd", strtotime("+".($k - 1)." days"));
+        $params = array(
+            'chnlCd' => $ServiceId,
+            'evntCmpYmd' =>  $day
+        );
+        $params = http_build_query($params);
+        $url = $url."?".$params;
+
+        try {
+            $response = @file_get_contents($url, False, $context);
+            if ($response === False) :
+                throw new Exception ($ChannelName.HTTP_ERROR);
+            else :
+                $response = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'.$response;
+                $dom = new DomDocument;
+                libxml_use_internal_errors(true);
+                $response = mb_convert_encoding($response, "UTF-8", "EUC-KR");
+                $response = str_replace(array('<재>', ' [..', ' (..'), array('&lt;재&gt;', '', ''), $response);
+                $dom->loadHTML($response);
+                $xpath = new DomXPath($dom);
+                $query = "//table[@class='datatable06 datatable06_type01']/tbody/tr";
+                $rows = $xpath->query($query);
+
+                foreach($rows as $row) :
+                    $cells = $row->getElementsByTagName('td');
+                    $startTime = date("YmdHis", strtotime($day." ".trim($cells[0]->nodeValue)));
+                    $images = $cells[1]->getElementsByTagName('img');
+                    $rating = 0;
+                    foreach($images as $image) :
+                        if(preg_match('/(\d+)세이상 관람가/', $image->attributes->getNamedItem('alt')->nodeValue, $ratings)) $rating = $ratings[1];
+                    endforeach;
+                    #programName, startTime, rating, category
+                    $epginfo[]= array(trim($cells[1]->nodeValue), $startTime, $rating, trim($cells[2]->nodeValue));
+                endforeach;
+                $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
+                foreach($zipped as $epg) :
+                    preg_match('/(<재>?)?(.*?)(\[(.*)\])?\s?(\(([\d,]+)회\))?$/', $epg[0][0], $matches);
+                    $programName = trim($matches[2]) ?: "";
+                    $subprogramName = trim($matches[4]) ?: "";
+                    $startTime = $epg[0][1] ?: "";
+                    $endTime = $epg[1][1] ?: "";
+                    $desc = "";
+                    $actors = "";
+                    $producers = "";
+                    $category = $epg[0][3] ?: "";
+                    $rebroadcast = trim($matches[1]) ? True: False;
+                    $episode = trim($matches[6]) ?: "";
+                    $rating = $epg[0][2] ?: 0;
+                    $programdata = array(
+                        'channelId'=> $ChannelId,
+                        'startTime' => $startTime,
+                        'endTime' => $endTime,
+                        'programName' => $programName,
+                        'subprogramName'=> $subprogramName,
+                        'desc' => $desc,
+                        'actors' => $actors,
+                        'producers' => $producers,
+                        'category' => $category,
+                        'episode' => $episode,
+                        'rebroadcast' => $rebroadcast,
+                        'rating' => $rating
+                    );
+                    writeProgram($programdata);
+                endforeach;
+            endif;
+        } catch (Exception $e) {
+            printError($e->getMessage());
+        }
+    endforeach;
 }
 
 function GetEPGFromSK($ChannelInfo) {
@@ -571,6 +652,7 @@ function writeProgram($programdata) {
         '음악' => 'Music / Ballet / Dance',
         '뉴스' => 'News / Current affairs',
         '다큐' => 'Documentary',
+        '라이프' => 'Documentary',
         '시사/다큐' => 'Documentary',
         '연예' => 'Show / Game show',
         '스포츠' => 'Sports',
@@ -578,7 +660,7 @@ function writeProgram($programdata) {
        );
     $contentType = "";
     foreach($contentTypeDict as $key => $value) :
-        if(!(strpos($category, $key) === false)) :
+        if(!(strpos($category, $key) === False)) :
             $contentType = $value;
         endif;
     endforeach;

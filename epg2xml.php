@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-define("VERSION", "1.1.3");
+define("VERSION", "1.1.4");
 
 # Set My Configuration
 $default_icon_url = ""; # TV channel icon url (ex : http://www.example.com/Channels)
@@ -18,149 +18,144 @@ define("CHANNEL_ERROR", " 존재하지 않는 채널입니다.");
 define("CONTENT_ERROR ", " EPG 정보가 없습니다.");
 define("HTTP_ERROR", " EPG 정보를 가져오는데 문제가 있습니다.");
 define("SOCKET_ERROR", "xmltv.sock 파일을 찾을 수 없습니다.");
-define("JSON_FILE_ERROR", " Channel.json 파일을 읽을 수 없습니다.");
-define("JSON_SYNTAX_ERROR",  "Channel.json 파일 형식이 잘못되었습니다.");
-//사용방법
-$usage = <<<USAGE
-usage: epg2xml.php [-h] -i {KT,LG,SK}
-                  (-v | -d | -o [xmltv.xml] | -s [xmltv.sock]) [-l 1-7]
-                  [--icon http://www.example.com/icon] [--verbose y, n]
+define("JSON_FILE_ERROR", "json 파일을 읽을 수 없습니다.");
+define("JSON_SYNTAX_ERROR",  "json 파일 형식이 잘못되었습니다.");
 
-USAGE;
 //도움말
 $help = <<<HELP
-usage: epg2xml.py [-h] -i {KT,LG,SK}
-                  (-v | -d | -o [xmltv.xml] | -s [xmltv.sock]) [-l 1-7]
-                  [--icon http://www.example.com/icon] [--verbose y, n]
-
-EPG 정보를 출력하는 방법을 선택한다
+usage: epg2xml.php -h
 
 optional arguments:
   -h, --help            show this help message and exit
   -v, --version         show programs version number and exit
-  -d, --display         EPG 정보 화면출력
-  -o [xmltv.xml], --outfile [xmltv.xml]       EPG 정보 저장
-  -s [xmltv.sock], --socket [xmltv.sock]      xmltv.sock(External: XMLTV)로 EPG정보 전송
-
-  IPTV 선택
-
-  -i {KT,LG,SK}         사용하는 IPTV : KT, LG, SK
-
-추가옵션:
-  -l 1-7, --limit 1-7   EPG 정보를 가져올 기간, 기본값: 2
-  --icon http://www.example.com/icon
-                        채널 아이콘 URL, 기본값:
-  --verbose y, n        EPG 정보 추가 출력
 
 HELP;
 
 //옵션 처리
 $shortargs  = "";
-$shortargs .= "i:";
 $shortargs .= "v";
-$shortargs .= "d";
-$shortargs .= "o:s:";
-$shortargs .= "l:";
 $shortargs .= "h";
 
 $longargs  = array(
     "version",
-    "display",
-    "outfile:",
-    "socket:",
-    "limit::",
-    "icon:",
-    "episode:",
-    "rebroadcast:",
-    "verbose:",
     "help"
 );
 $args = getopt($shortargs, $longargs);
 
 if($args['h'] === False || $args['help'] === False)://도움말 출력
-    print($help);
+    printf($help);
     exit;
 elseif($args['v'] === False || $args['version'] === False)://버전 정보 출력
     printf("epg2xml.php version : %s\n", VERSION);
     exit;
 else :
-    if(empty($args['i'])) : //ISP 선택없을 시 사용법 출력
-        print($usage);
-        print("epg2xml.php: error: argument -i: expected one argument\n");
+    $Settingfile = __DIR__."/epg2xml.json";
+    try {
+        $f = @file_get_contents($Settingfile); // Read Setting Information file
+        if($f === False) :
+            throw new Exception("epg2xml.".JSON_FILE_ERROR);
+        else :
+            try {
+                $Settings = json_decode($f, TRUE);
+                if(json_last_error() != JSON_ERROR_NONE) throw new Exception("epg2xml.".JSON_SYNTAX_ERROR);
+                $MyISP = $Settings['MyISP'];
+                $default_output = $Settings['output'];
+                $default_icon_url = $Settings['default_icon_url'];
+                $default_rebroadcast = $Settings['default_rebroadcast'];
+                $default_episode = $Settings['default_episode'];
+                $default_verbose = $Settings['default_verbose'];
+                $default_fetch_limit = $Settings['default_fetch_limit'];
+                $default_xml_filename = $Settings['default_xml_filename'];
+                $default_xml_socket = $Settings['default_xml_socket'];
+            }
+            catch(Exception $e) {
+                printError($e->getMessage());
+                exit;
+            }
+        endif;
+    }
+    catch(Exception $e) {
+        printError($e->getMessage());
+        exit;
+    }
+    if(empty($MyISP)) : //ISP 선택없을 시 사용법 출력
+        printError("epg2xml.json 파일의 MyISP항목이 없습니다.");
         exit;
     else :
-        if(in_array($args['i'], array("KT", "LG", "SK"))) : //ISP 선택
-            $MyISP = $args['i'];
-            if($args['d'] === False || $args['display'] === False ) :
-                if($args['o'] || $args['outfile'] || $args['s'] || $args['socket']) :
-                    print($usage);
-                    print("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
-                    exit;
-                endif;
-                $output = "display";
-            elseif(empty($args['o']) === False || empty($args['outfile']) === False) :
-                if($args['d'] === False || $args['display'] === False || $args['s'] || $args['socket']) :
-                    print($usage);
-                    print("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
-                    exit;
-                endif;
-                $output = "file";
-                $outfile = $args['o'] ?: $args['outfile'];
-            elseif(empty($args['s']) === False || empty($args['socket']) === False) :
-                if($args['d'] === False || $args['display'] === False || $args['o'] || $args['outfile']) :
-                    print($usage);
-                    print("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
-                    exit;
-                endif;
-                $output = "socket";
-                $socket = $args['s'] ?: $args['socket'];
-            else :
-                print($usage);
-                print("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
+        if(in_array($MyISP, array("KT", "LG", "SK"))) : //ISP 선택
+            if(empty($default_output)) :
+                printError("epg2xml.json 파일의 output항목이 없습니다.");
                 exit;
-            endif;
-            if(empty($args['l']) === False || empty($args['limit']) === False) :
-                if(in_array($args['l'], array(1, 2, 3, 4, 5, 6, 7)) || in_array($args['limit'], array(1, 2, 3, 4, 5, 6, 7))) :
-                    $period = $args['l'] ?: $args['limit'];
+            else :
+                if(in_array($default_output, array("d", "o", "s"))) :
+                    switch ($default_output) :
+                        case "d" :
+                            $output = "display";
+                            break;
+                        case "o" :
+                            $output = "file";
+                            break;
+                        case "s" :
+                            $output = "socket";
+                            break;
+                    endswitch;
                 else :
-                    print($usage);
-                    print("epg2xml.php: error: argument -l/--limit: invalid choice: ".$args['l']." (choose from 1, 2, 3, 4, 5, 6, 7)\n");
+                    printError("output는 d, o, s만 가능합니다.");
                     exit;
                 endif;
             endif;
-            if(empty($args['icon']) === False) :
-                $IconUrl = $args['icon'];
+            if(is_null($default_icon_url) == True) :
+                printError("epg2xml.json 파일의 default_icon_url항목이 없습니다.");
+                exit;
+            else :
+                $IconUrl = $default_icon_url;
             endif;
-            if(empty($args['episode']) === False) :
-                if(in_array($args['episode'], array("y", "n"))) :
-                    $episode = $args['episode'];
+            if(empty($default_rebroadcast)) :
+                printError("epg2xml.json 파일의 default_rebroadcast항목이 없습니다.");
+                exit;
+            else :
+                if(in_array($default_rebroadcast, array("y", "n"))) :
+                    $rebroadcast = $default_rebroadcast;
                 else :
-                    print($usage);
-                    print("epg2xml.php: argument --episode: invalid choice: 'a' (choose from 'y', 'n')\n");
+                    printError("default_rebroadcast는 y, n만 가능합니다.");
                     exit;
                 endif;
-             endif;
-            if(empty($args['rebroadcast']) === False) :
-                if(in_array($args['rebroadcast'], array("y", "n"))) :
-                    $rebroadcast = $args['rebroadcast'];
+            endif;
+           if(empty($default_episode)) :
+                printError("epg2xml.json 파일의 default_episode항목이 없습니다.");
+                exit;
+            else :
+                if(in_array($default_episode, array("y", "n"))) :
+                    $episode = $default_episode;
                 else :
-                    print($usage);
-                    print("epg2xml.php: argument --rebroadcast: invalid choice: 'a' (choose from 'y', 'n')\n");
+                    printError("default_episode는 y, n만 가능합니다.");
                     exit;
                 endif;
-             endif;
-            if(empty($args['verbose']) === False) :
-                if(in_array($args['verbose'], array("y", "n"))) :
-                    $verbose = $args['verbose'];
+            endif;
+           if(empty($default_verbose)) :
+                printError("epg2xml.json 파일의 default_verbose항목이 없습니다.");
+                exit;
+            else :
+                if(in_array($default_verbose, array("y", "n"))) :
+                    $verbose = $default_verbose;
                 else :
-                    print($usage);
-                    print("epg2xml.php: argument --verbose: invalid choice: 'a' (choose from 'y', 'n')\n");
+                    printError("default_verbose는 y, n만 가능합니다.");
                     exit;
                 endif;
-             endif;
+            endif;
+            if(empty($default_fetch_limit)) :
+                printError("epg2xml.json 파일의 default_fetch_limit항목이 없습니다.");
+                exit;
+            else :
+                if(in_array($default_fetch_limit, array(1, 2, 3, 4, 5, 6, 7))) :
+                    $period = $default_fetch_limit;
+                else :
+                    printError("default_fetch_limit는 1, 2, 3, 4, 5, 6, 7만 가능합니다.");
+                    exit;
+                endif;
+            endif;
         else :
-            print($usage);
-            print("epg2xml.php: error: argument -i: invalid choice: '".$args1['i']."' (choose from 'KT', 'LG', 'SK')\n");
+            printError("MyISP는 KT, LG, SK만 가능합니다.");
             exit;
         endif;
     endif;
@@ -183,7 +178,8 @@ elseif($output == "file") :
     fclose($fp);
 elseif($output == "socket") :
     $socket = $socket ?: $default_xml_socket;
-    $fp = fsockopen('unix:///volume1/@appstore/tvheadend-testing/var/epggrab/xmltv.sock', -1, $errno, $errstr, 30);
+    $socket = "unix://".$socket;
+    $fp = fsockopen($socket, -1, $errno, $errstr, 30);
     getEpg();
     fclose($fp);
 endif;
@@ -195,11 +191,11 @@ function getEPG() {
     try {
         $f = @file_get_contents($Channelfile); // Read Channel Information file
         if($f === False) :
-            throw new Exception(JSON_FILE_ERROR);
+            throw new Exception("Chanel.".JSON_FILE_ERROR);
         else :
             try {
                 $Channeldatas = json_decode($f, TRUE);
-                if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
+                if(json_last_error() != JSON_ERROR_NONE) throw new Exception("Channel.".JSON_SYNTAX_ERROR);
             }
             catch(Exception $e) {
                 printError($e->getMessage());

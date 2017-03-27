@@ -1,29 +1,24 @@
 #!/usr/bin/env php
 <?php
+@date_default_timezone_set('Asia/Seoul');
 define("VERSION", "1.1.4");
 
-# Set My Configuration
-$default_icon_url = ""; # TV channel icon url (ex : http://www.example.com/Channels)
-$default_rebroadcast = "y"; # 제목에 재방송 정보 출력
-$default_episode = "n"; # 제목에 회차정보 출력
-$default_verbose = "n"; # 자세한 epg 데이터 출력
-$default_fetch_limit = 2; # epg 데이터 가져오는 기간
-$default_xml_filename = "xmltv.xml"; # epg 저장시 기본 저장 이름 (ex: /home/tvheadend/xmltv.xml)
-$default_xml_socket = "xmltv.sock"; # External XMLTV 사용시 기본 소켓 이름 (ex: /home/tvheadend/xmltv.sock)
-
-# Set variable
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
 define("CHANNEL_ERROR", " 존재하지 않는 채널입니다.");
 define("CONTENT_ERROR ", " EPG 정보가 없습니다.");
 define("HTTP_ERROR", " EPG 정보를 가져오는데 문제가 있습니다.");
+define("DISPLAY_ERROR", "EPG를 출력할 수 없습니다.");
+define("FILE_ERROR", "xmltv.xml 파일을 만들수 없습니다.");
 define("SOCKET_ERROR", "xmltv.sock 파일을 찾을 수 없습니다.");
-define("JSON_FILE_ERROR", "json 파일을 읽을 수 없습니다.");
+define("JSON_FILE_ERROR", "json 파일이 없습니다.");
 define("JSON_SYNTAX_ERROR",  "json 파일 형식이 잘못되었습니다.");
 
 //도움말
 $help = <<<HELP
 usage: epg2xml.php -h
+
+EPG 정보 출력 프로그램
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -51,9 +46,10 @@ elseif($args['v'] === False || $args['version'] === False)://버전 정보 출�
 else :
     $Settingfile = __DIR__."/epg2xml.json";
     try {
-        $f = @file_get_contents($Settingfile); // Read Setting Information file
+        $f = @file_get_contents($Settingfile);
         if($f === False) :
-            throw new Exception("epg2xml.".JSON_FILE_ERROR);
+            printError("epg2xml.".JSON_FILE_ERROR);
+            exit;
         else :
             try {
                 $Settings = json_decode($f, TRUE);
@@ -65,8 +61,88 @@ else :
                 $default_episode = $Settings['default_episode'];
                 $default_verbose = $Settings['default_verbose'];
                 $default_fetch_limit = $Settings['default_fetch_limit'];
-                $default_xml_filename = $Settings['default_xml_filename'];
+                $default_xml_file = $Settings['default_xml_file'];
                 $default_xml_socket = $Settings['default_xml_socket'];
+                if(empty($MyISP)) : //ISP 선택없을 시 사용법 출력
+                    printError("epg2xml.json 파일의 MyISP항목이 없습니다.");
+                    exit;
+                else :
+                    if(!in_array($MyISP, array("KT", "LG", "SK"))) : //ISP 선택
+                        printError("MyISP는 KT, LG, SK만 가능합니다.");
+                        exit;
+                    endif;
+                endif;
+                if(empty($default_output)) :
+                    printError("epg2xml.json 파일의 output항목이 없습니다.");
+                    exit;
+                else :
+                    if(in_array($default_output, array("d", "o", "s"))) :
+                        switch ($default_output) :
+                            case "d" :
+                                $output = "display";
+                                break;
+                            case "o" :
+                                $output = "file";
+                                break;
+                            case "s" :
+                                $output = "socket";
+                                break;
+                        endswitch;
+                    else :
+                        printError("output는 d, o, s만 가능합니다.");
+                        exit;
+                    endif;
+                endif;
+                if(is_null($default_icon_url) == True) :
+                    printError("epg2xml.json 파일의 default_icon_url항목이 없습니다.");
+                    exit;
+                else :
+                    $IconUrl = $default_icon_url;
+                endif;
+                if(empty($default_rebroadcast)) :
+                    printError("epg2xml.json 파일의 default_rebroadcast항목이 없습니다.");
+                    exit;
+                else :
+                    if(in_array($default_rebroadcast, array("y", "n"))) :
+                        $addrebroadcast = $default_rebroadcast;
+                    else :
+                        printError("default_rebroadcast는 y, n만 가능합니다.");
+                        exit;
+                    endif;
+                endif;
+               if(empty($default_episode)) :
+                    printError("epg2xml.json 파일의 default_episode항목이 없습니다.");
+                    exit;
+                else :
+                    if(in_array($default_episode, array("y", "n"))) :
+                        $addepisode = $default_episode;
+                    else :
+                        printError("default_episode는 y, n만 가능합니다.");
+                        exit;
+                    endif;
+                endif;
+                if(empty($default_verbose)) :
+                    printError("epg2xml.json 파일의 default_verbose항목이 없습니다.");
+                    exit;
+                else :
+                    if(in_array($default_verbose, array("y", "n"))) :
+                        $addverbose = $default_verbose;
+                    else :
+                        printError("default_verbose는 y, n만 가능합니다.");
+                        exit;
+                    endif;
+                endif;
+                if(empty($default_fetch_limit)) :
+                    printError("epg2xml.json 파일의 default_fetch_limit항목이 없습니다.");
+                    exit;
+                else :
+                    if(in_array($default_fetch_limit, array(1, 2, 3, 4, 5, 6, 7))) :
+                        $period = $default_fetch_limit;
+                    else :
+                        printError("default_fetch_limit는 1, 2, 3, 4, 5, 6, 7만 가능합니다.");
+                        exit;
+                    endif;
+                endif;
             }
             catch(Exception $e) {
                 printError($e->getMessage());
@@ -78,110 +154,58 @@ else :
         printError($e->getMessage());
         exit;
     }
-    if(empty($MyISP)) : //ISP 선택없을 시 사용법 출력
-        printError("epg2xml.json 파일의 MyISP항목이 없습니다.");
-        exit;
-    else :
-        if(in_array($MyISP, array("KT", "LG", "SK"))) : //ISP 선택
-            if(empty($default_output)) :
-                printError("epg2xml.json 파일의 output항목이 없습니다.");
-                exit;
-            else :
-                if(in_array($default_output, array("d", "o", "s"))) :
-                    switch ($default_output) :
-                        case "d" :
-                            $output = "display";
-                            break;
-                        case "o" :
-                            $output = "file";
-                            break;
-                        case "s" :
-                            $output = "socket";
-                            break;
-                    endswitch;
-                else :
-                    printError("output는 d, o, s만 가능합니다.");
-                    exit;
-                endif;
-            endif;
-            if(is_null($default_icon_url) == True) :
-                printError("epg2xml.json 파일의 default_icon_url항목이 없습니다.");
-                exit;
-            else :
-                $IconUrl = $default_icon_url;
-            endif;
-            if(empty($default_rebroadcast)) :
-                printError("epg2xml.json 파일의 default_rebroadcast항목이 없습니다.");
-                exit;
-            else :
-                if(in_array($default_rebroadcast, array("y", "n"))) :
-                    $rebroadcast = $default_rebroadcast;
-                else :
-                    printError("default_rebroadcast는 y, n만 가능합니다.");
-                    exit;
-                endif;
-            endif;
-           if(empty($default_episode)) :
-                printError("epg2xml.json 파일의 default_episode항목이 없습니다.");
-                exit;
-            else :
-                if(in_array($default_episode, array("y", "n"))) :
-                    $episode = $default_episode;
-                else :
-                    printError("default_episode는 y, n만 가능합니다.");
-                    exit;
-                endif;
-            endif;
-           if(empty($default_verbose)) :
-                printError("epg2xml.json 파일의 default_verbose항목이 없습니다.");
-                exit;
-            else :
-                if(in_array($default_verbose, array("y", "n"))) :
-                    $verbose = $default_verbose;
-                else :
-                    printError("default_verbose는 y, n만 가능합니다.");
-                    exit;
-                endif;
-            endif;
-            if(empty($default_fetch_limit)) :
-                printError("epg2xml.json 파일의 default_fetch_limit항목이 없습니다.");
-                exit;
-            else :
-                if(in_array($default_fetch_limit, array(1, 2, 3, 4, 5, 6, 7))) :
-                    $period = $default_fetch_limit;
-                else :
-                    printError("default_fetch_limit는 1, 2, 3, 4, 5, 6, 7만 가능합니다.");
-                    exit;
-                endif;
-            endif;
-        else :
-            printError("MyISP는 KT, LG, SK만 가능합니다.");
-            exit;
-        endif;
-    endif;
-endif;
-// 옵션 처리
-$period = $period ?: $default_fetch_limit;
-$IconUrl = $IconUrl ?: $default_icon_url;
-$addepisode = $episode ?: $default_episode;
-$addrebroadcast = $rebroadcast ?: $default_rebroadcast;
-$verbose = $verbose ?: $default_verbose;
+ endif;
 
 if($output == "display") :
     $fp = fopen('php://output', 'w+');
-    getEpg();
-    fclose($fp);
+    if ($fp === False) :
+        printError(DISPLAY_ERROR);
+        exit;
+    else :
+        try {
+            getEpg();
+            fclose($fp);
+        } catch(Exception $e) {
+            if($GLOBALS['debug']) printError($e->getMessage());
+        }
+    endif;
 elseif($output == "file") :
-    $outfile = $outfile ?: $default_xml_filename;
-    $fp = fopen($outfile, 'w+');
-    getEpg();
-    fclose($fp);
+    if($default_xml_file) :
+        $fp = fopen($default_xml_file, 'w+');
+        if ($fp === False) :
+            printError(FIEL_ERROR);
+            exit;
+        else :
+            try {
+                getEpg();
+                fclose($fp);
+            } catch(Exception $e) {
+                if($GLOBALS['debug']) printError($e->getMessage());
+            }
+        endif;
+    else :
+        printError("epg2xml.json 파일의 default_xml_file항목이 없습니다.");
+        exit;
+    endif;
 elseif($output == "socket") :
-    $socket = $socket ?: $default_xml_socket;
-    $socket = "unix://".$socket;
-    $fp = fsockopen($socket, -1, $errno, $errstr, 30);
-    getEpg();
-    fclose($fp);
+    if($default_xml_socket) :
+        $default_xml_socket = "unix://".$default_xml_socket;
+        $fp = @fsockopen($default_xml_socket, -1, $errno, $errstr, 30);
+        if ($fp === False) :
+            printError(SOCKET_ERROR);
+            exit;
+        else :
+            try {
+                getEpg();
+                fclose($fp);
+            } catch(Exception $e) {
+                if($GLOBALS['debug']) printError($e->getMessage());
+            }
+        endif;
+    else :
+        printError("epg2xml.json 파일의 default_xml_socket항목이 없습니다.");
+        exit;
+    endif;
 endif;
 
 function getEPG() {
@@ -189,9 +213,10 @@ function getEPG() {
     $MyISP = $GLOBALS['MyISP'];
     $Channelfile = __DIR__."/Channel.json";
     try {
-        $f = @file_get_contents($Channelfile); // Read Channel Information file
+        $f = @file_get_contents($Channelfile);
         if($f === False) :
-            throw new Exception("Chanel.".JSON_FILE_ERROR);
+            printError("Channel.json.".JSON_FILE_ERROR);
+            exit;
         else :
             try {
                 $Channeldatas = json_decode($f, TRUE);
@@ -207,26 +232,25 @@ function getEPG() {
         printError($e->getMessage());
         exit;
     }
-
     fprintf($fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     fprintf($fp, "<!DOCTYPE tv SYSTEM \"xmltv.dtd\">\n\n");
-
     fprintf($fp, "<tv generator-info-name=\"epg2xml.py %s\">\n", VERSION);
-
     foreach ($Channeldatas as $Channeldata) : #Get Channel & Print Channel info
         if($Channeldata['Enabled'] == 1) :
             $ChannelId = $Channeldata['Id'];
             $ChannelName = htmlspecialchars($Channeldata['Name'], ENT_XML1);
             $ChannelSource = $Channeldata['Source'];
             $ChannelServiceId = $Channeldata['ServiceId'];
-            $ChannelISPName = "[".$Channeldata[$MyISP.'Ch']."]".htmlspecialchars($Channeldata[$MyISP." Name"], ENT_XML1);
+            $Channelnumber = $Channeldata[$MyISP.'Ch'];
+            $ChannelISPName = htmlspecialchars($Channeldata[$MyISP." Name"], ENT_XML1);
             $ChannelIconUrl = htmlspecialchars($Channeldata['Icon_url'], ENT_XML1);
-
             if($Channeldata[$MyISP.'Ch'] != Null):
                 $ChannelInfos[] = array($ChannelId,  $ChannelName, $ChannelSource, $ChannelServiceId);
                 fprintf($fp, "  <channel id=\"%s\">\n", $ChannelId);
                 fprintf($fp, "    <display-name>%s</display-name>\n", $ChannelName);
                 fprintf($fp, "    <display-name>%s</display-name>\n", $ChannelISPName);
+                fprintf($fp, "    <display-name>%s</display-name>\n", $Channelnumber);
+                fprintf($fp, "    <display-name>%s</display-name>\n", $Channelnumber." ".$ChannelISPName);
                 if($IconUrl) :
                     fprintf($fp, "    <icon src=\"%s/%s.png\" />\n", $IconUrl, $ChannelId);
                 else :
@@ -286,7 +310,7 @@ function GetEPGFromEPG($ChannelInfo) {
         try {
             $response = @file_get_contents($url, False, $context);
             if ($response === False) :
-                throw new Exception ($ChannelName.HTTP_ERROR);
+                printError($ChannelName.HTTP_ERROR);
             else :
                 $response = str_replace("charset=euc-kr", "charset=utf-8", $response);
                 $dom = new DomDocument;
@@ -394,7 +418,7 @@ function GetEPGFromKT($ChannelInfo) {
         try {
             $response = @file_get_contents($url, False, $context);
             if ($response === False) :
-                throw new Exception ($ChannelName.HTTP_ERROR);
+                printError($ChannelName.HTTP_ERROR);
             else :
                 $response = str_replace("charset=euc-kr", "charset=utf-8", $response);
                 $dom = new DomDocument;
@@ -445,7 +469,6 @@ function GetEPGFromKT($ChannelInfo) {
         }
     endforeach;
 }
-
 function GetEPGFromLG($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
@@ -470,7 +493,7 @@ function GetEPGFromLG($ChannelInfo) {
         try {
             $response = @file_get_contents($url, False, $context);
             if ($response === False) :
-                throw new Exception ($ChannelName.HTTP_ERROR);
+                printError($ChannelName.HTTP_ERROR);
             else :
                 $response = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'.$response;
                 $dom = new DomDocument;
@@ -528,7 +551,6 @@ function GetEPGFromLG($ChannelInfo) {
         }
     endforeach;
 }
-
 function GetEPGFromSK($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
@@ -551,7 +573,7 @@ function GetEPGFromSK($ChannelInfo) {
     try {
         $response = @file_get_contents($url, False, $context);
         if ($response === False) :
-            throw new Exception ($ChannelName.HTTP_ERROR);
+            printError($ChannelName.HTTP_ERROR);
         else :
             try {
                 $data = json_decode($response, TRUE);
@@ -576,7 +598,7 @@ function GetEPGFromSK($ChannelInfo) {
                         endif;
                         $startTime = date("YmdHis",$program['startTime']/1000);
                         $endTime = date("YmdHis",$program['endTime']/1000);
-                        if ($GLOBALS['verbose'] == "y") :
+                        if ($GLOBALS['addverbose'] == "y") :
                             $desc = $program['synopsis'] ?: "";
                             $actors =trim(str_replace('...','',$program['actorName']), ', ') ?: "";
                             $producers = trim(str_replace('...','',$program['directorName']), ', ') ?: "";
@@ -642,7 +664,7 @@ function GetEPGFromSKY($ChannelInfo) {
         try {
             $response = @file_get_contents($url, False, $context);
             if ($response === False) :
-                throw new Exception ($ChannelName.HTTP_ERROR);
+                printError($ChannelName.HTTP_ERROR);
             else :
                 try {
                     $data = json_decode($response, TRUE);
@@ -658,7 +680,7 @@ function GetEPGFromSKY($ChannelInfo) {
                             $subprogramName = str_replace(array('&lt;', '&gt;', '&amp;'), array('<', '>', '&'),$program['program_subname']) ?: "";
                             $startTime = $program['starttime'];
                             $endTime = $program['endtime'];
-                            if ($GLOBALS['verbose'] == "y") :
+                            if ($GLOBALS['addverbose'] == "y") :
                                 $actors = trim(str_replace('...', '',$program['cast']), ', ') ?: "";
                                 $producers = trim(str_replace('...', '',$program['dirt']), ', ') ?: "";
                                 $description = str_replace(array('&lt;', '&gt;', '&amp;'), array('<', '>', '&'),$program['description']) ?: "";
@@ -737,7 +759,7 @@ function GetEPGFromNaver($ChannelInfo) {
         try {
             $response = @file_get_contents($url, False, $context);
             if ($response === False) :
-                throw new Exception ($ChannelName.HTTP_ERROR);
+                printError($ChannelName.HTTP_ERROR);
             else :
                 try {
                     $response = str_replace('epg( ', '', $response );
@@ -816,7 +838,7 @@ function writeProgram($programdata) {
     else :
         $rating = sprintf("%s세 이상 관람가", $programdata['rating']);
     endif;
-    if($GLOBALS['verbose'] == 'y') :
+    if($GLOBALS['addverbose'] == 'y') :
         $desc = $programdata['programName'];
         if($subprogramName)  $desc = $desc."\n부제 : ".$subprogramName;
         if($episode) $desc = $desc."\n회차 : (".$episode."회)";
@@ -828,6 +850,7 @@ function writeProgram($programdata) {
         $desc = "";
     endif;
     if($programdata['desc']) $desc = $desc."\n".$programdata['desc'];
+    $desc = htmlspecialchars($desc, ENT_XML1);
     $contentTypeDict = array(
         '교양' => 'Arts / Culture (without music)',
         '만화' => 'Cartoons / Puppets',
@@ -855,7 +878,7 @@ function writeProgram($programdata) {
     if($subprogramName) :
         fprintf($fp, "    <sub-title lang=\"kr\">%s</sub-title>\n", $subprogramName);
     endif;
-    if($GLOBALS['verbose']=='y') :
+    if($GLOBALS['addverbose']=='y') :
         fprintf($fp, "    <desc lang=\"kr\">%s</desc>\n", $desc);
         if($actors || $producers):
             fprintf($fp, "    <credits>\n");
@@ -889,7 +912,4 @@ function printLog($args) {
 function printError($args) {
     fwrite(STDERR, "Error : ".$args."\n");
 }
-set_error_handler (function ($errno, $errstr, $errfile, $errline) {
-    throw new ErrorException ($errstr, 0, $errno, $errfile, $errline);
-});
 ?>

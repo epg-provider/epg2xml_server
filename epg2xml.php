@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 @date_default_timezone_set('Asia/Seoul');
-define("VERSION", "1.1.4");
+define("VERSION", "1.1.5");
 
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
@@ -9,30 +9,60 @@ define("CHANNEL_ERROR", " 존재하지 않는 채널입니다.");
 define("CONTENT_ERROR ", " EPG 정보가 없습니다.");
 define("HTTP_ERROR", " EPG 정보를 가져오는데 문제가 있습니다.");
 define("DISPLAY_ERROR", "EPG를 출력할 수 없습니다.");
-define("FILE_ERROR", "xmltv.xml 파일을 만들수 없습니다.");
-define("SOCKET_ERROR", "xmltv.sock 파일을 찾을 수 없습니다.");
+define("FILE_ERROR", "XML 파일을 만들수 없습니다.");
+define("SOCKET_ERROR", "소켓 파일을 찾을 수 없습니다.");
 define("JSON_FILE_ERROR", "json 파일이 없습니다.");
 define("JSON_SYNTAX_ERROR",  "json 파일 형식이 잘못되었습니다.");
 
+//사용방법
+$usage = <<<USAGE
+usage: epg2xml.php [-h] -i {KT,LG,SK}
+                  (-v | -d | -o [xmltv.xml] | -s [xmltv.sock]) [-l 1-7]
+                  [--icon http://www.example.com/icon] [--verbose y, n]
+USAGE;
+
 //도움말
 $help = <<<HELP
-usage: epg2xml.php -h
-
-EPG 정보 출력 프로그램
-
+usage: epg2xml.py [-h] -i {KT,LG,SK}
+                  (-v | -d | -o [xmltv.xml] | -s [xmltv.sock]) [-l 1-7]
+                  [--icon http://www.example.com/icon] [--verbose y, n]
+EPG 정보를 출력하는 방법을 선택한다
 optional arguments:
   -h, --help            show this help message and exit
   -v, --version         show programs version number and exit
+  -d, --display         EPG 정보 화면출력
+  -o [xmltv.xml], --outfile [xmltv.xml]       EPG 정보 저장
+  -s [xmltv.sock], --socket [xmltv.sock]      xmltv.sock(External: XMLTV)로 EPG정보 전송
+  IPTV 선택
+  -i {KT,LG,SK}         사용하는 IPTV : KT, LG, SK
+추가옵션:
+  -l 1-7, --limit 1-7   EPG 정보를 가져올 기간, 기본값: 2
+  --icon http://www.example.com/icon
+                        채널 아이콘 URL, 기본값:
+  --rebroadcast y, n    재방송정보 제목에 추가 출력
+  --episode y, n        회차정보 제목에 추가 출력
+  --verbose y, n        EPG 정보 추가 출력
 
 HELP;
 
 //옵션 처리
 $shortargs  = "";
+$shortargs .= "i:";
 $shortargs .= "v";
+$shortargs .= "d";
+$shortargs .= "o:s:";
+$shortargs .= "l:";
 $shortargs .= "h";
-
 $longargs  = array(
     "version",
+    "display",
+    "outfile:",
+    "socket:",
+    "limit::",
+    "icon:",
+    "episode:",
+    "rebroadcast:",
+    "verbose:",
     "help"
 );
 $args = getopt($shortargs, $longargs);
@@ -56,13 +86,44 @@ else :
                 if(json_last_error() != JSON_ERROR_NONE) throw new Exception("epg2xml.".JSON_SYNTAX_ERROR);
                 $MyISP = $Settings['MyISP'];
                 $default_output = $Settings['output'];
+                $default_xml_file = $Settings['default_xml_file'];
+                $default_xml_socket = $Settings['default_xml_socket'];
                 $default_icon_url = $Settings['default_icon_url'];
+                $default_fetch_limit = $Settings['default_fetch_limit'];
                 $default_rebroadcast = $Settings['default_rebroadcast'];
                 $default_episode = $Settings['default_episode'];
                 $default_verbose = $Settings['default_verbose'];
-                $default_fetch_limit = $Settings['default_fetch_limit'];
-                $default_xml_file = $Settings['default_xml_file'];
-                $default_xml_socket = $Settings['default_xml_socket'];
+
+                if(!empty($args['i'])) $MyISP = $args['i'];
+                if($args['d'] === False || $args['display'] === False ) :
+                    if($args['o'] || $args['outfile'] || $args['s'] || $args['socket']) :
+                        printf($usage);
+                        printf("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
+                        exit;
+                    endif;
+                    $default_output = "d";
+                elseif(empty($args['o']) === False || empty($args['outfile']) === False) :
+                    if($args['d'] === False || $args['display'] === False || $args['s'] || $args['socket']) :
+                        print($usage);
+                        print("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
+                        exit;
+                    endif;
+                    $default_output = "o";
+                    $default_xml_file = $args['o'] ?: $args['outfile'];
+                elseif(empty($args['s']) === False || empty($args['socket']) === False) :
+                    if($args['d'] === False || $args['display'] === False || $args['o'] || $args['outfile']) :
+                        print($usage);
+                        print("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
+                        exit;
+                    endif;
+                    $default_output = "s";
+                    $default_xml_socket = $args['s'] ?: $args['socket'];
+                endif;
+                if(empty($args['l']) === False || empty($args['limit']) === False) $default_fetch_limit = $args['l'] ?: $args['limit'];
+                if(empty($args['icon']) === False) $default_icon_url = $args['icon'];
+                if(empty($args['rebroadcast']) === False) $default_rebroadcast = $args['rebroadcast'];
+                if(empty($args['episode']) === False) $default_episode = $args['episode'];
+                if(empty($args['verbose']) === False) $default_verbose = $args['verbose'];
                 if(empty($MyISP)) : //ISP 선택없을 시 사용법 출력
                     printError("epg2xml.json 파일의 MyISP항목이 없습니다.");
                     exit;
@@ -90,6 +151,17 @@ else :
                         endswitch;
                     else :
                         printError("output는 d, o, s만 가능합니다.");
+                        exit;
+                    endif;
+                endif;
+                if(empty($default_fetch_limit)) :
+                    printError("epg2xml.json 파일의 default_fetch_limit항목이 없습니다.");
+                    exit;
+                else :
+                    if(in_array($default_fetch_limit, array(1, 2, 3, 4, 5, 6, 7))) :
+                        $period = $default_fetch_limit;
+                    else :
+                        printError("default_fetch_limit는 1, 2, 3, 4, 5, 6, 7만 가능합니다.");
                         exit;
                     endif;
                 endif;
@@ -129,17 +201,6 @@ else :
                         $addverbose = $default_verbose;
                     else :
                         printError("default_verbose는 y, n만 가능합니다.");
-                        exit;
-                    endif;
-                endif;
-                if(empty($default_fetch_limit)) :
-                    printError("epg2xml.json 파일의 default_fetch_limit항목이 없습니다.");
-                    exit;
-                else :
-                    if(in_array($default_fetch_limit, array(1, 2, 3, 4, 5, 6, 7))) :
-                        $period = $default_fetch_limit;
-                    else :
-                        printError("default_fetch_limit는 1, 2, 3, 4, 5, 6, 7만 가능합니다.");
                         exit;
                     endif;
                 endif;

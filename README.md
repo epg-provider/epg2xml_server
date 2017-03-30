@@ -63,11 +63,20 @@ tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을
 </pre>
 
 ## 옵션 소개
-
 실행시 사용가능한 인수는 --help 명령어로 확인이 가능하다
+epg2xml.json의 설정을 옵션의 인수를 이용하여 변경할 수 있다.
 <pre>
 -h --help : 도움말 출력
 --version : 버전을 보여준다.
+-i : IPTV 선택 (KT, SK, LG 선택가능) ex) -i KT
+-d --display : EPG 정보를 화면으로 보여준다.
+-o --outfile : EPG 정보를 파일로 저장한다. ex) -o xmltv.xml
+-s --socket  : EPG 정보를 xmltv.sock로 전송한다. ex) -s /var/run/xmltv.sock
+-l --limit : EPG 정보 가져올 기간으로 기본값은 2일이며 최대 7일까지 설정 가능하다. ex) -l 2
+--icon : 채널 icon 위치 URL ex) --icon http://www.example.com
+--rebroadcast : 제목에 재방송정보 표기 ex) --rebroadcast y
+--episode : 제목에 회차정보 표기 ex) --episode y
+--verbose : EPG 정보 상세하게 표기 ex) --verbose y
 </pre>
 
 ## 라이센스

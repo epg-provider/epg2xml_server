@@ -64,6 +64,7 @@ tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을
 
 ## 옵션 소개
 실행시 사용가능한 인수는 --help 명령어로 확인이 가능하다
+epg2xml.json의 설정을 옵션의 인수를 이용하여 변경할 수 있다.
 <pre>
 -h --help : 도움말 출력
 --version : 버전을 보여준다.

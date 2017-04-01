@@ -19,7 +19,7 @@
     "###_COMMENT_###" : "### epg 데이터 가져오는 기간으로 1에서 7까지 설정가능 ###",
     "default_fetch_limit" : "2",
     "###_COMMENT_###" : "### epg 저장시 기본 저장 이름 (ex: /home/tvheadend/xmltv.xml) ###",
-    "default_xml_filename" : "xmltv.xml",
+    "default_xml_file" : "xmltv.xml",
     "###_COMMENT_###" : "### # External XMLTV 사용시 기본 소켓 이름 (ex: /home/tvheadend/xmltv.sock) ###",
     "default_xml_socket" : "xmltv.sock",
     "###_COMMENT_###" : ""

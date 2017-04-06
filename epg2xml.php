@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 @date_default_timezone_set('Asia/Seoul');
-define("VERSION", "1.1.5");
+define("VERSION", "1.1.6");
 
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
@@ -295,7 +295,7 @@ function getEPG() {
     }
     fprintf($fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     fprintf($fp, "<!DOCTYPE tv SYSTEM \"xmltv.dtd\">\n\n");
-    fprintf($fp, "<tv generator-info-name=\"epg2xml.py %s\">\n", VERSION);
+    fprintf($fp, "<tv generator-info-name=\"epg2xml.php %s\">\n", VERSION);
     foreach ($Channeldatas as $Channeldata) : #Get Channel & Print Channel info
         if($Channeldata['Enabled'] == 1) :
             $ChannelId = $Channeldata['Id'];
@@ -491,9 +491,9 @@ function GetEPGFromKT($ChannelInfo) {
                 foreach($rows as $row) :
                     $cells = $row->getElementsByTagName('td');
                     #programName, startTime, rating, category
-                    $startTime = date("YmdHis", strtotime($day." ".trim($cells[0]->nodeValue)));
-                    $rating = str_replace("all", 0, str_replace("세 이상", "", trim($cells[2]->nodeValue)));
-                    $epginfo[]= array(trim($cells[1]->nodeValue), $startTime, $rating, trim($cells[4]->nodeValue));
+                    $startTime = date("YmdHis", strtotime($day." ".trim($cells->item(0)->nodeValue)));
+                    $rating = str_replace("all", 0, str_replace("세 이상", "", trim($cells->item(2)->nodeValue)));
+                    $epginfo[]= array(trim($cells->item(1)->nodeValue), $startTime, $rating, trim($cells->itme(4)->nodeValue));
                 endforeach;
                 $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
                 foreach($zipped as $epg) :
@@ -567,14 +567,14 @@ function GetEPGFromLG($ChannelInfo) {
                 $rows = $xpath->query($query);
                 foreach($rows as $row) :
                     $cells = $row->getElementsByTagName('td');
-                    $startTime = date("YmdHis", strtotime($day." ".trim($cells[0]->nodeValue)));
+                    $startTime = date("YmdHis", strtotime($day." ".trim($cells->item(0)->nodeValue)));
                     $images = $cells[1]->getElementsByTagName('img');
                     $rating = 0;
                     foreach($images as $image) :
                         if(preg_match('/(\d+)세이상 관람가/', $image->attributes->getNamedItem('alt')->nodeValue, $ratings)) $rating = $ratings[1];
                     endforeach;
                     #programName, startTime, rating, category
-                    $epginfo[]= array(trim($cells[1]->nodeValue), $startTime, $rating, trim($cells[2]->nodeValue));
+                    $epginfo[]= array(trim($cells->item(1)->nodeValue), $startTime, $rating, trim($cells->item(2)->nodeValue));
                 endforeach;
                 $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
                 foreach($zipped as $epg) :
@@ -900,9 +900,9 @@ function writeProgram($programdata) {
         $rating = sprintf("%s세 이상 관람가", $programdata['rating']);
     endif;
     if($GLOBALS['addverbose'] == 'y') :
-        $desc = $programdata['programName'];
+        $desc = htmlspecialchars($programdata['programName'], ENT_XML1);
         if($subprogramName)  $desc = $desc."\n부제 : ".$subprogramName;
-        if($episode) $desc = $desc."\n회차 : (".$episode."회)";
+        if($episode) $desc = $desc."\n회차 : ".$episode."회";
         if($category) $desc = $desc."\n장르 : ".$category;
         if($actors) $desc = $desc."\n출연 : ".$actors;
         if($producers) $desc = $desc."\n제작 : ".$producers;
@@ -910,8 +910,7 @@ function writeProgram($programdata) {
     else:
         $desc = "";
     endif;
-    if($programdata['desc']) $desc = $desc."\n".$programdata['desc'];
-    $desc = htmlspecialchars($desc, ENT_XML1);
+    if($programdata['desc']) $desc = $desc."\n".htmlspecialchars($programdata['desc'], ENT_XML1);
     $contentTypeDict = array(
         '교양' => 'Arts / Culture (without music)',
         '만화' => 'Cartoons / Puppets',

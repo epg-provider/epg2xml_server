@@ -17,7 +17,7 @@ import pprint
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.1.5'
+__version__ = '1.1.6'
 
 # Set variable
 debug = False
@@ -54,13 +54,16 @@ def getEpg():
             ChannelName = escape(Channeldata['Name'])
             ChannelSource = Channeldata['Source']
             ChannelServiceId = Channeldata['ServiceId']
-            ChannelISPName = '[' + str(Channeldata[MyISP+'Ch']) + '] ' + escape(Channeldata[MyISP+' Name'])
+            ChannelNumber = str(Channeldata[MyISP+'Ch']);
+            ChannelISPName = escape(Channeldata[MyISP+' Name'])
             ChannelIconUrl = escape(Channeldata['Icon_url'])
             if not (Channeldata[MyISP+'Ch'] is None):
                 ChannelInfos.append([ChannelId,  ChannelName, ChannelSource, ChannelServiceId])
                 print('  <channel id="%s">' % (ChannelId))
                 print('    <display-name>%s</display-name>' % (ChannelName))
                 print('    <display-name>%s</display-name>' % (ChannelISPName))
+                print('    <display-name>%s</display-name>' % (ChannelNumber))
+                print('    <display-name>%s</display-name>' % (ChannelNumber+' '+ChannelISPName))
                 if IconUrl:
                     print('    <icon src="%s/%s.png" />' % (IconUrl, ChannelId))
                 else :
@@ -81,11 +84,11 @@ def getEpg():
         elif ChannelSource == 'LG':
             GetEPGFromLG(ChannelInfo)
         elif ChannelSource == 'SK':
-           GetEPGFromSK(ChannelInfo)
+            GetEPGFromSK(ChannelInfo)
         elif ChannelSource == 'SKY':
-           GetEPGFromSKY(ChannelInfo)
+            GetEPGFromSKY(ChannelInfo)
         elif ChannelSource == 'NAVER':
-           GetEPGFromNaver(ChannelInfo)
+            GetEPGFromNaver(ChannelInfo)
     print('</tv>')
 
 # Get EPG data from epg.co.kr
@@ -220,6 +223,7 @@ def GetEPGFromLG(ChannelInfo):
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
+            data = data.replace('<재>', '&lt;재&gt;')
             strainer = SoupStrainer('table')
             soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
             html = soup.find('table', {'class':'datatable06'}).tbody.find_all('tr') if soup.find('table', {'class':'datatable06'}) else ''
@@ -231,10 +235,13 @@ def GetEPGFromLG(ChannelInfo):
                     programName = ''
                     subprogramName = ''
                     episode = ''
-                    matches = re.match('^(.*?)(\(([\d,]+)회\))?$',  epg1[0].decode('string_escape'))
+                    matches = re.match('(<재>?)?(.*?)(\[(.*)\])?\s?(\(([\d,]+)회\))?$',  epg1[0].decode('string_escape'))
+                    rebroadcast = False
                     if not (matches is None):
-                        programName = matches.group(1) if matches.group(1) else ''
-                        episode = matches.group(3) if matches.group(3) else ''
+                        programName = matches.group(2) if matches.group(2) else ''
+                        subprogramName = matches.group(4) if matches.group(4) else ''
+                        rebroadcast = True if matches.group(1) else False
+                        episode = matches.group(6) if matches.group(6) else ''
                     startTime = datetime.datetime.strptime(epg1[1], '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
                     endTime = datetime.datetime.strptime(epg2[1], '%Y-%m-%d %H:%M')
@@ -243,7 +250,6 @@ def GetEPGFromLG(ChannelInfo):
                     desc = ''
                     actors = ''
                     producers = ''
-                    rebroadcast = False
                     rating = 0
                     matches = re.match('(\d+)세이상 관람가', epg1[3].encode('utf-8'))
                     if not(matches is None): rating = int(matches.group(1))
@@ -479,10 +485,6 @@ def printLog(*args):
 def printError(*args):
     print("Error : ", *args, file=sys.stderr)
 
-#parser = argparse.ArgumentParser(description = 'EPG 정보 출력 프로그램')
-#parser.add_argument('-v', '--version', action = 'version', version = '%(prog)s version : ' + __version__)
-#parser.parse_args()
-
 Settingfile = os.path.dirname(os.path.abspath(__file__)) + '/epg2xml.json'
 ChannelInfos = []
 try:
@@ -504,7 +506,6 @@ except EnvironmentError:
 except ValueError:
     printError("epg2xml." + JSON_SYNTAX_ERROR)
     sys.exit()
-
 
 parser = argparse.ArgumentParser(description = 'EPG 정보를 출력하는 방법을 선택한다')
 argu1 = parser.add_argument_group(description = 'IPTV 선택')

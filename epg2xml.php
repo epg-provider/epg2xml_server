@@ -295,7 +295,7 @@ function getEPG() {
     }
     fprintf($fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     fprintf($fp, "<!DOCTYPE tv SYSTEM \"xmltv.dtd\">\n\n");
-    fprintf($fp, "<tv generator-info-name=\"epg2xml.php %s\">\n", VERSION);
+    fprintf($fp, "<tv generator-info-name=\"epg2xml %s\">\n", VERSION);
     foreach ($Channeldatas as $Channeldata) : #Get Channel & Print Channel info
         if($Channeldata['Enabled'] == 1) :
             $ChannelId = $Channeldata['Id'];
@@ -399,7 +399,7 @@ function GetEPGFromEPG($ChannelInfo) {
                                     $hour = $hour." PM";
                                 else :
                                     $hour = $hour." AM";
-                                    $thisday = date("Ymd", strtotime("+1 days"));
+                                    $thisday = date("Ymd", strtotime($day." +1 days"));
                                 endif;
                                 break;
                         endswitch;
@@ -493,12 +493,17 @@ function GetEPGFromKT($ChannelInfo) {
                     #programName, startTime, rating, category
                     $startTime = date("YmdHis", strtotime($day." ".trim($cells->item(0)->nodeValue)));
                     $rating = str_replace("all", 0, str_replace("세 이상", "", trim($cells->item(2)->nodeValue)));
-                    $epginfo[]= array(trim($cells->item(1)->nodeValue), $startTime, $rating, trim($cells->itme(4)->nodeValue));
+                    $epginfo[]= array(trim($cells->item(1)->nodeValue), $startTime, $rating, trim($cells->item(4)->nodeValue));
                 endforeach;
                 $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
                 foreach($zipped as $epg) :
-                    $programName = $epg[0][0] ?: "";
+                    $programName = "";
                     $subprogramName = "";
+                    preg_match('/^(.*?)( <(.*)>)?$/', $epg[0][0], $matches);
+                    if($matches) :
+                       $programName = $matches[1] ?: "";
+                       $subprogramName = $matches[3] ?: "";
+                    endif;
                     $startTime = $epg[0][1] ?: "";
                     $endTime = $epg[1][1] ?: "";
                     $desc = "";
@@ -563,18 +568,16 @@ function GetEPGFromLG($ChannelInfo) {
                 $response = str_replace(array('<재>', ' [..', ' (..'), array('&lt;재&gt;', '', ''), $response);
                 $dom->loadHTML($response);
                 $xpath = new DomXPath($dom);
-                $query = "//table[@class='datatable06 datatable06_type01']/tbody/tr";
+                $query = "//div[@class='tblType list']/table/tbody/tr";
                 $rows = $xpath->query($query);
                 foreach($rows as $row) :
                     $cells = $row->getElementsByTagName('td');
+                    $programName = trim($cells->item(1)->childNodes->item(0)->nodeValue);
                     $startTime = date("YmdHis", strtotime($day." ".trim($cells->item(0)->nodeValue)));
-                    $images = $cells[1]->getElementsByTagName('img');
-                    $rating = 0;
-                    foreach($images as $image) :
-                        if(preg_match('/(\d+)세이상 관람가/', $image->attributes->getNamedItem('alt')->nodeValue, $ratings)) $rating = $ratings[1];
-                    endforeach;
+                    $spans = $cells->item(1)->getElementsByTagName('span');
+                    $rating = trim($spans->item(1)->nodeValue)=="All" ? 0 : trim($spans->item(1)->nodeValue);
                     #programName, startTime, rating, category
-                    $epginfo[]= array(trim($cells->item(1)->nodeValue), $startTime, $rating, trim($cells->item(2)->nodeValue));
+                    $epginfo[]= array($programName, $startTime, $rating, trim($cells->item(2)->nodeValue));
                 endforeach;
                 $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
                 foreach($zipped as $epg) :
@@ -737,15 +740,15 @@ function GetEPGFromSKY($ChannelInfo) {
                     else :
                         $programs = $data['scheduleListIn'];
                         foreach($programs as $program) :
-                            $programName = str_replace(array('&lt;', '&gt;', '&amp;'), array('<', '>', '&'),$program['program_name']) ?: "";
-                            $subprogramName = str_replace(array('&lt;', '&gt;', '&amp;'), array('<', '>', '&'),$program['program_subname']) ?: "";
+                            $programName = htmlspecialchars_decode($program['program_name']) ?: "";
+                            $subprogramName = str_replace(array('amp;'), array('&'),$program['program_subname']) ?: "";
                             $startTime = $program['starttime'];
                             $endTime = $program['endtime'];
                             if ($GLOBALS['addverbose'] == "y") :
                                 $actors = trim(str_replace('...', '',$program['cast']), ', ') ?: "";
                                 $producers = trim(str_replace('...', '',$program['dirt']), ', ') ?: "";
-                                $description = str_replace(array('&lt;', '&gt;', '&amp;'), array('<', '>', '&'),$program['description']) ?: "";
-                                $summary = str_replace(array('&lt;', '&gt;', '&amp;'), array('<', '>', '&'),$program['summary']) ?: "";
+                                $description = str_replace(array('lt;', 'gt;', 'amp;'), array('<', '>', '&'),$program['description']) ?: "";
+                                $summary = str_replace(array('lt;', 'gt;', 'amp;'), array('<', '>', '&'),$program['summary']) ?: "";
                                 $desc = $description ?: "";
                                 if($summary) :
                                     $desc = $desc."\n".$summary;
@@ -844,7 +847,7 @@ function GetEPGFromNaver($ChannelInfo) {
                         endfor;
                         $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
                         foreach($zipped as $epg) :
-                            $programName = $epg[0][0] ?: "";
+                            $programName = htmlspecialchars_decode($epg[0][0], ENT_XML1) ?: "";
                             $subprogramName = "";
                             $startTime = $epg[0][1] ?: "";
                             $endTime = $epg[1][1] ?: "";

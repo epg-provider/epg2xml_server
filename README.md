@@ -34,8 +34,7 @@ Channel.json 파일을 텍스트 편집기로 열어보면 각채널별 정보�
 ## 사용방법
 
 ### tv_grab_file 사용시 (https://github.com/neo365/tvheadend-for-Korea)
-epg2xml
-tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을
+epg2xml tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이 변경해준다.
 
 #### PYTHON의 경우
 <pre>
@@ -49,7 +48,11 @@ tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을
 /home/hts/epg2xml.php
 </pre>
 
-### XMLTV 사용시
+
+
+### XMLTV SOCKET 사용시
+**xmltv.sock 사용시 socat 등을 사용하지 않고 바로 socket에 쓰기가 가능하다**
+
 #### PYTHON의 경우
 <pre>
 /usr/bin/python /home/hts/epg2xml.py 또는

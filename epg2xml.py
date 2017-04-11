@@ -96,11 +96,11 @@ def GetEPGFromEPG(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
-    epginfo = []
     url = 'http://www.epg.co.kr/epg-cgi/extern/cnm_guide_type_v070530.cgi'
     for k in range(period):
         day = today + datetime.timedelta(days=k)
         params = {'beforegroup':'100', 'checkchannel':ServiceId, 'select_group':'100', 'start_date':day.strftime('%Y%m%d')}
+        epginfo = []
         try:
             response = requests.post(url, data=params, headers=ua)
             response.raise_for_status()
@@ -161,12 +161,12 @@ def GetEPGFromKT(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
-    epginfo = []
+
     url = 'http://tv.olleh.com/renewal_sub/liveTv/pop_schedule_week.asp'
     for k in range(period):
         day = today + datetime.timedelta(days=k)
         params = {'ch_name':'', 'ch_no':ServiceId, 'nowdate':day.strftime('%Y%m%d'), 'seldatie':day.strftime('%Y%m%d'), 'tab_no':'1'}
-
+        epginfo = []
         try:
             response = requests.get(url, params=params, headers=ua)
             response.raise_for_status()
@@ -175,7 +175,6 @@ def GetEPGFromKT(ChannelInfo):
             strainer = SoupStrainer('table', {'id':'pop_day'})
             soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
             html = soup.find('table', {'id':'pop_day'}).tbody.find_all('tr') if soup.find('table', {'id':'pop_day'}) else ''
-
             if(html):
                 for row in html:
                     for cell in [row.find_all('td')]:
@@ -214,12 +213,12 @@ def GetEPGFromLG(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
-    epginfo = []
+
     url = 'http://www.uplus.co.kr/css/chgi/chgi/RetrieveTvSchedule.hpi'
     for k in range(period):
         day = today + datetime.timedelta(days=k)
         params = {'chnlCd': ServiceId, 'evntCmpYmd': day.strftime('%Y%m%d')}
-
+        epginfo = []
         try:
             response = requests.get(url, params=params, headers=ua)
             response.raise_for_status()
@@ -342,9 +341,6 @@ def GetEPGFromSKY(ChannelInfo):
                     else: pass
                 else :
                     programs = data['scheduleListIn']
-#                    for v in programs :
-#                        printError(str(ChannelId) + ' ' + str(v['starttime']) + ' ' + str(v['endtime'])+ ' ' + v['program_name'])
-#                    for program  in {v['starttime']:v for v in programs}.values():
                     for program in programs :
                         programName = unescape(program['program_name']).replace('lt;','<').replace('gt;','>').replace('amp;','&') if program['program_name'] else ''
                         subprogramName = unescape(program['program_subname']).replace('lt;','<').replace('gt;','>').replace('amp;','&') if program['program_subname'] else ''

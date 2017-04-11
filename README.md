@@ -49,7 +49,8 @@ tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을
 /home/hts/epg2xml.php
 </pre>
 
-### XMLTV 사용시
+ 
+### XMLTV SOCKET 사용시 (xmltv.sock 사용시 socat 등을 사용할 필요는 없다)
 #### PYTHON의 경우
 <pre>
 /usr/bin/python /home/hts/epg2xml.py 또는

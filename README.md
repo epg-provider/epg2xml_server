@@ -51,7 +51,7 @@ epg2xml tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이
 
 
 ### XMLTV SOCKET 사용시
-xmltv.sock 사용시 socat 등을 사용하지 않고 바로 socket에 쓰기가 가능하다
+**xmltv.sock 사용시 socat 등을 사용하지 않고 바로 socket에 쓰기가 가능하다**
 
 #### PYTHON의 경우
 <pre>

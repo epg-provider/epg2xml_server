@@ -1,7 +1,7 @@
 {
     "###_COMMENT_###" : "",
     "###_COMMENT_###" : "epg 정보를 가져오는 설정 파일",
-    "###_COMMENT_###" : "사용하는 ISP 선택 (KT, LG, SK)",
+    "###_COMMENT_###" : "사용하는 ISP 선택 (ALL, KT, LG, SK)",
     "MyISP": "KT",
     "###_COMMENT_###" : "output 셋팅은 (d, o, s) 셋중에 하나로 선택한다",
     "###_COMMENT_###" : " d - EPG 정보 화면 출력",

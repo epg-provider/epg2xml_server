@@ -17,7 +17,7 @@ import pprint
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.1.5'
+__version__ = '1.1.6'
 
 # Set variable
 debug = False
@@ -46,7 +46,7 @@ def getEpg():
 
     print('<?xml version="1.0" encoding="UTF-8"?>')
     print('<!DOCTYPE tv SYSTEM "xmltv.dtd">\n')
-    print('<tv generator-info-name="epg2xml.py ' + __version__ + '">')
+    print('<tv generator-info-name="epg2xml ' + __version__ + '">')
 
     for Channeldata in Channeldatas: #Get Channel & Print Channel info
         if Channeldata['Enabled'] == 1:
@@ -54,18 +54,21 @@ def getEpg():
             ChannelName = escape(Channeldata['Name'])
             ChannelSource = Channeldata['Source']
             ChannelServiceId = Channeldata['ServiceId']
-            ChannelISPName = '[' + str(Channeldata[MyISP+'Ch']) + '] ' + escape(Channeldata[MyISP+' Name'])
             ChannelIconUrl = escape(Channeldata['Icon_url'])
-            if not (Channeldata[MyISP+'Ch'] is None):
-                ChannelInfos.append([ChannelId,  ChannelName, ChannelSource, ChannelServiceId])
-                print('  <channel id="%s">' % (ChannelId))
-                print('    <display-name>%s</display-name>' % (ChannelName))
+            ChannelInfos.append([ChannelId,  ChannelName, ChannelSource, ChannelServiceId])
+            print('  <channel id="%s">' % (ChannelId))
+            print('    <display-name>%s</display-name>' % (ChannelName))
+            if MyISP != "ALL" and Channeldata[MyISP+'Ch'] is not None:
+                ChannelNumber = str(Channeldata[MyISP+'Ch']);
+                ChannelISPName = escape(Channeldata[MyISP+' Name'])
                 print('    <display-name>%s</display-name>' % (ChannelISPName))
-                if IconUrl:
-                    print('    <icon src="%s/%s.png" />' % (IconUrl, ChannelId))
-                else :
-                    print('    <icon src="%s" />' % (ChannelIconUrl))
-                print('  </channel>')
+                print('    <display-name>%s</display-name>' % (ChannelNumber))
+                print('    <display-name>%s</display-name>' % (ChannelNumber+' '+ChannelISPName))
+            if IconUrl:
+                print('    <icon src="%s/%s.png" />' % (IconUrl, ChannelId))
+            else :
+                print('    <icon src="%s" />' % (ChannelIconUrl))
+            print('  </channel>')
 
     # Print Program Information
     for ChannelInfo in ChannelInfos:
@@ -81,11 +84,11 @@ def getEpg():
         elif ChannelSource == 'LG':
             GetEPGFromLG(ChannelInfo)
         elif ChannelSource == 'SK':
-           GetEPGFromSK(ChannelInfo)
+            GetEPGFromSK(ChannelInfo)
         elif ChannelSource == 'SKY':
-           GetEPGFromSKY(ChannelInfo)
+            GetEPGFromSKY(ChannelInfo)
         elif ChannelSource == 'NAVER':
-           GetEPGFromNaver(ChannelInfo)
+            GetEPGFromNaver(ChannelInfo)
     print('</tv>')
 
 # Get EPG data from epg.co.kr
@@ -93,11 +96,11 @@ def GetEPGFromEPG(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
-    epginfo = []
     url = 'http://www.epg.co.kr/epg-cgi/extern/cnm_guide_type_v070530.cgi'
     for k in range(period):
         day = today + datetime.timedelta(days=k)
         params = {'beforegroup':'100', 'checkchannel':ServiceId, 'select_group':'100', 'start_date':day.strftime('%Y%m%d')}
+        epginfo = []
         try:
             response = requests.post(url, data=params, headers=ua)
             response.raise_for_status()
@@ -130,8 +133,10 @@ def GetEPGFromEPG(ChannelInfo):
                             grade = re.match('.*schedule_([\d,]+)?.*',image)
                             if not (grade is None): rating = int(grade.group(1))
                             else : rating = 0
+                            programName = matches.group(2).strip() if matches.group(2) else ''
+                            subprogramName = matches.group(4).strip() if matches.group(4) else ''
                             #programName, startTime, rating, subprogramName, rebroadcast, episode
-                            epginfo.append([matches.group(2), startTime, rating, matches.group(4), matches.group(5), matches.group(7)])
+                            epginfo.append([programName, startTime, rating, subprogramName, matches.group(5), matches.group(7)])
 
             for epg1, epg2 in zip(epginfo, epginfo[1:]):
                 programName = epg1[0] if epg1[0] else ''
@@ -156,12 +161,12 @@ def GetEPGFromKT(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
-    epginfo = []
+
     url = 'http://tv.olleh.com/renewal_sub/liveTv/pop_schedule_week.asp'
     for k in range(period):
         day = today + datetime.timedelta(days=k)
         params = {'ch_name':'', 'ch_no':ServiceId, 'nowdate':day.strftime('%Y%m%d'), 'seldatie':day.strftime('%Y%m%d'), 'tab_no':'1'}
-
+        epginfo = []
         try:
             response = requests.get(url, params=params, headers=ua)
             response.raise_for_status()
@@ -170,7 +175,6 @@ def GetEPGFromKT(ChannelInfo):
             strainer = SoupStrainer('table', {'id':'pop_day'})
             soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
             html = soup.find('table', {'id':'pop_day'}).tbody.find_all('tr') if soup.find('table', {'id':'pop_day'}) else ''
-
             if(html):
                 for row in html:
                     for cell in [row.find_all('td')]:
@@ -209,32 +213,39 @@ def GetEPGFromLG(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
-    epginfo = []
+
     url = 'http://www.uplus.co.kr/css/chgi/chgi/RetrieveTvSchedule.hpi'
     for k in range(period):
         day = today + datetime.timedelta(days=k)
         params = {'chnlCd': ServiceId, 'evntCmpYmd': day.strftime('%Y%m%d')}
-
+        epginfo = []
         try:
             response = requests.get(url, params=params, headers=ua)
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
+            data = data.replace('<재>', '&lt;재&gt;')
             strainer = SoupStrainer('table')
             soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
-            html = soup.find('table', {'class':'datatable06'}).tbody.find_all('tr') if soup.find('table', {'class':'datatable06'}) else ''
+            html = soup.find('table').tbody.find_all('tr') if soup.find('table') else ''
             if(html):
                 for row in html:
                     for cell in [row.find_all('td')]:
-                        epginfo.append([cell[1].text.strip(), str(day) + ' ' + cell[0].text, cell[2].text.strip(), cell[1].find('img', alt=True)['alt'].strip()])
+                        rating = 0 if cell[1].find('span', {'class': 'tag cte_all'}).text.strip()=="All" else int(cell[1].find('span', {'class': 'tag cte_all'}).text.strip())
+                        cell[1].find('span', {'class': 'tagGroup'}).decompose()
+                        epginfo.append([cell[1].text.strip(), str(day) + ' ' + cell[0].text, cell[2].text.strip(), rating])
+                        #cell[1].find('img', alt=True)['alt'].strip()])
                 for epg1, epg2 in zip(epginfo, epginfo[1:]):
                     programName = ''
                     subprogramName = ''
                     episode = ''
-                    matches = re.match('^(.*?)(\(([\d,]+)회\))?$',  epg1[0].decode('string_escape'))
+                    matches = re.match('(<재>?)?(.*?)(\[(.*)\])?\s?(\(([\d,]+)회\))?$',  epg1[0].decode('string_escape'))
+                    rebroadcast = False
                     if not (matches is None):
-                        programName = matches.group(1) if matches.group(1) else ''
-                        episode = matches.group(3) if matches.group(3) else ''
+                        programName = matches.group(2) if matches.group(2) else ''
+                        subprogramName = matches.group(4) if matches.group(4) else ''
+                        rebroadcast = True if matches.group(1) else False
+                        episode = matches.group(6) if matches.group(6) else ''
                     startTime = datetime.datetime.strptime(epg1[1], '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
                     endTime = datetime.datetime.strptime(epg2[1], '%Y-%m-%d %H:%M')
@@ -243,10 +254,6 @@ def GetEPGFromLG(ChannelInfo):
                     desc = ''
                     actors = ''
                     producers = ''
-                    rebroadcast = False
-                    rating = 0
-                    matches = re.match('(\d+)세이상 관람가', epg1[3].encode('utf-8'))
-                    if not(matches is None): rating = int(matches.group(1))
                     programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
                     writeProgram(programdata)
             else:
@@ -285,6 +292,8 @@ def GetEPGFromSK(ChannelInfo):
                         programName = matches.group(1).strip() if matches.group(1) else ''
                         subprogramName = matches.group(3).strip() if matches.group(3) else ''
                         episode = matches.group(2).replace('회', '') if matches.group(2) else ''
+                        episode = '' if episode== '0' else episode
+#                            printError(episode)
                         rebroadcast = True if matches.group(5) else False
                     startTime = datetime.datetime.fromtimestamp(int(program['startTime'])/1000)
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
@@ -332,7 +341,7 @@ def GetEPGFromSKY(ChannelInfo):
                     else: pass
                 else :
                     programs = data['scheduleListIn']
-                    for program  in {v['starttime']:v for v in programs}.values():
+                    for program in programs :
                         programName = unescape(program['program_name']).replace('lt;','<').replace('gt;','>').replace('amp;','&') if program['program_name'] else ''
                         subprogramName = unescape(program['program_subname']).replace('lt;','<').replace('gt;','>').replace('amp;','&') if program['program_subname'] else ''
                         startTime = program['starttime']
@@ -441,7 +450,7 @@ def writeProgram(programdata):
     else:
         desc =''
     if programdata['desc'] : desc = desc + '\n' + escape(programdata['desc'])
-    contentTypeDict={'교양':'Arts / Culture (without music)', '만화':'Cartoons / Puppets', '교육':'Education / Science / Factual topics', '취미':'Leisure hobbies', '드라마':'Movie / Drama', '영화':'Movie / Drama', '음악':'Music / Ballet / Dance', '뉴스':'News / Current affairs', '다큐':'Documentary', '시사/다큐':'Documentary', '연예':'Show / Game show', '스포츠':'Sports', '홈쇼핑':'Advertisement / Shopping'}
+    contentTypeDict={'교양':'Arts / Culture (without music)', '만화':'Cartoons / Puppets', '교육':'Education / Science / Factual topics', '취미':'Leisure hobbies', '드라마':'Movie / Drama', '영화':'Movie / Drama', '음악':'Music / Ballet / Dance', '뉴스':'News / Current affairs', '다큐':'Documentary', '라이프':'Documentary', '시사/다큐':'Documentary', '연예':'Show / Game show', '스포츠':'Sports', '홈쇼핑':'Advertisement / Shopping'}
     contentType = ''
     for key, value in contentTypeDict.iteritems():
         if category.startswith(key):
@@ -479,10 +488,6 @@ def printLog(*args):
 def printError(*args):
     print("Error : ", *args, file=sys.stderr)
 
-#parser = argparse.ArgumentParser(description = 'EPG 정보 출력 프로그램')
-#parser.add_argument('-v', '--version', action = 'version', version = '%(prog)s version : ' + __version__)
-#parser.parse_args()
-
 Settingfile = os.path.dirname(os.path.abspath(__file__)) + '/epg2xml.json'
 ChannelInfos = []
 try:
@@ -508,7 +513,7 @@ except ValueError:
 
 parser = argparse.ArgumentParser(description = 'EPG 정보를 출력하는 방법을 선택한다')
 argu1 = parser.add_argument_group(description = 'IPTV 선택')
-argu1.add_argument('-i', dest = 'MyISP', choices = ['KT', 'LG', 'SK'], help = '사용하는 IPTV : KT, LG, SK', default = MyISP)
+argu1.add_argument('-i', dest = 'MyISP', choices = ['ALL', 'KT', 'LG', 'SK'], help = '사용하는 IPTV : ALL, KT, LG, SK', default = MyISP)
 argu2 = parser.add_mutually_exclusive_group()
 argu2.add_argument('-v', '--version', action = 'version', version = '%(prog)s version : ' + __version__)
 argu2.add_argument('-d', '--display', action = 'store_true', help = 'EPG 정보 화면출력')
@@ -538,8 +543,8 @@ if args.episode : default_episode = args.episode
 if args.verbose : default_verbose = args.verbose
 
 if MyISP:
-    if not any(MyISP in s for s in ['KT', 'LG', 'SK']):
-        printError("MyISP는 KT, LG, SK만 가능합니다.")
+    if not any(MyISP in s for s in ['ALL', 'KT', 'LG', 'SK']):
+        printError("MyISP는 ALL, KT, LG, SK만 가능합니다.")
         sys.exit()
 else :
     printError("epg2xml.json 파일의 MyISP항목이 없습니다.")

@@ -54,21 +54,21 @@ def getEpg():
             ChannelName = escape(Channeldata['Name'])
             ChannelSource = Channeldata['Source']
             ChannelServiceId = Channeldata['ServiceId']
-            ChannelNumber = str(Channeldata[MyISP+'Ch']);
-            ChannelISPName = escape(Channeldata[MyISP+' Name'])
             ChannelIconUrl = escape(Channeldata['Icon_url'])
-            if not (Channeldata[MyISP+'Ch'] is None):
-                ChannelInfos.append([ChannelId,  ChannelName, ChannelSource, ChannelServiceId])
-                print('  <channel id="%s">' % (ChannelId))
-                print('    <display-name>%s</display-name>' % (ChannelName))
+            ChannelInfos.append([ChannelId,  ChannelName, ChannelSource, ChannelServiceId])
+            print('  <channel id="%s">' % (ChannelId))
+            print('    <display-name>%s</display-name>' % (ChannelName))
+            if MyISP != "ALL" and Channeldata[MyISP+'Ch'] is not None:
+                ChannelNumber = str(Channeldata[MyISP+'Ch']);
+                ChannelISPName = escape(Channeldata[MyISP+' Name'])
                 print('    <display-name>%s</display-name>' % (ChannelISPName))
                 print('    <display-name>%s</display-name>' % (ChannelNumber))
                 print('    <display-name>%s</display-name>' % (ChannelNumber+' '+ChannelISPName))
-                if IconUrl:
-                    print('    <icon src="%s/%s.png" />' % (IconUrl, ChannelId))
-                else :
-                    print('    <icon src="%s" />' % (ChannelIconUrl))
-                print('  </channel>')
+            if IconUrl:
+                print('    <icon src="%s/%s.png" />' % (IconUrl, ChannelId))
+            else :
+                print('    <icon src="%s" />' % (ChannelIconUrl))
+            print('  </channel>')
 
     # Print Program Information
     for ChannelInfo in ChannelInfos:
@@ -513,7 +513,7 @@ except ValueError:
 
 parser = argparse.ArgumentParser(description = 'EPG 정보를 출력하는 방법을 선택한다')
 argu1 = parser.add_argument_group(description = 'IPTV 선택')
-argu1.add_argument('-i', dest = 'MyISP', choices = ['KT', 'LG', 'SK'], help = '사용하는 IPTV : KT, LG, SK', default = MyISP)
+argu1.add_argument('-i', dest = 'MyISP', choices = ['ALL', 'KT', 'LG', 'SK'], help = '사용하는 IPTV : ALL, KT, LG, SK', default = MyISP)
 argu2 = parser.add_mutually_exclusive_group()
 argu2.add_argument('-v', '--version', action = 'version', version = '%(prog)s version : ' + __version__)
 argu2.add_argument('-d', '--display', action = 'store_true', help = 'EPG 정보 화면출력')
@@ -543,8 +543,8 @@ if args.episode : default_episode = args.episode
 if args.verbose : default_verbose = args.verbose
 
 if MyISP:
-    if not any(MyISP in s for s in ['KT', 'LG', 'SK']):
-        printError("MyISP는 KT, LG, SK만 가능합니다.")
+    if not any(MyISP in s for s in ['ALL', 'KT', 'LG', 'SK']):
+        printError("MyISP는 ALL, KT, LG, SK만 가능합니다.")
         sys.exit()
 else :
     printError("epg2xml.json 파일의 MyISP항목이 없습니다.")

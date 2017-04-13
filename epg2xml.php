@@ -34,7 +34,7 @@ optional arguments:
   -o [xmltv.xml], --outfile [xmltv.xml]       EPG 정보 저장
   -s [xmltv.sock], --socket [xmltv.sock]      xmltv.sock(External: XMLTV)로 EPG정보 전송
   IPTV 선택
-  -i {KT,LG,SK}         사용하는 IPTV : KT, LG, SK
+  -i {ALL, KT,LG,SK}         사용하는 IPTV : ALL, KT, LG, SK
 추가옵션:
   -l 1-7, --limit 1-7   EPG 정보를 가져올 기간, 기본값: 2
   --icon http://www.example.com/icon
@@ -128,8 +128,8 @@ else :
                     printError("epg2xml.json 파일의 MyISP항목이 없습니다.");
                     exit;
                 else :
-                    if(!in_array($MyISP, array("KT", "LG", "SK"))) : //ISP 선택
-                        printError("MyISP는 KT, LG, SK만 가능합니다.");
+                    if(!in_array($MyISP, array("ALL", "KT", "LG", "SK"))) : //ISP 선택
+                        printError("MyISP는 ALL, KT, LG, SK만 가능합니다.");
                         exit;
                     endif;
                 endif;
@@ -296,32 +296,32 @@ function getEPG() {
     fprintf($fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     fprintf($fp, "<!DOCTYPE tv SYSTEM \"xmltv.dtd\">\n\n");
     fprintf($fp, "<tv generator-info-name=\"epg2xml %s\">\n", VERSION);
+ 
     foreach ($Channeldatas as $Channeldata) : #Get Channel & Print Channel info
         if($Channeldata['Enabled'] == 1) :
             $ChannelId = $Channeldata['Id'];
             $ChannelName = htmlspecialchars($Channeldata['Name'], ENT_XML1);
             $ChannelSource = $Channeldata['Source'];
             $ChannelServiceId = $Channeldata['ServiceId'];
-            $Channelnumber = $Channeldata[$MyISP.'Ch'];
-            $ChannelISPName = htmlspecialchars($Channeldata[$MyISP." Name"], ENT_XML1);
-            $ChannelIconUrl = htmlspecialchars($Channeldata['Icon_url'], ENT_XML1);
-            if($Channeldata[$MyISP.'Ch'] != Null):
-                $ChannelInfos[] = array($ChannelId,  $ChannelName, $ChannelSource, $ChannelServiceId);
-                fprintf($fp, "  <channel id=\"%s\">\n", $ChannelId);
-                fprintf($fp, "    <display-name>%s</display-name>\n", $ChannelName);
+            $ChannelIconUrl = htmlspecialchars($Channeldata['Icon_url'], ENT_XML1);            
+            $ChannelInfos[] = array($ChannelId,  $ChannelName, $ChannelSource, $ChannelServiceId);
+            fprintf($fp, "  <channel id=\"%s\">\n", $ChannelId);
+            fprintf($fp, "    <display-name>%s</display-name>\n", $ChannelName);
+            if($MyISP != "ALL" && $Channeldata[$MyISP.'Ch'] != Null):
+                $Channelnumber = $Channeldata[$MyISP.'Ch'];
+                $ChannelISPName = htmlspecialchars($Channeldata[$MyISP." Name"], ENT_XML1);
                 fprintf($fp, "    <display-name>%s</display-name>\n", $ChannelISPName);
                 fprintf($fp, "    <display-name>%s</display-name>\n", $Channelnumber);
                 fprintf($fp, "    <display-name>%s</display-name>\n", $Channelnumber." ".$ChannelISPName);
-                if($IconUrl) :
-                    fprintf($fp, "    <icon src=\"%s/%s.png\" />\n", $IconUrl, $ChannelId);
-                else :
-                    fprintf($fp, "    <icon src=\"%s\" />\n", $ChannelIconUrl);
-                endif;
-                fprintf($fp, "  </channel>\n");
             endif;
+            if($IconUrl) :
+                fprintf($fp, "    <icon src=\"%s/%s.png\" />\n", $IconUrl, $ChannelId);
+            else :
+                fprintf($fp, "    <icon src=\"%s\" />\n", $ChannelIconUrl);
+            endif;
+            fprintf($fp, "  </channel>\n");
         endif;
     endforeach;
-
     # Print Program Information
     foreach ($ChannelInfos as $ChannelInfo) :
         $ChannelId = $ChannelInfo[0];

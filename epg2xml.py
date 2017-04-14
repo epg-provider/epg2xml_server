@@ -293,7 +293,6 @@ def GetEPGFromSK(ChannelInfo):
                         subprogramName = matches.group(3).strip() if matches.group(3) else ''
                         episode = matches.group(2).replace('회', '') if matches.group(2) else ''
                         episode = '' if episode== '0' else episode
-#                            printError(episode)
                         rebroadcast = True if matches.group(5) else False
                     startTime = datetime.datetime.fromtimestamp(int(program['startTime'])/1000)
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
@@ -357,7 +356,6 @@ def GetEPGFromSKY(ChannelInfo):
                             desc = ''
                             actors = ''
                             producers = ''
-
                         category = program['program_category1']
                         episode = program['episode_id'] if program['episode_id'] else ''
                         if episode : episode = int(episode)

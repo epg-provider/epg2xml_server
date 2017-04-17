@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 @date_default_timezone_set('Asia/Seoul');
-define("VERSION", "1.1.6");
+define("VERSION", "1.1.7");
 
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
@@ -949,12 +949,12 @@ function writeProgram($programdata) {
         if($actors || $producers):
             fprintf($fp, "    <credits>\n");
             if($actors) :
-                foreach(split(',', $actors) as $actor):
+                foreach(explode(',', $actors) as $actor):
                     if($actor) fprintf($fp, "      <actor>%s</actor>\n", $actor);
                 endforeach;
             endif;
             if($producers) :
-                foreach(split(',', $producers) as $producer):
+                foreach(explode(',', $producers) as $producer):
                     if($producer) fprintf($fp, "      <producer>%s</producer>\n", $producer);
                 endforeach;
             endif;

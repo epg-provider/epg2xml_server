@@ -19,7 +19,7 @@ import pprint
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.1.7'
+__version__ = '1.1.7p'
 
 # Set variable
 debug = False
@@ -56,21 +56,29 @@ def getEpg():
             ChannelSource = Channeldata['Source']
             ChannelServiceId = Channeldata['ServiceId']
             ChannelIconUrl = escape(Channeldata['Icon_url'])
-            ChannelInfos.append([ChannelId,  ChannelName, ChannelSource, ChannelServiceId])
-            print('  <channel id="%s">' % (ChannelId))
-            print('    <display-name>%s</display-name>' % (ChannelName))
             if MyISP != "ALL" and Channeldata[MyISP+'Ch'] is not None:
+                ChannelInfos.append([ChannelId,  ChannelName, ChannelSource, ChannelServiceId])
                 ChannelNumber = str(Channeldata[MyISP+'Ch']);
                 ChannelISPName = escape(Channeldata[MyISP+' Name'])
+                print('  <channel id="%s">' % (ChannelId))
+                print('    <display-name>%s</display-name>' % (ChannelName))
                 print('    <display-name>%s</display-name>' % (ChannelISPName))
                 print('    <display-name>%s</display-name>' % (ChannelNumber))
                 print('    <display-name>%s</display-name>' % (ChannelNumber+' '+ChannelISPName))
-            if IconUrl:
-                print('    <icon src="%s/%s.png" />' % (IconUrl, ChannelId))
-            else :
-                print('    <icon src="%s" />' % (ChannelIconUrl))
-            print('  </channel>')
-
+                if IconUrl:
+                    print('    <icon src="%s/%s.png" />' % (IconUrl, ChannelId))
+                else :
+                    print('    <icon src="%s" />' % (ChannelIconUrl))
+                print('  </channel>')
+            elif MyISP == "ALL":
+                ChannelInfos.append([ChannelId,  ChannelName, ChannelSource, ChannelServiceId])
+                print('  <channel id="%s">' % (ChannelId))
+                print('    <display-name>%s</display-name>' % (ChannelName))
+                if IconUrl:
+                    print('    <icon src="%s/%s.png" />' % (IconUrl, ChannelId))
+                else :
+                    print('    <icon src="%s" />' % (ChannelIconUrl))
+                print('  </channel>')
     # Print Program Information
     for ChannelInfo in ChannelInfos:
         ChannelId = ChannelInfo[0]

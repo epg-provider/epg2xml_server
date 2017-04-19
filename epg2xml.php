@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 @date_default_timezone_set('Asia/Seoul');
-define("VERSION", "1.1.7");
+define("VERSION", "1.1.7p1");
 
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
@@ -304,22 +304,32 @@ function getEPG() {
             $ChannelSource = $Channeldata['Source'];
             $ChannelServiceId = $Channeldata['ServiceId'];
             $ChannelIconUrl = htmlspecialchars($Channeldata['Icon_url'], ENT_XML1);            
-            $ChannelInfos[] = array($ChannelId,  $ChannelName, $ChannelSource, $ChannelServiceId);
-            fprintf($fp, "  <channel id=\"%s\">\n", $ChannelId);
-            fprintf($fp, "    <display-name>%s</display-name>\n", $ChannelName);
             if($MyISP != "ALL" && $Channeldata[$MyISP.'Ch'] != Null):
+                $ChannelInfos[] = array($ChannelId,  $ChannelName, $ChannelSource, $ChannelServiceId);
                 $Channelnumber = $Channeldata[$MyISP.'Ch'];
                 $ChannelISPName = htmlspecialchars($Channeldata[$MyISP." Name"], ENT_XML1);
+                fprintf($fp, "  <channel id=\"%s\">\n", $ChannelId);
+                fprintf($fp, "    <display-name>%s</display-name>\n", $ChannelName);
                 fprintf($fp, "    <display-name>%s</display-name>\n", $ChannelISPName);
                 fprintf($fp, "    <display-name>%s</display-name>\n", $Channelnumber);
                 fprintf($fp, "    <display-name>%s</display-name>\n", $Channelnumber." ".$ChannelISPName);
+                if($IconUrl) :
+                    fprintf($fp, "    <icon src=\"%s/%s.png\" />\n", $IconUrl, $ChannelId);
+                else :
+                    fprintf($fp, "    <icon src=\"%s\" />\n", $ChannelIconUrl);
+                endif;
+                fprintf($fp, "  </channel>\n");
+            elseif($MyISP == "ALL"):
+                $ChannelInfos[] = array($ChannelId,  $ChannelName, $ChannelSource, $ChannelServiceId);
+                fprintf($fp, "  <channel id=\"%s\">\n", $ChannelId);
+                fprintf($fp, "    <display-name>%s</display-name>\n", $ChannelName);
+                if($IconUrl) :
+                    fprintf($fp, "    <icon src=\"%s/%s.png\" />\n", $IconUrl, $ChannelId);
+                else :
+                    fprintf($fp, "    <icon src=\"%s\" />\n", $ChannelIconUrl);
+                endif;
+                fprintf($fp, "  </channel>\n");
             endif;
-            if($IconUrl) :
-                fprintf($fp, "    <icon src=\"%s/%s.png\" />\n", $IconUrl, $ChannelId);
-            else :
-                fprintf($fp, "    <icon src=\"%s\" />\n", $ChannelIconUrl);
-            endif;
-            fprintf($fp, "  </channel>\n");
         endif;
     endforeach;
     # Print Program Information

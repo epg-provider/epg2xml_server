@@ -19,7 +19,7 @@ import pprint
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.1.7p'
+__version__ = '1.1.7p1'
 
 # Set variable
 debug = False

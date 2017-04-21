@@ -226,7 +226,7 @@
 {"Id":279,"Name":"JJC지방자치TV","KT Name":"JJC지방자치TV","KTCh":279,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/AuXr9jA.png","Source":"NAVER","ServiceId":3244879,"Enabled":1},
 {"Id":280,"Name":"채널 Ching","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"채널 Ching","SKCh":105,"Icon_url":"http://i.imgur.com/tRqGKcS.png","Source":"SK","ServiceId":907,"Enabled":1},
 {"Id":281,"Name":"채널A","KT Name":"채널A","KTCh":18,"LG Name":"채널A","LGCh":18,"SK Name":"채널A","SKCh":18,"Icon_url":"http://i.imgur.com/xti35f5.png","Source":"SK","ServiceId":242,"Enabled":1},
-{"Id":282,"Name":"채널A 플러스","KT Name":"채널A 플러스","KTCh":98,"LG Name":"채널A플러스","LGCh":115,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/rRisTh8.png","Source":"NAVER","ServiceId"5286712:,"Enabled":1},
+{"Id":282,"Name":"채널A 플러스","KT Name":"채널A 플러스","KTCh":98,"LG Name":"채널A플러스","LGCh":115,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/rRisTh8.png","Source":"NAVER","ServiceId"5286712,"Enabled":1},
 {"Id":283,"Name":"채널CGV","KT Name":"채널CGV","KTCh":29,"LG Name":"CH CGV","LGCh":39,"SK Name":"Ch CGV","SKCh":53,"Icon_url":"http://i.imgur.com/fwjRwkx.png","Source":"SK","ServiceId":187,"Enabled":1},
 {"Id":284,"Name":"채널i","KT Name":"채널i","KTCh":250,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/X7lXvtw.png","Source":"NAVER","ServiceId":3173174,"Enabled":1},
 {"Id":285,"Name":"채널뷰","KT Name":"채널뷰","KTCh":176,"LG Name":"","LGCh":null,"SK Name":"채널View","SKCh":212,"Icon_url":"http://i.imgur.com/lvtWgFL.png","Source":"SK","ServiceId":276,"Enabled":1},

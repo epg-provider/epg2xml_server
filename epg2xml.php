@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 @date_default_timezone_set('Asia/Seoul');
-define("VERSION", "1.1.7p1");
+define("VERSION", "1.1.8");
 
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
@@ -361,6 +361,8 @@ function getEPG() {
             GetEPGFromMil($ChannelInfo);
         elseif($ChannelSource == 'IFM'):
             GetEPGFromIfm($ChannelInfo);
+        elseif($ChannelSource == 'KBS'):
+            GetEPGFromKbs($ChannelInfo);
         endif;
     endforeach;
     fprintf($fp, "</tv>\n");
@@ -378,6 +380,7 @@ function GetEPGFromEPG($ChannelInfo) {
             'header'=> $GLOBALS['ua']
     ));
     $context  = stream_context_create($options);
+    $epginfo = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://www.epg.co.kr/epg-cgi/extern/cnm_guide_type_v070530.cgi";
         $day = date("Ymd", strtotime("+".($k - 1)." days"));
@@ -389,10 +392,9 @@ function GetEPGFromEPG($ChannelInfo) {
         );
         $params = http_build_query($params);
         $url = $url."?".$params;
-        $epginfo = array();
         try {
             $response = @file_get_contents($url, False, $context);
-            if ($response === False) :
+            if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
                 $response = str_replace("charset=euc-kr", "charset=utf-8", $response);
@@ -417,9 +419,9 @@ function GetEPGFromEPG($ChannelInfo) {
                                 $hour = $hour." PM";
                                 break;
                             case 4 :
-                                if($hour > 5 ) :
+                                if($hour > 5 && $hour < 12) :
                                     $hour = $hour." PM";
-                                else :
+                                elseif($hour <5 || $hour == 12) :
                                     $hour = $hour." AM";
                                     $thisday = date("Ymd", strtotime($day." +1 days"));
                                 endif;
@@ -436,43 +438,43 @@ function GetEPGFromEPG($ChannelInfo) {
                                 $rating = 0;
                             endif;
                         endif;
-                            #programName, startTime, rating, subprogramName, rebroadcast, episode
+                            //programName, startTime, rating, subprogramName, rebroadcast, episode
                             $epginfo[] = array(trim($matches[2]), $startTime, $rating, trim($matches[4]), $matches[5], $matches[7]);
                     endforeach;
                 endfor;
-                $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
-                foreach($zipped as $epg) :
-                    $programName = $epg[0][0] ?: "";
-                    $subprogramName = $epg[0][3] ?: "";
-                    $startTime = $epg[0][1] ?: "";
-                    $endTime = $epg[1][1] ?: "";
-                    $desc = "";
-                    $actors = "";
-                    $producers = "";
-                    $category = "";
-                    $rebroadcast = $epg[0][4] ? True : False;
-                    $episode = $epg[0][5] ?: "";
-                    $rating = $epg[0][2] ?: 0;
-                    $programdata = array(
-                        'channelId'=> $ChannelId,
-                        'startTime' => $startTime,
-                        'endTime' => $endTime,
-                        'programName' => $programName,
-                        'subprogramName'=> $subprogramName,
-                        'desc' => $desc,
-                        'actors' => $actors,
-                        'producers' => $producers,
-                        'category' => $category,
-                        'episode' => $episode,
-                        'rebroadcast' => $rebroadcast,
-                        'rating' => $rating
-                    );
-                    writeProgram($programdata);
-                endforeach;
             endif;
         } catch (Exception $e) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
+    endforeach;
+    $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
+    foreach($zipped as $epg) :
+        $programName = $epg[0][0] ?: "";
+        $subprogramName = $epg[0][3] ?: "";
+        $startTime = $epg[0][1] ?: "";
+        $endTime = $epg[1][1] ?: "";
+        $desc = "";
+        $actors = "";
+        $producers = "";
+        $category = "";
+        $rebroadcast = $epg[0][4] ? True : False;
+        $episode = $epg[0][5] ?: "";
+        $rating = $epg[0][2] ?: 0;
+        $programdata = array(
+            'channelId'=> $ChannelId,
+            'startTime' => $startTime,
+            'endTime' => $endTime,
+            'programName' => $programName,
+            'subprogramName'=> $subprogramName,
+            'desc' => $desc,
+            'actors' => $actors,
+            'producers' => $producers,
+            'category' => $category,
+            'episode' => $episode,
+            'rebroadcast' => $rebroadcast,
+            'rating' => $rating
+        );
+        writeProgram($programdata);
     endforeach;
 }
 
@@ -488,6 +490,7 @@ function GetEPGFromKT($ChannelInfo) {
             'header'=> $GLOBALS['ua']
     ));
     $context  = stream_context_create($options);
+    $epginfo = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://tv.olleh.com/renewal_sub/liveTv/pop_schedule_week.asp";
         $day = date("Ymd", strtotime("+".($k - 1)." days"));
@@ -500,10 +503,9 @@ function GetEPGFromKT($ChannelInfo) {
         );
         $params = http_build_query($params);
         $url = $url."?".$params;
-        $epginfo = array();
         try {
             $response = @file_get_contents($url, False, $context);
-            if ($response === False) :
+            if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
                 $response = str_replace("charset=euc-kr", "charset=utf-8", $response);
@@ -520,45 +522,44 @@ function GetEPGFromKT($ChannelInfo) {
                     $rating = str_replace("all", 0, str_replace("세 이상", "", trim($cells->item(2)->nodeValue)));
                     $epginfo[]= array(trim($cells->item(1)->nodeValue), $startTime, $rating, trim($cells->item(4)->nodeValue));
                 endforeach;
-                $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
-                foreach($zipped as $epg) :
-                    $programName = "";
-                    $subprogramName = "";
-                    preg_match('/^(.*?)( <(.*)>)?$/', $epg[0][0], $matches);
-                    if($matches) :
-                       $programName = $matches[1] ?: "";
-                       $subprogramName = $matches[3] ?: "";
-                    endif;
-                    $startTime = $epg[0][1] ?: "";
-                    $endTime = $epg[1][1] ?: "";
-                    $desc = "";
-                    $actors = "";
-                    $producers = "";
-                    $category = $epg[0][3] ?: "";
-                    $rebroadcast = False;
-                    $episode = "";
-                    $rating = $epg[0][2] ?: 0;
-                    $programdata = array(
-                        'channelId'=> $ChannelId,
-                        'startTime' => $startTime,
-                        'endTime' => $endTime,
-                        'programName' => $programName,
-                        'subprogramName'=> $subprogramName,
-                        'desc' => $desc,
-                        'actors' => $actors,
-                        'producers' => $producers,
-                        'category' => $category,
-                        'episode' => $episode,
-                        'rebroadcast' => $rebroadcast,
-                        'rating' => $rating
-                    );
-
-                    writeProgram($programdata);
-                endforeach;
             endif;
         } catch (Exception $e) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
+    endforeach;
+    $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
+    foreach($zipped as $epg) :
+        $programName = "";
+        $subprogramName = "";
+        preg_match('/^(.*?)( <(.*)>)?$/', $epg[0][0], $matches);
+        if($matches) :
+           $programName = $matches[1] ?: "";
+           $subprogramName = $matches[3] ?: "";
+        endif;
+        $startTime = $epg[0][1] ?: "";
+        $endTime = $epg[1][1] ?: "";
+        $desc = "";
+        $actors = "";
+        $producers = "";
+        $category = $epg[0][3] ?: "";
+        $rebroadcast = False;
+        $episode = "";
+        $rating = $epg[0][2] ?: 0;
+        $programdata = array(
+            'channelId'=> $ChannelId,
+            'startTime' => $startTime,
+            'endTime' => $endTime,
+            'programName' => $programName,
+            'subprogramName'=> $subprogramName,
+            'desc' => $desc,
+            'actors' => $actors,
+            'producers' => $producers,
+            'category' => $category,
+            'episode' => $episode,
+            'rebroadcast' => $rebroadcast,
+            'rating' => $rating
+        );
+        writeProgram($programdata);
     endforeach;
 }
 
@@ -574,6 +575,7 @@ function GetEPGFromLG($ChannelInfo) {
             'header'=> $GLOBALS['ua']
     ));
     $context  = stream_context_create($options);
+    $epginfo = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://www.uplus.co.kr/css/chgi/chgi/RetrieveTvSchedule.hpi";
         $day = date("Ymd", strtotime("+".($k - 1)." days"));
@@ -583,10 +585,9 @@ function GetEPGFromLG($ChannelInfo) {
         );
         $params = http_build_query($params);
         $url = $url."?".$params;
-        $epginfo = array();
         try {
             $response = @file_get_contents($url, False, $context);
-            if ($response === False) :
+            if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
                 $response = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'.$response;
@@ -604,43 +605,43 @@ function GetEPGFromLG($ChannelInfo) {
                     $startTime = date("YmdHis", strtotime($day." ".trim($cells->item(0)->nodeValue)));
                     $spans = $cells->item(1)->getElementsByTagName('span');
                     $rating = trim($spans->item(1)->nodeValue)=="All" ? 0 : trim($spans->item(1)->nodeValue);
-                    #programName, startTime, rating, category
+                    //programName, startTime, rating, category
                     $epginfo[]= array($programName, $startTime, $rating, trim($cells->item(2)->nodeValue));
-                endforeach;
-                $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
-                foreach($zipped as $epg) :
-                    preg_match('/(<재>?)?(.*?)(\[(.*)\])?\s?(\(([\d,]+)회\))?$/', $epg[0][0], $matches);
-                    $programName = trim($matches[2]) ?: "";
-                    $subprogramName = trim($matches[4]) ?: "";
-                    $startTime = $epg[0][1] ?: "";
-                    $endTime = $epg[1][1] ?: "";
-                    $desc = "";
-                    $actors = "";
-                    $producers = "";
-                    $category = $epg[0][3] ?: "";
-                    $rebroadcast = trim($matches[1]) ? True: False;
-                    $episode = trim($matches[6]) ?: "";
-                    $rating = $epg[0][2] ?: 0;
-                    $programdata = array(
-                        'channelId'=> $ChannelId,
-                        'startTime' => $startTime,
-                        'endTime' => $endTime,
-                        'programName' => $programName,
-                        'subprogramName'=> $subprogramName,
-                        'desc' => $desc,
-                        'actors' => $actors,
-                        'producers' => $producers,
-                        'category' => $category,
-                        'episode' => $episode,
-                        'rebroadcast' => $rebroadcast,
-                        'rating' => $rating
-                    );
-                    writeProgram($programdata);
                 endforeach;
             endif;
         } catch (Exception $e) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
+    endforeach;
+    $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
+    foreach($zipped as $epg) :
+        preg_match('/(<재>?)?(.*?)(\[(.*)\])?\s?(\(([\d,]+)회\))?$/', $epg[0][0], $matches);
+        $programName = trim($matches[2]) ?: "";
+        $subprogramName = trim($matches[4]) ?: "";
+        $startTime = $epg[0][1] ?: "";
+        $endTime = $epg[1][1] ?: "";
+        $desc = "";
+        $actors = "";
+        $producers = "";
+        $category = $epg[0][3] ?: "";
+        $rebroadcast = trim($matches[1]) ? True: False;
+        $episode = trim($matches[6]) ?: "";
+        $rating = $epg[0][2] ?: 0;
+        $programdata = array(
+            'channelId'=> $ChannelId,
+            'startTime' => $startTime,
+            'endTime' => $endTime,
+            'programName' => $programName,
+            'subprogramName'=> $subprogramName,
+            'desc' => $desc,
+            'actors' => $actors,
+            'producers' => $producers,
+            'category' => $category,
+            'episode' => $episode,
+            'rebroadcast' => $rebroadcast,
+            'rating' => $rating
+        );
+        writeProgram($programdata);
     endforeach;
 }
 
@@ -666,7 +667,7 @@ function GetEPGFromSK($ChannelInfo) {
     $url = $url."?".$params;
     try {
         $response = @file_get_contents($url, False, $context);
-        if ($response === False) :
+        if ($response === False && $GLOBALS['debug']) :
             printError($ChannelName.HTTP_ERROR);
         else :
             try {
@@ -734,12 +735,12 @@ function GetEPGFromSKY($ChannelInfo) {
     $ServiceId =  $ChannelInfo[3];
     $options = array(
         'http' => array(
-            'method' => 'GET',
+            'method' => 'POST',
             'header'=> $GLOBALS['ua']
     ));
     $context  = stream_context_create($options);
     foreach(range(1, $GLOBALS['period']) as $k) :
-        $url = "http://www.skylife.co.kr/channel/epg/channelScheduleList.do";
+        $url = "http://www.skylife.co.kr/channel/epg/channelScheduleListJson.do";
         $day = date("Y-m-d", strtotime("+".($k - 1)." days"));
         $params = array(
             'area' => 'in',
@@ -751,14 +752,14 @@ function GetEPGFromSKY($ChannelInfo) {
         $url = $url."?".$params;
         try {
             $response = @file_get_contents($url, False, $context);
-            if ($response === False) :
+            if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
                 try {
                     $data = json_decode($response, TRUE);
                     if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
                     if(count($data['scheduleListIn']) == 0) :
-                        if($GLOBALS['debug']) : 
+                        if($GLOBALS['debug']) :
                             printError($ChannelName.CHANNEL_ERROR);
                         endif;
                     else :
@@ -818,6 +819,8 @@ function GetEPGFromNaver($ChannelInfo) {
             'header'=> $GLOBALS['ua']
     ));
     $context  = stream_context_create($options);
+    $epginfo = array();
+    $totaldate = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "https://search.naver.com/p/csearch/content/batchrender_ssl.nhn";
         $day = date("Ymd", strtotime("+".($k - 1)." days"));
@@ -841,7 +844,7 @@ function GetEPGFromNaver($ChannelInfo) {
     $url = $url."?".$params;
     try {
         $response = @file_get_contents($url, False, $context);
-        if ($response === False) :
+        if ($response === False && $GLOBALS['debug']) :
             printError($ChannelName.HTTP_ERROR);
         else :
             try {
@@ -858,7 +861,7 @@ function GetEPGFromNaver($ChannelInfo) {
                     for($i = 0; $i < count($data['displayDates']); $i++) :
                         for($j = 0; $j < 24; $j++) :
                             foreach($data['schedules'][$j][$i] as $program) :
-                                #programName, startTime, episode, rebroadcast, rating
+                                //programName, startTime, episode, rebroadcast, rating
                                 $startTime = date("YmdHis", strtotime($data['displayDates'][$i]['date']." ".$program['startTime']));
                                 $epginfo[] = array($program['title'], $startTime, str_replace("회","", $program['episode']), $program['isRerun'], $program['grade']);
                             endforeach;
@@ -940,7 +943,7 @@ function GetEPGFromMbc($ChannelInfo) {
         $url = $url."?".$params;
         try {
             $response = @file_get_contents($url, False, $context);
-            if ($response === False) :
+            if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
                 try {
@@ -987,7 +990,6 @@ function GetEPGFromMbc($ChannelInfo) {
                                 );
                                 writeProgram($programdata);
                             endif;
-
                         endforeach;
                     endif;
                 } catch(Exception $e) {
@@ -1021,7 +1023,7 @@ function GetEPGFromMil($ChannelInfo) {
         $url = $url."?".$params;
         try {
             $response = @file_get_contents($url, False, $context);
-            if ($response === False) :
+            if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
                 try {
@@ -1102,7 +1104,7 @@ function GetEPGFromIfm($ChannelInfo) {
         $url = $url."?".$params;
         try {
             $response = @file_get_contents($url, False, $context);
-            if ($response === False) :
+            if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
                 try {
@@ -1154,7 +1156,96 @@ function GetEPGFromIfm($ChannelInfo) {
         }
     endforeach;
 }
-  
+
+// Get EPG data from KBS
+function GetEPGFromKbs($ChannelInfo) {
+    $ChannelId = $ChannelInfo[0];
+    $ChannelName = $ChannelInfo[1];
+    $ServiceId =  $ChannelInfo[3];
+    $options = array(
+        'http' => array(
+            'method' => 'GET',
+            'header'=> $GLOBALS['ua']
+    ));
+    $context  = stream_context_create($options);
+    $epginfo = array();
+    foreach(range(1, $GLOBALS['period']) as $k) :
+        $url = "http://world.kbs.co.kr/include/wink/_ajax_schedule.php";
+        $day = date("Y-m-d", strtotime("+".($k - 1)." days"));
+        $params = array(
+            'channel'=>'wink_11'
+        );
+        $params = http_build_query($params);
+        $url = $url."?".$params;
+        try {
+            $response = @file_get_contents($url, False, $context);
+            if ($response === False && $GLOBALS['debug']) :
+                printError($ChannelName.HTTP_ERROR);
+            else :
+                try {
+                    $data = json_decode($response, TRUE);
+                    if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
+                    if(count($data['schedule']) == 0) :
+                        if($GLOBALS['debug']) : 
+                            printError($ChannelName.CHANNEL_ERROR);
+                        endif;
+                    else :
+                        $dom = new DomDocument;
+                        libxml_use_internal_errors(true);
+                        $dom->loadHTML($data['schedule']);
+                        $xpath = new DomXPath($dom);
+                        $query = "//li";
+                        $rows = $xpath->query($query);
+                        foreach($rows as $row) :
+                            $cells = $row->getElementsByTagName('span');
+                            $programName = trim($cells->item(2)->childNodes->item(0)->nodeValue);
+                            $programName = str_replace(array("[","]", " Broadcast"), array("", "", ""), $programName);
+                            $startTime = $day." ".trim($cells->item(0)->childNodes->item(0)->nodeValue);
+                            //programName, startTime, rating, category
+                            $epginfo[]= array($programName, $startTime);
+                        endforeach;
+                    endif;
+                } catch(Exception $e) {
+                    if($GLOBALS['debug']) printError($e->getMessage());
+                }
+            endif;
+        } catch (Exception $e) {
+            if($GLOBALS['debug']) printError($e->getMessage());
+        }
+    endforeach;
+    $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
+    foreach($zipped as $epg) :
+        $programName = $epg[0][0] ?: "";
+        $subprogramName = "";
+        $startTime = $epg[0][1] ?: "";
+        $startTime = date("YmdHis", strtotime($startTime));
+        $endTime = $epg[1][1] ?: "";
+        $endTime = date("YmdHis", strtotime($endTime));
+        $desc = "";
+        $actors = "";
+        $producers = "";
+        $category = "";
+        $rebroadcast = False;
+        $episode = "";
+        $rating = 0;
+        $programdata = array(
+            'channelId'=> $ChannelId,
+            'startTime' => $startTime,
+            'endTime' => $endTime,
+            'programName' => $programName,
+            'subprogramName'=> $subprogramName,
+            'desc' => $desc,
+            'actors' => $actors,
+            'producers' => $producers,
+            'category' => $category,
+            'episode' => $episode,
+            'rebroadcast' => $rebroadcast,
+            'rating' => $rating
+        );
+        writeProgram($programdata);
+    endforeach;
+}
+
 function writeProgram($programdata) {
     $fp = $GLOBALS['fp'];
     $ChannelId = $programdata['channelId'];

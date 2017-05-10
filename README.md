@@ -37,7 +37,7 @@ epg2xml.json의 설정을 옵션의 인수를 이용하여 변경할 수 있다.
 <pre>
 -h --help : 도움말 출력
 --version : 버전을 보여준다.
--i : IPTV 선택 (All, KT, SK, LG 선택가능) ex) -i KT
+-i : IPTV 선택 (ALL, KT, SK, LG 선택가능) ex) -i KT
 -d --display : EPG 정보를 화면으로 보여준다.
 -o --outfile : EPG 정보를 파일로 저장한다. ex) -o xmltv.xml
 -s --socket  : EPG 정보를 xmltv.sock로 전송한다. ex) -s /var/run/xmltv.sock

@@ -11,7 +11,7 @@ BeautifulSoup(bs4), lxml, requests 모듈이 추가로 필요하다.
 synology의 경우 파이썬 모듈을 설치하면 easy_install beautifulsoup, easy_install lxml, easy_install requests 로 추가할 수 있다.
 
 ### EPG2XML.php
-PHP의 내장함수를 이용하므로 특별한 모듈은 필요없다. 
+json, dom, mbstring, openssl 모듈이 필요하다.
 
 ## 설정방법
 epg2xml.json 안의 항목이 설정 가능한 항목이다. 

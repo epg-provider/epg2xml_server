@@ -340,5 +340,5 @@
 {"Id":441,"Name":"경인방송","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/zBTPTRe.png","Source":"IFM","ServiceId":3,"Enabled":0},
 {"Id":442,"Name":"AMC","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"AMC","SKCh":100,"Icon_url":"http://i.imgur.com/cJ1B77S.png","Source":"SK","ServiceId":199,"Enabled":0},
 {"Id":443,"Name":"TVA","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/tg99cob.png","Source":"NAVER","ServiceId":814777,"Enabled":0},
-{"Id":443,"Name":"채널W","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/mtiKEkU.png","Source":"SKY","ServiceId":518,"Enabled":0}
+{"Id":444,"Name":"채널W","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/mtiKEkU.png","Source":"SKY","ServiceId":518,"Enabled":0}
 ]

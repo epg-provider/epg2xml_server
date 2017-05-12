@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+error_reporting(0);
 @date_default_timezone_set('Asia/Seoul');
 define("VERSION", "1.1.8");
 

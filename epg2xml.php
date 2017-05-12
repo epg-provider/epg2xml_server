@@ -1,10 +1,8 @@
 #!/usr/bin/env php
 <?php
-error_reporting(0);
 @date_default_timezone_set('Asia/Seoul');
-
-define("VERSION", "1.1.8");
-
+error_reporting(E_ALL ^ E_NOTICE);
+define("VERSION", "1.1.9");
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
 define("CHANNEL_ERROR", " 존재하지 않는 채널입니다.");
@@ -16,6 +14,16 @@ define("SOCKET_ERROR", "소켓 파일을 찾을 수 없습니다.");
 define("JSON_FILE_ERROR", "json 파일이 없습니다.");
 define("JSON_SYNTAX_ERROR",  "json 파일 형식이 잘못되었습니다.");
 
+if(version_compare(PHP_VERSION, '5.6.11','<')) :
+    printError("PHP 버전은 5.6.11 이상이어야 합니다.");
+    printError("현재 PHP 버전은 ".PHP_VERSION." 입니다.");
+    exit;
+endif;
+if (!extension_loaded('json') && !extension_loaded('dom') && !extension_loaded('mbstring') && !extension_loaded('openssl')) :
+    printError("필요 모듈이 설치되지 않았습니다.\n json, dom, mbstring, openssl 모듈이 설치되어 있는지 확인하세요");
+    exit;
+endif;
+
 //사용방법
 $usage = <<<USAGE
 usage: epg2xml.php [-h] -i {ALL, KT,LG,SK}
@@ -25,7 +33,7 @@ USAGE;
 
 //도움말
 $help = <<<HELP
-usage: epg2xml.py [-h] -i {ALL, KT,LG,SK}
+usage: epg2xml.php [-h] -i {ALL, KT,LG,SK}
                   (-v | -d | -o [xmltv.xml] | -s [xmltv.sock]) [-l 1-7]
                   [--icon http://www.example.com/icon] [--verbose y, n]
 EPG 정보를 출력하는 방법을 선택한다
@@ -69,10 +77,10 @@ $longargs  = array(
 );
 $args = getopt($shortargs, $longargs);
 
-if($args['h'] === False || $args['help'] === False)://도움말 출력
+if((isset($args['h']) && $args['h'] === False) || (isset($args['help']) && $args['help'] === False))://도움말 출력
     printf($help);
     exit;
-elseif($args['v'] === False || $args['version'] === False)://버전 정보 출력
+elseif((isset($args['v']) && $args['v'] === False) || (isset($args['version']) && $args['version'] === False))://버전 정보 출력
     printf("epg2xml.php version : %s\n", VERSION);
     exit;
 else :
@@ -97,15 +105,15 @@ else :
                 $default_verbose = $Settings['default_verbose'];
 
                 if(!empty($args['i'])) $MyISP = $args['i'];
-                if($args['d'] === False || $args['display'] === False ) :
-                    if($args['o'] || $args['outfile'] || $args['s'] || $args['socket']) :
+                if((isset($args['d']) && $args['d'] === False) || (isset($args['display']) && $args['display'] === False) ) :
+                    if(isset($args['o']) || isset($args['outfile']) || isset($args['s']) || isset($args['socket'])) :
                         printf($usage);
                         printf("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
                         exit;
                     endif;
                     $default_output = "d";
                 elseif(empty($args['o']) === False || empty($args['outfile']) === False) :
-                    if($args['d'] === False || $args['display'] === False || $args['s'] || $args['socket']) :
+                    if((isset($args['d']) && $args['d'] === False) || (isset($args['display']) && $args['display'] === False) || isset($args['s']) || isset($args['socket'])) :
                         print($usage);
                         print("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
                         exit;
@@ -113,7 +121,7 @@ else :
                     $default_output = "o";
                     $default_xml_file = $args['o'] ?: $args['outfile'];
                 elseif(empty($args['s']) === False || empty($args['socket']) === False) :
-                    if($args['d'] === False || $args['display'] === False || $args['o'] || $args['outfile']) :
+                    if((isset($args['d']) && $args['d'] === False) || (isset($args['display']) && $args['display'] === False) || isset($args['o']) || isset($args['outfile'])) :
                         print($usage);
                         print("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
                         exit;
@@ -217,7 +225,7 @@ else :
         printError($e->getMessage());
         exit;
     }
- endif;
+endif;
 
 if($output == "display") :
     $fp = fopen('php://output', 'w+');
@@ -275,6 +283,7 @@ function getEPG() {
     $fp = $GLOBALS['fp'];
     $MyISP = $GLOBALS['MyISP'];
     $Channelfile = __DIR__."/Channel.json";
+    $IconUrl = "";
     try {
         $f = @file_get_contents($Channelfile);
         if($f === False) :
@@ -430,18 +439,25 @@ function GetEPGFromEPG($ChannelInfo) {
                                 break;
                         endswitch;
                         $startTime = date("YmdHis", strtotime($thisday." ".$hour));
+                        $programName = "";
+                        $subprogramName = "";
+                        $rating = 0;
+                        $episode = "";
+                        $rebroadcast = False;                        
                         preg_match('/<td height="25" valign="top">?(.*<a.*?">)?(.*?)\s*(&lt;(.*)&gt;)?\s*(\(재\))?\s*(\(([\d,]+)회\))?(<img.*?)?(<\/a>)?\s*<\/td>/', trim($dom->saveHTML($program)), $matches);
                         if ($matches != NULL) :
-                            $image = $matches[8] ? $matches[8] : "";
-                            preg_match('/.*schedule_([\d,]+)?.*/', $image, $grade);
-                            if($grade != NULL) : 
-                                $rating = $grade[1];
-                            else :
-                                $rating = 0;
+                            if(isset($matches[2])) $programName = trim($matches[2]) ?: "";
+                            if(isset($matches[4])) $subprogramName = trim($matches[4]) ?: "";
+                            if(isset($matches[5])) $rebroadcast = $matches[5] ? True : False;
+                            if(isset($matches[7])) $episode = $matches[7] ?: "";
+                            if(isset($matches[8])) :
+                                $image = $matches[8] ? $matches[8] : "";
+                                preg_match('/.*schedule_([\d,]+)?.*/', $image, $grade);
+                                if($grade != NULL) $rating = $grade[1];
                             endif;
                         endif;
                             //programName, startTime, rating, subprogramName, rebroadcast, episode
-                            $epginfo[] = array(trim($matches[2]), $startTime, $rating, trim($matches[4]), $matches[5], $matches[7]);
+                            $epginfo[] = array($programName, $startTime, $rating, $subprogramName, $rebroadcast, $episode );
                     endforeach;
                 endfor;
             endif;
@@ -459,7 +475,7 @@ function GetEPGFromEPG($ChannelInfo) {
         $actors = "";
         $producers = "";
         $category = "";
-        $rebroadcast = $epg[0][4] ? True : False;
+        $rebroadcast = $epg[0][4];
         $episode = $epg[0][5] ?: "";
         $rating = $epg[0][2] ?: 0;
         $programdata = array(
@@ -534,9 +550,9 @@ function GetEPGFromKT($ChannelInfo) {
         $programName = "";
         $subprogramName = "";
         preg_match('/^(.*?)( <(.*)>)?$/', $epg[0][0], $matches);
-        if($matches) :
-           $programName = $matches[1] ?: "";
-           $subprogramName = $matches[3] ?: "";
+        if ($matches != NULL) :
+           if(isset($matches[1])) $programName = $matches[1] ?: "";
+           if(isset($matches[3])) $subprogramName = $matches[3] ?: "";
         endif;
         $startTime = $epg[0][1] ?: "";
         $endTime = $epg[1][1] ?: "";
@@ -618,16 +634,23 @@ function GetEPGFromLG($ChannelInfo) {
     $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
     foreach($zipped as $epg) :
         preg_match('/(<재>?)?(.*?)(\[(.*)\])?\s?(\(([\d,]+)회\))?$/', $epg[0][0], $matches);
-        $programName = trim($matches[2]) ?: "";
-        $subprogramName = trim($matches[4]) ?: "";
+        $programName = "";
+        $subprogramName = "";
+        $episode = "";
+        $rebroadcast = False;
+        if ($matches != NULL) :
+            if(isset($matches[2])) $programName = trim($matches[2]) ?: "";
+            if(isset($matches[4])) $subprogramName = trim($matches[4]) ?: "";
+            if(isset($matches[6])) $episode = trim($matches[6]) ?: "";
+            if(isset($matches[1])) $rebroadcast = trim($matches[1]) ? True: False;
+        endif;
         $startTime = $epg[0][1] ?: "";
         $endTime = $epg[1][1] ?: "";
         $desc = "";
         $actors = "";
         $producers = "";
         $category = $epg[0][3] ?: "";
-        $rebroadcast = trim($matches[1]) ? True: False;
-        $episode = trim($matches[6]) ?: "";
+
         $rating = $epg[0][2] ?: 0;
         $programdata = array(
             'channelId'=> $ChannelId,
@@ -688,10 +711,10 @@ function GetEPGFromSK($ChannelInfo) {
                         $rebroadcast = False;
                         preg_match('/^(.*?)(?:\s*[\(<]([\d,회]+)[\)>])?(?:\s*<([^<]*?)>)?(\((재)\))?$/', str_replace('...', '>', $program['programName']), $matches);
                         if ($matches != NULL) :
-                            $programName = trim($matches[1]) ?: "";
-                            $subprogramName = trim($matches[3]) ?: "";
-                            $episode = str_replace("회", "", $matches[2]) ?: "";
-                            $rebroadcast = $matches[5] ? True : False;
+                            if(isset($matches[1])) $programName = trim($matches[1]) ?: "";
+                            if(isset($matches[3])) $subprogramName = trim($matches[3]) ?: "";
+                            if(isset($matches[2])) $episode = str_replace("회", "", $matches[2]) ?: "";
+                            if(isset($matches[5])) $rebroadcast = $matches[5] ? True : False;
                         endif;
                         $startTime = date("YmdHis",$program['startTime']/1000);
                         $endTime = date("YmdHis",$program['endTime']/1000);

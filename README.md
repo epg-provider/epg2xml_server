@@ -1,7 +1,10 @@
 # EPG2XML
 
-이 프로그램은 EPG(Electronic Program Guide)를 웹상의 여러 소스에서 가져와서 XML로 출력하는 프로그램으로 python2 및 php5 Cli에서 사용 가능하도록 제작되었다.
-기본적으로 외부의 소스를 분석하여 출력하므로 외부 소스 사이트가 변경되거나 삭제되면 문제가 발생할 수 있다.
+이 프로그램은 EPG(Electronic Program Guide)를 웹상의 여러 소스에서 가져와서 XML로 출력하는 프로그램으로 python2.7 및 php5.6.3 이상에서 사용 가능하도록 제작되었다.
+
+python 3과 php 5.6.3 이하에서는 정상적인 작동을 보장하지 못한다.
+
+또한 외부의 소스를 분석하여 EPG 정보를 가공하여 보여주는 것이므로 외부 소스 사이트가 변경되거나 삭제되면 문제가 발생할 수 있다.
 
 ## 필요 모듈
 
@@ -79,7 +82,6 @@ epg2xml tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이
 /usr/bin/php /home/hts/epg2xml.php 또는
 /home/hts/epg2xml.php
 </pre>
-
 
 ## 라이센스
 BSD

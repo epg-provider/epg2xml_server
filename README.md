@@ -16,7 +16,7 @@ json, dom, mbstring, openssl 모듈이 필요하다.
 ## 설정방법
 epg2xml.json 안의 항목이 설정 가능한 항목이다. 
 <pre>
-MyISP : 사용하는 ISP를 넣는다 .(KT, LG, SK가 사용가능하다)
+MyISP : 사용하는 ISP를 넣는다 .(ALL, KT, LG, SK가 사용가능하다)
 default_icon_url : 채널별 아이콘이 있는 url을 설정할 수 있다. 아이콘의 이름은 json 파일에 있는 Id.png로 기본설정되어 있다.
 default_rebroadcast : 제목에 재방송 정보 출력
 default_episode : 제목에 회차정보 출력
@@ -37,7 +37,7 @@ epg2xml.json의 설정을 옵션의 인수를 이용하여 변경할 수 있다.
 <pre>
 -h --help : 도움말 출력
 --version : 버전을 보여준다.
--i : IPTV 선택 (KT, SK, LG 선택가능) ex) -i KT
+-i : IPTV 선택 (ALL, KT, SK, LG 선택가능) ex) -i KT
 -d --display : EPG 정보를 화면으로 보여준다.
 -o --outfile : EPG 정보를 파일로 저장한다. ex) -o xmltv.xml
 -s --socket  : EPG 정보를 xmltv.sock로 전송한다. ex) -s /var/run/xmltv.sock

@@ -19,8 +19,20 @@ if(version_compare(PHP_VERSION, '5.6.11','<')) :
     printError("현재 PHP 버전은 ".PHP_VERSION." 입니다.");
     exit;
 endif;
-if (!extension_loaded('json') && !extension_loaded('dom') && !extension_loaded('mbstring') && !extension_loaded('openssl')) :
-    printError("필요 모듈이 설치되지 않았습니다.\n json, dom, mbstring, openssl 모듈이 설치되어 있는지 확인하세요");
+if (!extension_loaded('json'))) :
+    printError("json 모듈이 설치되지 않았습니다.");
+    exit;
+endif;
+if (!extension_loaded('dom')) :
+    printError("dom 모듈이 설치되지 않았습니다.");
+    exit;
+endif;
+if (!extension_loaded('mbstring') :
+    printError("mbstring 모듈이 설치되지 않았습니다.");
+    exit;
+endif;
+if (!extension_loaded('openssl')) :
+    printError("openssl 모듈이 설치되지 않았습니다.");
     exit;
 endif;
 

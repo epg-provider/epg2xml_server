@@ -19,7 +19,7 @@ if(version_compare(PHP_VERSION, '5.6.3','<')) :
     printError("현재 PHP 버전은 ".PHP_VERSION." 입니다.");
     exit;
 endif;
-if (!extension_loaded('json'))) :
+if (!extension_loaded('json')) :
     printError("json 모듈이 설치되지 않았습니다.");
     exit;
 endif;
@@ -27,7 +27,7 @@ if (!extension_loaded('dom')) :
     printError("dom 모듈이 설치되지 않았습니다.");
     exit;
 endif;
-if (!extension_loaded('mbstring') :
+if (!extension_loaded('mbstring')) :
     printError("mbstring 모듈이 설치되지 않았습니다.");
     exit;
 endif;

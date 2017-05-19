@@ -9,6 +9,8 @@
   - 언어 버전 사항 체크
   - 필요 모듈 사항 체크
   - 버그 수정
+  - php 버전 웹 버전 추가
+  - php 버전 file_get_contents를 curl 사용으로 수정
  Version 1.1.8
   - KBS 함수 추가
   - 채널 변경 사항 반영

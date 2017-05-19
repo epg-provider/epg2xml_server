@@ -94,7 +94,8 @@ tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이 변경�
 
 ### PHP WEB의 경우
 <pre>
-http://domain/epg2xml.php
+http://domain/epg2xml.php 또는
+http://domain/epg2xml.php?i=ALL&l=2
 </pre>
 ## 라이센스
 BSD

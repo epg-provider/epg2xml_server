@@ -2,7 +2,9 @@
 <?php
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
+if (PHP_SAPI != "cli") header("Content-Type: application/xml; charset=utf-8");
 define("VERSION", "1.1.9");
+
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
 define("CHANNEL_ERROR", " 존재하지 않는 채널입니다.");
@@ -36,6 +38,10 @@ if (!extension_loaded('openssl')) :
     exit;
 endif;
 
+if (!extension_loaded('curl')) :
+    printError("curl 모듈이 설치되지 않았습니다.");
+    exit;
+endif;
 //사용방법
 $usage = <<<USAGE
 usage: epg2xml.php [-h] -i {ALL, KT,LG,SK}
@@ -397,13 +403,6 @@ function GetEPGFromEPG($ChannelInfo) {
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
     $epginfo = array();
-    $options = array(
-        'http' => array(
-            'method' => 'GET',
-            'header'=> $GLOBALS['ua']
-    ));
-    $context  = stream_context_create($options);
-    $epginfo = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://www.epg.co.kr/epg-cgi/extern/cnm_guide_type_v070530.cgi";
         $day = date("Ymd", strtotime("+".($k - 1)." days"));
@@ -416,7 +415,7 @@ function GetEPGFromEPG($ChannelInfo) {
         $params = http_build_query($params);
         $url = $url."?".$params;
         try {
-            $response = @file_get_contents($url, False, $context);
+            $response = getWeb($url);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -514,13 +513,6 @@ function GetEPGFromKT($ChannelInfo) {
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
     $epginfo = array();
-    $options = array(
-        'http' => array(
-            'method' => 'GET',
-            'header'=> $GLOBALS['ua']
-    ));
-    $context  = stream_context_create($options);
-    $epginfo = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://tv.olleh.com/renewal_sub/liveTv/pop_schedule_week.asp";
         $day = date("Ymd", strtotime("+".($k - 1)." days"));
@@ -534,7 +526,7 @@ function GetEPGFromKT($ChannelInfo) {
         $params = http_build_query($params);
         $url = $url."?".$params;
         try {
-            $response = @file_get_contents($url, False, $context);
+            $response = getWeb($url);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -599,13 +591,6 @@ function GetEPGFromLG($ChannelInfo) {
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
     $epginfo = array();
-    $options = array(
-        'http' => array(
-            'method' => 'GET',
-            'header'=> $GLOBALS['ua']
-    ));
-    $context  = stream_context_create($options);
-    $epginfo = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://www.uplus.co.kr/css/chgi/chgi/RetrieveTvSchedule.hpi";
         $day = date("Ymd", strtotime("+".($k - 1)." days"));
@@ -616,7 +601,7 @@ function GetEPGFromLG($ChannelInfo) {
         $params = http_build_query($params);
         $url = $url."?".$params;
         try {
-            $response = @file_get_contents($url, False, $context);
+            $response = getWeb($url);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -689,12 +674,6 @@ function GetEPGFromSK($ChannelInfo) {
     $ServiceId =  $ChannelInfo[3];
     $today = date("Ymd");
     $lastday = date("Ymd", strtotime("+".($GLOBALS['period'] - 1)." days"));
-    $options = array(
-        'http' => array(
-            'method' => 'GET',
-            'header'=> $GLOBALS['ua']
-    ));
-    $context  = stream_context_create($options);
     $url = "http://m.btvplus.co.kr/Common/Inc/IFGetData.asp";
     $params = array(
         'variable' => 'IF_LIVECHART_DETAIL',
@@ -703,7 +682,7 @@ function GetEPGFromSK($ChannelInfo) {
     $params = http_build_query($params);
     $url = $url."?".$params;
     try {
-        $response = @file_get_contents($url, False, $context);
+        $response = getWeb($url);
         if ($response === False && $GLOBALS['debug']) :
             printError($ChannelName.HTTP_ERROR);
         else :
@@ -770,12 +749,6 @@ function GetEPGFromSKY($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
-    $options = array(
-        'http' => array(
-            'method' => 'POST',
-            'header'=> $GLOBALS['ua']
-    ));
-    $context  = stream_context_create($options);
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://www.skylife.co.kr/channel/epg/channelScheduleListJson.do";
         $day = date("Y-m-d", strtotime("+".($k - 1)." days"));
@@ -788,7 +761,7 @@ function GetEPGFromSKY($ChannelInfo) {
         $params = http_build_query($params);
         $url = $url."?".$params;
         try {
-            $response = @file_get_contents($url, False, $context);
+            $response = getWeb($url);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -850,12 +823,6 @@ function GetEPGFromNaver($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
-    $options = array(
-        'http' => array(
-            'method' => 'GET',
-            'header'=> $GLOBALS['ua']
-    ));
-    $context  = stream_context_create($options);
     $epginfo = array();
     $totaldate = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
@@ -880,7 +847,7 @@ function GetEPGFromNaver($ChannelInfo) {
     $params = http_build_query($params);
     $url = $url."?".$params;
     try {
-        $response = @file_get_contents($url, False, $context);
+        $response = getWeb($url);
         if ($response === False && $GLOBALS['debug']) :
             printError($ChannelName.HTTP_ERROR);
         else :
@@ -963,12 +930,6 @@ function GetEPGFromMbc($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
-    $options = array(
-        'http' => array(
-            'method' => 'GET',
-            'header'=> $GLOBALS['ua']
-    ));
-    $context  = stream_context_create($options);
     $dayofweek = array('일', '월', '화', '수', '목', '금', '토');
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://miniunit.imbc.com/Schedule";
@@ -979,7 +940,7 @@ function GetEPGFromMbc($ChannelInfo) {
         $params = http_build_query($params);
         $url = $url."?".$params;
         try {
-            $response = @file_get_contents($url, False, $context);
+            $response = getWeb($url);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1044,12 +1005,6 @@ function GetEPGFromMil($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
-    $options = array(
-        'http' => array(
-            'method' => 'GET',
-            'header'=> $GLOBALS['ua']
-    ));
-    $context  = stream_context_create($options);
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://radio.dema.mil.kr/web/fm/quick/ajaxTimetableList.do";
         $day = date("Y-m-d", strtotime("+".($k - 1)." days"));
@@ -1059,7 +1014,7 @@ function GetEPGFromMil($ChannelInfo) {
         $params = http_build_query($params);
         $url = $url."?".$params;
         try {
-            $response = @file_get_contents($url, False, $context);
+            $response = getWeb($url);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1123,12 +1078,6 @@ function GetEPGFromIfm($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
-    $options = array(
-        'http' => array(
-            'method' => 'GET',
-            'header'=> $GLOBALS['ua']
-    ));
-    $context  = stream_context_create($options);
     $dayofweek = array('1', '2', '3', '4', '5', '6', '7');
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://mapp.itvfm.co.kr/hyb/front/selectHybPgmList.do";
@@ -1140,7 +1089,7 @@ function GetEPGFromIfm($ChannelInfo) {
         $params = http_build_query($params);
         $url = $url."?".$params;
         try {
-            $response = @file_get_contents($url, False, $context);
+            $response = getWeb($url);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1199,12 +1148,6 @@ function GetEPGFromKbs($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
-    $options = array(
-        'http' => array(
-            'method' => 'GET',
-            'header'=> $GLOBALS['ua']
-    ));
-    $context  = stream_context_create($options);
     $epginfo = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
         $url = "http://world.kbs.co.kr/include/wink/_ajax_schedule.php";
@@ -1215,7 +1158,7 @@ function GetEPGFromKbs($ChannelInfo) {
         $params = http_build_query($params);
         $url = $url."?".$params;
         try {
-            $response = @file_get_contents($url, False, $context);
+             $response = getWeb($url);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1369,10 +1312,21 @@ function writeProgram($programdata) {
     endif;
     fprintf($fp, "  </programme>\n");
 }
-function printLog($args) {
-    fwrite(STDERR, $args."\n");
+function getWeb($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_USERAGENT, $GLOBALS['ua']); 
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return $response;
 }
-function printError($args) {
-    fwrite(STDERR, "Error : ".$args."\n");
+function printLog($string) {
+    fwrite(STDERR, $string."\n");
+}
+function printError($string) {
+    fwrite(STDERR, "Error : ".$string."\n");
 }
 ?>
+

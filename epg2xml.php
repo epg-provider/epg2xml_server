@@ -302,6 +302,8 @@ function getEPG() {
     $MyISP = $GLOBALS['MyISP'];
     $Channelfile = __DIR__."/Channel.json";
     $IconUrl = "";
+    $ChannelInfos = array();
+
     try {
         $f = @file_get_contents($Channelfile);
         if($f === False) :

@@ -1,17 +1,23 @@
 # EPG2XML
 
-이 프로그램은 EPG(Electronic Program Guide)를 웹상의 여러 소스에서 가져와서 XML로 출력하는 프로그램으로 python2 및 php5 Cli에서 사용 가능하도록 제작되었다.
-기본적으로 외부의 소스를 분석하여 출력하므로 외부 소스 사이트가 변경되거나 삭제되면 문제가 발생할 수 있다.
+이 프로그램은 EPG(Electronic Program Guide)를 웹상의 여러 소스에서 가져와서 XML로 출력하는 프로그램으로 python2.7 및 php5.6.3 이상에서 사용 가능하도록 제작되었다.
+
+python 3과 php 5.6.3 이하에서는 정상적인 작동을 보장하지 못한다.
+
+또한 외부의 소스를 분석하여 EPG 정보를 가공하여 보여주는 것이므로 외부 소스 사이트가 변경되거나 삭제되면 문제가 발생할 수 있다.
 
 ## 필요 모듈
 
-### EPG2XML.PY
+### epg2xml.py
 BeautifulSoup(bs4), lxml, requests 모듈이 추가로 필요하다.
 설치 OS별로 모듈을 설치하기 위한 사전 설치 방법이 다를 수도 있으므로 검색해서 설치하도록 한다.
 synology의 경우 파이썬 모듈을 설치하면 easy_install beautifulsoup, easy_install lxml, easy_install requests 로 추가할 수 있다.
 
-### EPG2XML.php
-json, dom, mbstring, openssl 모듈이 필요하다.
+### epg2xml.php
+json, dom, mbstring, openssl, curl 모듈이 필요하다. 일반적으로 PHP가 설치되어 있다면 대부분 설치되어 있는 모듈이나 설치되어 있지 않을 경우 추가로 설치해야 한다.
+
+### epg2xml-web.php
+epg2xml.php와 동일
 
 ## 설정방법
 epg2xml.json 안의 항목이 설정 가능한 항목이다. 
@@ -32,6 +38,7 @@ Channel.json 파일을 텍스트 편집기로 열어보면 각채널별 정보�
 삭제된 채널등으로 인해서 오류 발생시에도 Enabled:0으로 변경하면 오류 발생을 차단할 수 있다.
 
 ## 옵션 소개
+### epg2xml.py, epg2xml.php 옵션
 실행시 사용가능한 인수는 --help 명령어로 확인이 가능하다
 epg2xml.json의 설정을 옵션의 인수를 이용하여 변경할 수 있다.
 <pre>
@@ -48,10 +55,15 @@ epg2xml.json의 설정을 옵션의 인수를 이용하여 변경할 수 있다.
 --verbose : EPG 정보 상세하게 표기 ex) --verbose y
 </pre>
 
+### epg2xml-web.php 옵션
+실행시 사용가능한 인수는 epg2xml.php?help 명령어로 확인이 가능하다
+epg2xml.json의 설정을 옵션의 인수를 이용하여 변경할 수 있다.
+ex : http://domain/epg2xml.php?i=ALL&l=2
+
 ## 사용방법
 
-### tv_grab_file 사용시 (https://github.com/neo365/tvheadend-for-Korea)
-epg2xml tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이 변경해준다.
+### tv_grab_file 사용시 (https://github.com/nurtext/tv_grab_file_synology)
+tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이 변경해준다.
 
 #### PYTHON의 경우
 <pre>
@@ -59,7 +71,7 @@ epg2xml tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이
 /home/hts/epg2xml.py
 </pre>
 
-#### PHP의 경우
+#### PHP CLI의 경우
 <pre>
 /usr/bin/php /home/hts/epg2xml.php 또는
 /home/hts/epg2xml.php
@@ -74,12 +86,16 @@ epg2xml tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이
 /home/hts/epg2xml.py
 </pre>
 
-#### PHP의 경우
+#### PHP CLI의 경우
 <pre>
 /usr/bin/php /home/hts/epg2xml.php 또는
 /home/hts/epg2xml.php
 </pre>
 
-
+### PHP WEB의 경우
+<pre>
+http://domain/epg2xml.php 또는
+http://domain/epg2xml.php?i=ALL&l=2
+</pre>
 ## 라이센스
 BSD

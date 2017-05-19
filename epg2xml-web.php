@@ -1,8 +1,6 @@
-#!/usr/bin/env php
 <?php
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
-if (PHP_SAPI != "cli") header("Content-Type: application/xml; charset=utf-8");
 define("VERSION", "1.1.9");
 
 $debug = False;
@@ -47,6 +45,7 @@ $usage = <<<USAGE
 usage: epg2xml.php [-h] -i {ALL, KT,LG,SK}
                   (-v | -d | -o [xmltv.xml] | -s [xmltv.sock]) [-l 1-7]
                   [--icon http://www.example.com/icon] [--verbose y, n]
+       example : epg2xml.php?i=ALL&d&l=2
 USAGE;
 
 //도움말
@@ -56,49 +55,29 @@ usage: epg2xml.php [-h] -i {ALL, KT,LG,SK}
                   [--icon http://www.example.com/icon] [--verbose y, n]
 EPG 정보를 출력하는 방법을 선택한다
 optional arguments:
-  -h, --help            show this help message and exit
-  -v, --version         show programs version number and exit
-  -d, --display         EPG 정보 화면출력
-  -o [xmltv.xml], --outfile [xmltv.xml]       EPG 정보 저장
-  -s [xmltv.sock], --socket [xmltv.sock]      xmltv.sock(External: XMLTV)로 EPG정보 전송
+  h, help            show this help message and exit
+  v, version         show programs version number and exit
+  d, display         EPG 정보 화면출력
+  o [xmltv.xml], outfile [xmltv.xml]       EPG 정보 저장
+  s [xmltv.sock], socket [xmltv.sock]      xmltv.sock(External: XMLTV)로 EPG정보 전송
   IPTV 선택
-  -i {ALL, KT,LG,SK}         사용하는 IPTV : ALL, KT, LG, SK
+  i {ALL, KT,LG,SK}         사용하는 IPTV : ALL, KT, LG, SK
 추가옵션:
-  -l 1-7, --limit 1-7   EPG 정보를 가져올 기간, 기본값: 2
-  --icon http://www.example.com/icon
+  l 1-7, limit 1-7   EPG 정보를 가져올 기간, 기본값: 2
+  icon http://www.example.com/icon
                         채널 아이콘 URL, 기본값:
-  --rebroadcast y, n    재방송정보 제목에 추가 출력
-  --episode y, n        회차정보 제목에 추가 출력
-  --verbose y, n        EPG 정보 추가 출력
+  rebroadcast y, n    재방송정보 제목에 추가 출력
+  episode y, n        회차정보 제목에 추가 출력
+  verbose y, n        EPG 정보 추가 출력
 
 HELP;
 
-//옵션 처리
-$shortargs  = "";
-$shortargs .= "i:";
-$shortargs .= "v";
-$shortargs .= "d";
-$shortargs .= "o:s:";
-$shortargs .= "l:";
-$shortargs .= "h";
-$longargs  = array(
-    "version",
-    "display",
-    "outfile:",
-    "socket:",
-    "limit::",
-    "icon:",
-    "episode:",
-    "rebroadcast:",
-    "verbose:",
-    "help"
-);
-$args = getopt($shortargs, $longargs);
-
-if((isset($args['h']) && $args['h'] === False) || (isset($args['help']) && $args['help'] === False))://도움말 출력
-    printf($help);
+if(isset($_GET['h']) || isset($_GET['help']))://도움말 출력
+    header("Content-Type: text/plain; charset=utf-8");
+    print($help);
     exit;
-elseif((isset($args['v']) && $args['v'] === False) || (isset($args['version']) && $args['version'] === False))://버전 정보 출력
+elseif(isset($_GET['v'])|| isset($_GET['version']))://버전 정보 출력
+    header("Content-Type: text/plain; charset=utf-8");
     printf("epg2xml.php version : %s\n", VERSION);
     exit;
 else :
@@ -122,36 +101,36 @@ else :
                 $default_episode = $Settings['default_episode'];
                 $default_verbose = $Settings['default_verbose'];
 
-                if(!empty($args['i'])) $MyISP = $args['i'];
-                if((isset($args['d']) && $args['d'] === False) || (isset($args['display']) && $args['display'] === False) ) :
-                    if(isset($args['o']) || isset($args['outfile']) || isset($args['s']) || isset($args['socket'])) :
+                if(!empty($_GET['i'])) $MyISP = $_GET['i'];
+                if((isset($_GET['d']) && $_GET['d'] === False) || (isset($_GET['display']) && $_GET['display'] === False) ) :
+                    if(isset($_GET['o']) || isset($_GET['outfile']) || isset($_GET['s']) || isset($_GET['socket'])) :
                         printf($usage);
                         printf("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
                         exit;
                     endif;
                     $default_output = "d";
-                elseif(empty($args['o']) === False || empty($args['outfile']) === False) :
-                    if((isset($args['d']) && $args['d'] === False) || (isset($args['display']) && $args['display'] === False) || isset($args['s']) || isset($args['socket'])) :
+                elseif(empty($_GET['o']) === False || empty($_GET['outfile']) === False) :
+                    if((isset($_GET['d']) && $_GET['d'] === False) || (isset($_GET['display']) && $_GET['display'] === False) || isset($_GET['s']) || isset($_GET['socket'])) :
                         print($usage);
                         print("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
                         exit;
                     endif;
                     $default_output = "o";
-                    $default_xml_file = $args['o'] ?: $args['outfile'];
-                elseif(empty($args['s']) === False || empty($args['socket']) === False) :
-                    if((isset($args['d']) && $args['d'] === False) || (isset($args['display']) && $args['display'] === False) || isset($args['o']) || isset($args['outfile'])) :
+                    $default_xml_file = $_GET['o'] ?: $_GET['outfile'];
+                elseif(empty($_GET['s']) === False || empty($_GET['socket']) === False) :
+                    if((isset($_GET['d']) && $_GET['d'] === False) || (isset($_GET['display']) && $_GET['display'] === False) || isset($_GET['o']) || isset($_GET['outfile'])) :
                         print($usage);
                         print("epg2xml.php: error: one of the arguments -v/--version -d/--display -o/--outfile -s/--socket is required\n");
                         exit;
                     endif;
                     $default_output = "s";
-                    $default_xml_socket = $args['s'] ?: $args['socket'];
+                    $default_xml_socket = $_GET['s'] ?: $_GET['socket'];
                 endif;
-                if(empty($args['l']) === False || empty($args['limit']) === False) $default_fetch_limit = $args['l'] ?: $args['limit'];
-                if(empty($args['icon']) === False) $default_icon_url = $args['icon'];
-                if(empty($args['rebroadcast']) === False) $default_rebroadcast = $args['rebroadcast'];
-                if(empty($args['episode']) === False) $default_episode = $args['episode'];
-                if(empty($args['verbose']) === False) $default_verbose = $args['verbose'];
+                if(empty($_GET['l']) === False || empty($_GET['limit']) === False) $default_fetch_limit = $_GET['l'] ?: $_GET['limit'];
+                if(empty($_GET['icon']) === False) $default_icon_url = $_GET['icon'];
+                if(empty($_GET['rebroadcast']) === False) $default_rebroadcast = $_GET['rebroadcast'];
+                if(empty($_GET['episode']) === False) $default_episode = $_GET['episode'];
+                if(empty($_GET['verbose']) === False) $default_verbose = $_GET['verbose'];
                 if(empty($MyISP)) : //ISP 선택없을 시 사용법 출력
                     printError("epg2xml.json 파일의 MyISP항목이 없습니다.");
                     exit;
@@ -174,7 +153,7 @@ else :
                                 $output = "file";
                                 break;
                             case "s" :
-                                $output = "socket";
+                                $output = "display";
                                 break;
                         endswitch;
                     else :
@@ -322,6 +301,7 @@ function getEPG() {
         printError($e->getMessage());
         exit;
     }
+    header("Content-Type: application/xml; charset=utf-8");
     fprintf($fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     fprintf($fp, "<!DOCTYPE tv SYSTEM \"xmltv.dtd\">\n\n");
     fprintf($fp, "<tv generator-info-name=\"epg2xml %s\">\n", VERSION);
@@ -1323,10 +1303,10 @@ function getWeb($url) {
     return $response;
 }
 function printLog($string) {
-    fwrite(STDERR, $string."\n");
+    print($string."\n");
 }
 function printError($string) {
-    fwrite(STDERR, "Error : ".$string."\n");
+    header("Content-Type: text/plain; charset=utf-8");
+    print("Error : ".$string."\n");
 }
 ?>
-

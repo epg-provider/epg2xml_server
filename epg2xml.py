@@ -2,24 +2,44 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+import imp
+
 import os
 import sys
-import requests
 import json
 import locale
 import datetime
-from bs4 import BeautifulSoup, SoupStrainer
 import codecs
 import socket
 import re
 from xml.sax.saxutils import escape, unescape
 import argparse
 import pprint
-
+try:
+    imp.find_module('bs4')
+    from bs4 import BeautifulSoup, SoupStrainer
+except ImportError:
+    print("Error : ", "BeautifulSoup 모듈이 설치되지 않았습니다.", file=sys.stderr)
+    sys.exit()
+try:
+    imp.find_module('lxml')
+except ImportError:
+    print("Error : ", "lxml 모듈이 설치되지 않았습니다.", file=sys.stderr)
+    sys.exit()
+try:
+    imp.find_module('requests')
+    import requests
+except ImportError:
+    print("Error : ", "requests 모듈이 설치되지 않았습니다.", file=sys.stderr)
+    sys.exit()
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.1.8'
+__version__ = '1.1.9'
+
+if not sys.version_info[:2] == (2, 7):
+    print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
+    sys.exit()
 
 # Set variable
 debug = False

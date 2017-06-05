@@ -77,6 +77,12 @@ tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이 변경�
 /home/hts/epg2xml.php
 </pre>
 
+#### PHP WEB의 경우
+<pre>
+http://domain/epg2xml.php 또는
+http://domain/epg2xml.php?i=ALL&l=2
+</pre>
+
 ### XMLTV SOCKET 사용시
 **xmltv.sock 사용시 socat 등을 사용하지 않고 바로 socket에 쓰기가 가능하다**
 
@@ -92,10 +98,5 @@ tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이 변경�
 /home/hts/epg2xml.php
 </pre>
 
-### PHP WEB의 경우
-<pre>
-http://domain/epg2xml.php 또는
-http://domain/epg2xml.php?i=ALL&l=2
-</pre>
 ## 라이센스
 BSD

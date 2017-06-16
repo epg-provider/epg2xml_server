@@ -11,7 +11,7 @@ python 3과 php 5.6.3 이하에서는 정상적인 작동을 보장하지 못한
 ### epg2xml.py
 BeautifulSoup(bs4), lxml, requests 모듈이 추가로 필요하다.
 설치 OS별로 모듈을 설치하기 위한 사전 설치 방법이 다를 수도 있으므로 검색해서 설치하도록 한다.
-synology의 경우 파이썬 모듈을 설치하면 easy_install beautifulsoup, easy_install lxml, easy_install requests 로 추가할 수 있다.
+pip beautifulsoup4, pip install lxml, pip install requests 로 추가할 수 있다.
 
 ### epg2xml.php
 json, dom, mbstring, openssl, curl 모듈이 필요하다. 일반적으로 PHP가 설치되어 있다면 대부분 설치되어 있는 모듈이나 설치되어 있지 않을 경우 추가로 설치해야 한다.

@@ -35,7 +35,7 @@ except ImportError:
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.1.9'
+__version__ = '1.2.0'
 
 if not sys.version_info[:2] == (2, 7):
     print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
@@ -143,7 +143,7 @@ def GetEPGFromEPG(ChannelInfo):
         day = today + datetime.timedelta(days=k)
         params = {'beforegroup':'100', 'checkchannel':ServiceId, 'select_group':'100', 'start_date':day.strftime('%Y%m%d')}
         try:
-            response = requests.post(url, data=params, headers=ua)
+            response = requests.post(url, data=params, headers=ua, timeout=3)
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
@@ -181,6 +181,9 @@ def GetEPGFromEPG(ChannelInfo):
         except requests.exceptions.HTTPError:
             if(debug): printError(ChannelName + HTTP_ERROR)
             else: pass
+        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+            if(debug): printError(ChannelName + str(e))
+            else: pass
     for epg1, epg2 in zip(epginfo, epginfo[1:]):
         programName = epg1[0] if epg1[0] else ''
         subprogramName = epg1[3] if epg1[3] else ''
@@ -207,7 +210,7 @@ def GetEPGFromKT(ChannelInfo):
         day = today + datetime.timedelta(days=k)
         params = {'ch_name':'', 'ch_no':ServiceId, 'nowdate':day.strftime('%Y%m%d'), 'seldatie':day.strftime('%Y%m%d'), 'tab_no':'1'}
         try:
-            response = requests.get(url, params=params, headers=ua)
+            response = requests.get(url, params=params, headers=ua, timeout=3)
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
@@ -223,6 +226,9 @@ def GetEPGFromKT(ChannelInfo):
                 else: pass
         except requests.exceptions.HTTPError:
             if(debug): printError(ChannelName + HTTP_ERROR)
+            else: pass
+        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+            if(debug): printError(ChannelName + str(e))
             else: pass
     for epg1, epg2 in zip(epginfo, epginfo[1:]):
         programName = ''
@@ -258,7 +264,7 @@ def GetEPGFromLG(ChannelInfo):
         day = today + datetime.timedelta(days=k)
         params = {'chnlCd': ServiceId, 'evntCmpYmd': day.strftime('%Y%m%d')}
         try:
-            response = requests.get(url, params=params, headers=ua)
+            response = requests.post(url, data=params, headers=ua, timeout=3)
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
@@ -277,6 +283,9 @@ def GetEPGFromLG(ChannelInfo):
                 else: pass
         except requests.exceptions.HTTPError:
             if(debug): printError(ChannelName + HTTP_ERROR)
+            else: pass
+        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+            if(debug): printError(ChannelName + str(e))
             else: pass
     for epg1, epg2 in zip(epginfo, epginfo[1:]):
         programName = ''
@@ -309,7 +318,7 @@ def GetEPGFromSK(ChannelInfo):
     url = 'http://m.btvplus.co.kr/Common/Inc/IFGetData.asp'
     params = {'variable': 'IF_LIVECHART_DETAIL', 'pcode':'|^|start_time=' + today.strftime('%Y%m%d') + '00|^|end_time='+ lastday.strftime('%Y%m%d') + '24|^|svc_id=' + str(ServiceId)}
     try:
-        response = requests.get(url, params=params, headers=ua)
+        response = requests.post(url, data=params, headers=ua, timeout=3)
         response.raise_for_status()
         json_data = response.text
         try:
@@ -351,6 +360,10 @@ def GetEPGFromSK(ChannelInfo):
     except requests.exceptions.HTTPError:
         if(debug): printError(ChannelName + HTTP_ERROR)
         else: pass
+    except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+        if(debug): printError(ChannelName + str(e))
+        else: pass
+
 
 # Get EPG data from SKY
 def GetEPGFromSKY(ChannelInfo):
@@ -362,7 +375,7 @@ def GetEPGFromSKY(ChannelInfo):
         day = today + datetime.timedelta(days=k)
         params = {'area': 'in', 'inFd_channel_id': ServiceId, 'inairdate': day.strftime('%Y-%m-%d'), 'indate_type': 'now'}
         try:
-            response = requests.post(url, params=params, headers=ua)
+            response = requests.post(url, data=params, headers=ua, timeout=3)
             response.raise_for_status()
             json_data = response.text
             try:
@@ -396,6 +409,9 @@ def GetEPGFromSKY(ChannelInfo):
         except requests.exceptions.HTTPError:
             if(debug): printError(ChannelName + HTTP_ERROR)
             else: pass
+        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+            if(debug): printError(ChannelName + str(e))
+            else: pass
 
 # Get EPG data from Naver
 def GetEPGFromNaver(ChannelInfo):
@@ -410,7 +426,7 @@ def GetEPGFromNaver(ChannelInfo):
         totaldate.append(day.strftime('%Y%m%d'))
     params = {'_callback': 'epg', 'fileKey': 'single_schedule_channel_day', 'pkid': '66', 'u1': 'single_schedule_channel_day', 'u2': ','.join(totaldate), 'u3': today.strftime('%Y%m%d'), 'u4': period, 'u5': ServiceId, 'u6': '1', 'u7': ChannelName + '편성표', 'u8': ChannelName + '편성표', 'where': 'nexearch'}
     try:
-        response = requests.get(url, params=params, headers=ua)
+        response = requests.get(url, params=params, headers=ua, timeout=3)
         response.raise_for_status()
         json_data = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,response.text.split("epg(")[1].strip(");").strip())
         try:
@@ -442,7 +458,9 @@ def GetEPGFromNaver(ChannelInfo):
     except requests.exceptions.HTTPError:
         if(debug): printError(ChannelName + HTTP_ERROR)
         else: pass
-
+    except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+        if(debug): printError(ChannelName + str(e))
+        else: pass
 # Get EPG data from Tbroad
 def GetEPGFromTbroad(ChannelInfo):
     url='https://www.tbroad.com/chplan/selectRealTimeListForNormal.tb'
@@ -498,6 +516,9 @@ def GetEPGFromMbc(ChannelInfo):
         except requests.exceptions.HTTPError:
             if(debug): printError(ChannelName + HTTP_ERROR)
             else: pass
+        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+            if(debug): printError(ChannelName + str(e))
+            else: pass
 
 # Get EPG data from MIL
 def GetEPGFromMil(ChannelInfo):
@@ -509,7 +530,7 @@ def GetEPGFromMil(ChannelInfo):
         day = today + datetime.timedelta(days=k)
         params = {'program_date': day.strftime('%Y%m%d')}
         try:
-            response = requests.get(url, params=params, headers=ua)
+            response = requests.get(url, params=params, headers=ua, timeout=3)
             response.raise_for_status()
             json_data = response.text
             try:
@@ -548,6 +569,9 @@ def GetEPGFromMil(ChannelInfo):
         except requests.exceptions.HTTPError:
             if(debug): printError(ChannelName + HTTP_ERROR)
             else: pass
+        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+            if(debug): printError(ChannelName + str(e))
+            else: pass
 
 # Get EPG data from IFM
 def GetEPGFromIfm(ChannelInfo):
@@ -560,7 +584,7 @@ def GetEPGFromIfm(ChannelInfo):
         day = today + datetime.timedelta(days=k)
         params = {'outDay':dayofweek[(day.weekday()+1)%7], 'viewDt':day}
         try:
-            response = requests.get(url, params=params, headers=ua)
+            response = requests.get(url, params=params, headers=ua, timeout=3)
             response.raise_for_status()
             json_data = response.text
             try:
@@ -595,6 +619,9 @@ def GetEPGFromIfm(ChannelInfo):
         except requests.exceptions.HTTPError:
             if(debug): printError(ChannelName + HTTP_ERROR)
             else: pass
+        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+            if(debug): printError(ChannelName + str(e))
+            else: pass
 
 # Get EPG data from KBS
 def GetEPGFromKbs(ChannelInfo):
@@ -607,7 +634,7 @@ def GetEPGFromKbs(ChannelInfo):
     for k in range(period):
         day = today + datetime.timedelta(days=k)
         try:
-            response = requests.get(url, params=params, headers=ua)
+            response = requests.get(url, params=params, headers=ua, timeout=3)
             response.raise_for_status()
             json_data = response.text
             try:
@@ -627,6 +654,9 @@ def GetEPGFromKbs(ChannelInfo):
                  else: pass
         except requests.exceptions.HTTPError:
             if(debug): printError(ChannelName + HTTP_ERROR)
+            else: pass
+        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+            if(debug): printError(ChannelName + str(e))
             else: pass
     for epg1, epg2 in zip(epginfo, epginfo[1:]):
         programName = epg1[0]

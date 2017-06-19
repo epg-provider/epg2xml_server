@@ -3,7 +3,7 @@
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
 if (PHP_SAPI != "cli") header("Content-Type: application/xml; charset=utf-8");
-define("VERSION", "1.1.9");
+define("VERSION", "1.2.0");
 
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
@@ -415,15 +415,15 @@ function GetEPGFromEPG($ChannelInfo) {
             'start_date' => $day
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "POST";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
                 $response = str_replace("charset=euc-kr", "charset=utf-8", $response);
                 $dom = new DomDocument;
-                libxml_use_internal_errors(true);
+                libxml_use_internal_errors(True);
                 $dom->loadHTML(mb_convert_encoding($response, "UTF-8", "EUC-KR"));
                 $xpath = new DomXPath($dom);
                 for($i = 2; $i < 5; $i++) :
@@ -526,15 +526,15 @@ function GetEPGFromKT($ChannelInfo) {
             'tab_no' => '1'
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "GET";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
                 $response = str_replace("charset=euc-kr", "charset=utf-8", $response);
                 $dom = new DomDocument;
-                libxml_use_internal_errors(true);
+                libxml_use_internal_errors(True);
                 $dom->loadHTML(mb_convert_encoding($response, "UTF-8", "EUC-KR"));
                 $xpath = new DomXPath($dom);
                 $query = "//table[@id='pop_day']/tbody/tr";
@@ -601,15 +601,15 @@ function GetEPGFromLG($ChannelInfo) {
             'evntCmpYmd' =>  $day
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "POST";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
                 $response = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'.$response;
                 $dom = new DomDocument;
-                libxml_use_internal_errors(true);
+                libxml_use_internal_errors(True);
                 $response = mb_convert_encoding($response, "UTF-8", "EUC-KR");
                 $response = str_replace(array('<재>', ' [..', ' (..'), array('&lt;재&gt;', '', ''), $response);
                 $dom->loadHTML($response);
@@ -682,9 +682,9 @@ function GetEPGFromSK($ChannelInfo) {
         'pcode' => '|^|start_time='.$today.'00|^|end_time='.$lastday.'24|^|svc_id='.$ServiceId
     );
     $params = http_build_query($params);
-    $url = $url."?".$params;
+    $method = "POST";
     try {
-        $response = getWeb($url);
+        $response = getWeb($url, $params, $method);
         if ($response === False && $GLOBALS['debug']) :
             printError($ChannelName.HTTP_ERROR);
         else :
@@ -761,9 +761,9 @@ function GetEPGFromSKY($ChannelInfo) {
             'indate_type' => 'now'
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "POST";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -847,9 +847,9 @@ function GetEPGFromNaver($ChannelInfo) {
         'where' => 'nexearch'
     );
     $params = http_build_query($params);
-    $url = $url."?".$params;
+    $method = "GET";
     try {
-        $response = getWeb($url);
+        $response = getWeb($url, $params, $method);
         if ($response === False && $GLOBALS['debug']) :
             printError($ChannelName.HTTP_ERROR);
         else :
@@ -940,9 +940,9 @@ function GetEPGFromMbc($ChannelInfo) {
             'rtype' => 'json'
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "GET";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1014,9 +1014,9 @@ function GetEPGFromMil($ChannelInfo) {
             'program_date' => date("Ymd", strtotime($day))
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "GET";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1089,9 +1089,9 @@ function GetEPGFromIfm($ChannelInfo) {
             'viewDt' => $day
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "GET";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1158,9 +1158,9 @@ function GetEPGFromKbs($ChannelInfo) {
             'channel'=>'wink_11'
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "GET";
         try {
-             $response = getWeb($url);
+             $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1173,7 +1173,7 @@ function GetEPGFromKbs($ChannelInfo) {
                         endif;
                     else :
                         $dom = new DomDocument;
-                        libxml_use_internal_errors(true);
+                        libxml_use_internal_errors(True);
                         $dom->loadHTML($data['schedule']);
                         $xpath = new DomXPath($dom);
                         $query = "//li";
@@ -1314,16 +1314,26 @@ function writeProgram($programdata) {
     endif;
     fprintf($fp, "  </programme>\n");
 }
-function getWeb($url) {
+function getWeb($url, $params, $method) {
     $ch = curl_init();
+    if($method == "GET"):
+        $url = $url."?".$params;
+    elseif($method == "POST"):
+        curl_setopt ($ch, CURLOPT_POST, True);
+        curl_setopt ($ch, CURLOPT_POSTFIELDS, $params);
+    endif;
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
-    curl_setopt($ch, CURLOPT_HEADER, false);
-    curl_setopt($ch, CURLOPT_USERAGENT, $GLOBALS['ua']); 
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER,True);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+    curl_setopt($ch, CURLOPT_HEADER, False);
+    curl_setopt($ch, CURLOPT_FAILONERROR,True);
+    curl_setopt($ch, CURLOPT_USERAGENT, $GLOBALS['ua']);
     $response = curl_exec($ch);
+    if(curl_error($ch) && $GLOBALS['debug']) printError($url." ".curl_error($ch));
     curl_close($ch);
     return $response;
 }
+
 function printLog($string) {
     fwrite(STDERR, $string."\n");
 }

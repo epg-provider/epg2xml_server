@@ -1,7 +1,7 @@
 <?php
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
-define("VERSION", "1.1.9");
+define("VERSION", "1.2.0");
 
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
@@ -286,7 +286,7 @@ function getEPG() {
     try {
         $f = @file_get_contents($Channelfile);
         if($f === False) :
-            printError("Channel.json.".JSON_FILE_ERROR);
+            printError("Channel.".JSON_FILE_ERROR);
             exit;
         else :
             try {
@@ -395,9 +395,9 @@ function GetEPGFromEPG($ChannelInfo) {
             'start_date' => $day
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "POST";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -506,9 +506,9 @@ function GetEPGFromKT($ChannelInfo) {
             'tab_no' => '1'
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "GET";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -581,9 +581,9 @@ function GetEPGFromLG($ChannelInfo) {
             'evntCmpYmd' =>  $day
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "POST";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -662,9 +662,9 @@ function GetEPGFromSK($ChannelInfo) {
         'pcode' => '|^|start_time='.$today.'00|^|end_time='.$lastday.'24|^|svc_id='.$ServiceId
     );
     $params = http_build_query($params);
-    $url = $url."?".$params;
+    $method = "POST";
     try {
-        $response = getWeb($url);
+        $response = getWeb($url, $params, $method);
         if ($response === False && $GLOBALS['debug']) :
             printError($ChannelName.HTTP_ERROR);
         else :
@@ -741,9 +741,9 @@ function GetEPGFromSKY($ChannelInfo) {
             'indate_type' => 'now'
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "POST";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -827,9 +827,9 @@ function GetEPGFromNaver($ChannelInfo) {
         'where' => 'nexearch'
     );
     $params = http_build_query($params);
-    $url = $url."?".$params;
+    $method = "GET";
     try {
-        $response = getWeb($url);
+        $response = getWeb($url, $params, $method);
         if ($response === False && $GLOBALS['debug']) :
             printError($ChannelName.HTTP_ERROR);
         else :
@@ -920,9 +920,9 @@ function GetEPGFromMbc($ChannelInfo) {
             'rtype' => 'json'
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "GET";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -994,9 +994,9 @@ function GetEPGFromMil($ChannelInfo) {
             'program_date' => date("Ymd", strtotime($day))
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "GET";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1069,9 +1069,9 @@ function GetEPGFromIfm($ChannelInfo) {
             'viewDt' => $day
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "GET";
         try {
-            $response = getWeb($url);
+            $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1138,9 +1138,9 @@ function GetEPGFromKbs($ChannelInfo) {
             'channel'=>'wink_11'
         );
         $params = http_build_query($params);
-        $url = $url."?".$params;
+        $method = "GET";
         try {
-             $response = getWeb($url);
+             $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
@@ -1294,13 +1294,22 @@ function writeProgram($programdata) {
     endif;
     fprintf($fp, "  </programme>\n");
 }
-function getWeb($url) {
+function getWeb($url, $params, $method) {
     $ch = curl_init();
+    if($method == "GET"):
+        $url = $url."?".$params;
+    elseif($method == "POST"):
+        curl_setopt ($ch, CURLOPT_POST, True);
+        curl_setopt ($ch, CURLOPT_POSTFIELDS, $params);
+    endif;
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
-    curl_setopt($ch, CURLOPT_HEADER, false);
-    curl_setopt($ch, CURLOPT_USERAGENT, $GLOBALS['ua']); 
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER,True);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+    curl_setopt($ch, CURLOPT_HEADER, False);
+    curl_setopt($ch, CURLOPT_FAILONERROR,True);
+    curl_setopt($ch, CURLOPT_USERAGENT, $GLOBALS['ua']);
     $response = curl_exec($ch);
+    if(curl_error($ch) && $GLOBALS['debug']) printError($url." ".curl_error($ch));
     curl_close($ch);
     return $response;
 }

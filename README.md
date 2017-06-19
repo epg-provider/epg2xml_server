@@ -101,3 +101,6 @@ http://domain/epg2xml.php?i=ALL&l=2
 
 ## 라이센스
 BSD
+
+## FAQ
+https://github.com/wonipapa/epg2xml/wiki

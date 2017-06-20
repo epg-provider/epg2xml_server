@@ -35,7 +35,7 @@ except ImportError:
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.2.0'
+__version__ = '1.2.0p1'
 
 if not sys.version_info[:2] == (2, 7):
     print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
@@ -306,6 +306,7 @@ def GetEPGFromLG(ChannelInfo):
         desc = ''
         actors = ''
         producers = ''
+        rating = epg1[3]
         programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
         writeProgram(programdata)
 

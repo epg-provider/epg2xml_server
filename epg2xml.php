@@ -2,8 +2,7 @@
 <?php
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
-if (PHP_SAPI != "cli") header("Content-Type: application/xml; charset=utf-8");
-define("VERSION", "1.2.0");
+define("VERSION", "1.2.0p");
 
 $debug = False;
 $ua = "User-Agent: 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', accept: '*/*'";
@@ -16,8 +15,8 @@ define("SOCKET_ERROR", "소켓 파일을 찾을 수 없습니다.");
 define("JSON_FILE_ERROR", "json 파일이 없습니다.");
 define("JSON_SYNTAX_ERROR",  "json 파일 형식이 잘못되었습니다.");
 
-if(version_compare(PHP_VERSION, '5.6.3','<')) :
-    printError("PHP 버전은 5.6.3 이상이어야 합니다.");
+if(version_compare(PHP_VERSION, '5.5.9','<')) :
+    printError("PHP 버전은 5.5.9 이상이어야 합니다.");
     printError("현재 PHP 버전은 ".PHP_VERSION." 입니다.");
     exit;
 endif;

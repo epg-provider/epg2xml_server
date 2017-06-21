@@ -1,10 +1,10 @@
 # EPG2XML
 
-이 프로그램은 EPG(Electronic Program Guide)를 웹상의 여러 소스에서 가져와서 XML로 출력하는 프로그램으로 python2.7 및 php5.6.3 이상에서 사용 가능하도록 제작되었다.
+이 프로그램은 EPG(Electronic Program Guide)를 웹상의 여러 소스에서 가져와서 XML로 출력하는 프로그램으로 python2.7 및 php5.5.9 이상에서 사용 가능하도록 제작되었다.
 
-python 3과 php 5.6.3 이하에서는 정상적인 작동을 보장하지 못한다.
+python3과 php 5.5.9 이하에서는 정상적인 작동을 보장하지 못한다.
 
-또한 외부의 소스를 분석하여 EPG 정보를 가공하여 보여주는 것이므로 외부 소스 사이트가 변경되거나 삭제되면 문제가 발생할 수 있다.
+또한 외부의 소스를 분석하여 EPG 정보를 가공하여 보여주는 것이므로 외부 소스 사이트가 변경되거나 삭제되면 문제가 발생할 수 있다. 그럴 경우 ㅊ
 
 ## 필요 모듈
 
@@ -21,6 +21,7 @@ json, dom, mbstring, openssl, curl 모듈이 필요하다. 일반적으로 PHP�
 epg2xml.php와 동일
 
 ## 설정방법
+### epg2xml.json
 epg2xml.json 안의 항목이 설정 가능한 항목이다. 
 <pre>
 MyISP : 사용하는 ISP를 넣는다 .(ALL, KT, LG, SK가 사용가능하다)
@@ -33,6 +34,7 @@ default_xml_filename : EPG 저장시 기본 저장 이름으로 tvheadend 서버
 default_xml_socket   : External XMLTV 사용시 xmltv.sock가 있는 경로로 설정해준다.
 </pre>
 
+### Channel.json
 Channel.json 파일을 텍스트 편집기로 열어보면 각채널별 정보가 들어 있다.
 이중 Enabled:1로 되어 있는 부분을 Enabled:0으로 바꾸면 EPG정보를 가져오지 않는다.
 필요없는 채널정보를 가져오지 않게 하는 것으로 EPG 정보 수집시 시간을 단축할 수 있다.

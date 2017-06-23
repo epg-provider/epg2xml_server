@@ -14,8 +14,8 @@ define("SOCKET_ERROR", "소켓 파일을 찾을 수 없습니다.");
 define("JSON_FILE_ERROR", "json 파일이 없습니다.");
 define("JSON_SYNTAX_ERROR",  "json 파일 형식이 잘못되었습니다.");
 
-if(version_compare(PHP_VERSION, '5.5.9','<')) :
-    printError("PHP 버전은 5.5.9 이상이어야 합니다.");
+if(version_compare(PHP_VERSION, '5.4.35','<')) :
+    printError("PHP 버전은 5.4.45 이상이어야 합니다.");
     printError("현재 PHP 버전은 ".PHP_VERSION." 입니다.");
     exit;
 endif;

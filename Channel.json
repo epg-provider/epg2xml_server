@@ -1,5 +1,4 @@
 [
-{"id":0,"release":"2017-06-22","Enabled":0},
 {"Id":1,"Name":"9colors","KT Name":"9colors","KTCh":163,"LG Name":"9 colors","LGCh":178,"SK Name":"9colors","SKCh":220,"Icon_url":"http://i.imgur.com/tRhzBgK.png","Source":"SKY","ServiceId":99,"Enabled":1},
 {"Id":2,"Name":"애니박스","KT Name":"애니박스","KTCh":135,"LG Name":"애니박스","LGCh":148,"SK Name":"애니박스","SKCh":179,"Icon_url":"http://i.imgur.com/ipM9AXe.png","Source":"SKY","ServiceId":84,"Enabled":1},
 {"Id":3,"Name":"Animal Planet","KT Name":"Animal Planet","KTCh":179,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/ae70Di1.png","Source":"SKY","ServiceId":182,"Enabled":1},
@@ -341,5 +340,6 @@
 {"Id":444,"Name":"채널W","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/mtiKEkU.png","Source":"SKY","ServiceId":518,"Enabled":0},
 {"Id":445,"Name":"INSIGHT TV","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"INSIGHT TV","SKCh":74,"Icon_url":"http://i.imgur.com/eFTXeGV.png","Source":"EPG","ServiceId":908,"Enabled":1},
 {"Id":446,"Name":"인도어스포츠","KT Name":"","KTCh":null,"LG Name":"","LGCh":null,"SK Name":"인도어스포츠","SKCh":139,"Icon_url":"http://i.imgur.com/cb58LLs.png","Source":"NAVER","ServiceId":5949404,"Enabled":1},
-{"Id":447,"Name":"한국시니어TV","KT Name":"한국시니어TV","KTCh":264,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/XaObZ8I.png","Source":"KT","ServiceId":264,"Enabled":1}
+{"Id":447,"Name":"한국시니어TV","KT Name":"한국시니어TV","KTCh":264,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/XaObZ8I.png","Source":"KT","ServiceId":264,"Enabled":1},
+{"Id":448,"Name":"GCN","KT Name":"GCN","KTCh":882,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/0NsDeMa.png","Source":"EPG","ServiceId":652,"Enabled":1}
 ]

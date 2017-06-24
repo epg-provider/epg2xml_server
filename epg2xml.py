@@ -35,7 +35,7 @@ except ImportError:
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.2.0p1'
+__version__ = '1.2.0p2'
 
 if not sys.version_info[:2] == (2, 7):
     print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
@@ -178,10 +178,7 @@ def GetEPGFromEPG(ChannelInfo):
                             subprogramName = matches.group(4).strip() if matches.group(4) else ''
                             #programName, startTime, rating, subprogramName, rebroadcast, episode
                             epginfo.append([programName, startTime, rating, subprogramName, matches.group(5), matches.group(7)])
-        except requests.exceptions.HTTPError:
-            if(debug): printError(ChannelName + HTTP_ERROR)
-            else: pass
-        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+        except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
     for epg1, epg2 in zip(epginfo, epginfo[1:]):
@@ -224,10 +221,7 @@ def GetEPGFromKT(ChannelInfo):
             else:
                 if(debug): printError(ChannelName + CONTENT_ERROR)
                 else: pass
-        except requests.exceptions.HTTPError:
-            if(debug): printError(ChannelName + HTTP_ERROR)
-            else: pass
-        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+        except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
     for epg1, epg2 in zip(epginfo, epginfo[1:]):
@@ -281,10 +275,7 @@ def GetEPGFromLG(ChannelInfo):
             else:
                 if(debug): printError(ChannelName + CONTENT_ERROR)
                 else: pass
-        except requests.exceptions.HTTPError:
-            if(debug): printError(ChannelName + HTTP_ERROR)
-            else: pass
-        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+        except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
     for epg1, epg2 in zip(epginfo, epginfo[1:]):
@@ -358,10 +349,7 @@ def GetEPGFromSK(ChannelInfo):
         except ValueError:
             if(debug): printError(ChannelName + CONTENT_ERROR)
             else: pass
-    except requests.exceptions.HTTPError:
-        if(debug): printError(ChannelName + HTTP_ERROR)
-        else: pass
-    except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+    except (requests.exceptions.RequestException) as e:
         if(debug): printError(ChannelName + str(e))
         else: pass
 
@@ -407,10 +395,7 @@ def GetEPGFromSKY(ChannelInfo):
             except ValueError:
                 if(debug): printError(ChannelName + CONTENT_ERROR)
                 else: pass
-        except requests.exceptions.HTTPError:
-            if(debug): printError(ChannelName + HTTP_ERROR)
-            else: pass
-        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+        except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
 
@@ -456,10 +441,7 @@ def GetEPGFromNaver(ChannelInfo):
         except ValueError:
              if(debug): printError(ChannelName + CONTENT_ERROR)
              else: pass
-    except requests.exceptions.HTTPError:
-        if(debug): printError(ChannelName + HTTP_ERROR)
-        else: pass
-    except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+    except (requests.RequestException) as e:
         if(debug): printError(ChannelName + str(e))
         else: pass
 # Get EPG data from Tbroad
@@ -514,10 +496,7 @@ def GetEPGFromMbc(ChannelInfo):
             except ValueError:
                  if(debug): printError(ChannelName + CONTENT_ERROR)
                  else: pass
-        except requests.exceptions.HTTPError:
-            if(debug): printError(ChannelName + HTTP_ERROR)
-            else: pass
-        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+        except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
 
@@ -567,10 +546,7 @@ def GetEPGFromMil(ChannelInfo):
             except ValueError:
                  if(debug): printError(ChannelName + CONTENT_ERROR)
                  else: pass
-        except requests.exceptions.HTTPError:
-            if(debug): printError(ChannelName + HTTP_ERROR)
-            else: pass
-        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+        except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
 
@@ -617,10 +593,7 @@ def GetEPGFromIfm(ChannelInfo):
             except ValueError:
                  if(debug): printError(ChannelName + CONTENT_ERROR)
                  else: pass
-        except requests.exceptions.HTTPError:
-            if(debug): printError(ChannelName + HTTP_ERROR)
-            else: pass
-        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+        except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
 
@@ -653,10 +626,7 @@ def GetEPGFromKbs(ChannelInfo):
             except ValueError:
                  if(debug): printError(ChannelName + CONTENT_ERROR)
                  else: pass
-        except requests.exceptions.HTTPError:
-            if(debug): printError(ChannelName + HTTP_ERROR)
-            else: pass
-        except (requests.exceptions.ChunkedEncodingError, requests.ConnectionError) as e:
+        except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
     for epg1, epg2 in zip(epginfo, epginfo[1:]):

@@ -109,7 +109,7 @@
 {"Id":130,"Name":"MBN Plus","KT Name":"MBN Plus","KTCh":99,"LG Name":"MBN플러스","LGCh":116,"SK Name":"MBN 플러스","SKCh":98,"Icon_url":"http://i.imgur.com/yMZiUUp.png","Source":"NAVER","ServiceId":5286722,"Enabled":1},
 {"Id":133,"Name":"마운틴TV","KT Name":"마운틴TV","KTCh":117,"LG Name":"마운틴TV","LGCh":69,"SK Name":"Mountain TV","SKCh":247,"Icon_url":"http://i.imgur.com/4nLYnVC.png","Source":"NAVER","ServiceId":814889,"Enabled":1},
 {"Id":134,"Name":"mplex","KT Name":"mplex","KTCh":103,"LG Name":"Mplex","LGCh":46,"SK Name":"Mplex","SKCh":57,"Icon_url":"http://i.imgur.com/dOOBYJm.png","Source":"NAVER","ServiceId":814712,"Enabled":1},
-{"Id":135,"Name":"머니투데이방송","KT Name":"머니투데이방송","KTCh":181,"LG Name":"MTN","LGCh":122,"SK Name":"MTN","SKCh":152,"Icon_url":"http://i.imgur.com/joWd14j.png","Source":"SKY","ServiceId":129,"Enabled":1},
+{"Id":135,"Name":"머니투데이방송","KT Name":"머니투데이방송","KTCh":181,"LG Name":"MTN","LGCh":122,"SK Name":"MTN","SKCh":152,"Icon_url":"http://i.imgur.com/joWd14j.png","Source":"NAVER","ServiceId":814906,"Enabled":1},
 {"Id":136,"Name":"NatGeo People","KT Name":"NatGeo People","KTCh":171,"LG Name":"","LGCh":null,"SK Name":"Natgeo People","SKCh":263,"Icon_url":"http://i.imgur.com/2ghKPUg.png","Source":"NAVER","ServiceId":814946,"Enabled":1},
 {"Id":137,"Name":"NatGeo Wild","KT Name":"NatGeo Wild","KTCh":170,"LG Name":"NatGeo Wild","LGCh":134,"SK Name":"Natgeo Wild HD","SKCh":266,"Icon_url":"http://i.imgur.com/M4nh0Rk.png","Source":"SKY","ServiceId":63,"Enabled":1},
 {"Id":138,"Name":"NGC","KT Name":"NGC","KTCh":168,"LG Name":"내셔널지오그래픽","LGCh":131,"SK Name":"NGC","SKCh":260,"Icon_url":"http://i.imgur.com/mqTSPMN.png","Source":"SKY","ServiceId":972,"Enabled":1},

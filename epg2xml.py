@@ -656,10 +656,11 @@ def writeProgram(programdata):
     programName = escape(programdata['programName'])
     subprogramName = escape(programdata['subprogramName'])
 
-    matches = re.match('(.*) \(?(\d+)부\)?', unescape(programName))
+    matches = re.match('(.*) \(?(\d+부)\)?', unescape(programName.encode('utf-8', 'ignore')))
     if not(matches is None):
         programName = escape(matches.group(1));
-        subprogrameName = escape(matches.group(1)) + ' ' + subprogramName
+        subprogramName = escape(matches.group(2)) + ' ' + subprogramName
+        subprogramName = subprogramName.strip()
     if programName is None:
         programName = subprogramName
 

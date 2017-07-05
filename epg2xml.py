@@ -35,7 +35,7 @@ except ImportError:
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.2.0p2'
+__version__ = '1.2.1'
 
 if not sys.version_info[:2] == (2, 7):
     print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
@@ -655,6 +655,14 @@ def writeProgram(programdata):
     endTime = programdata['endTime']
     programName = escape(programdata['programName'])
     subprogramName = escape(programdata['subprogramName'])
+
+    matches = re.match('(.*) \(?(\d+)부\)?', unescape(programName))
+    if not(matches is None):
+        programName = escape(matches.group(1));
+        subprogrameName = escape(matches.group(1)) + ' ' + subprogramName
+    if programName is None:
+        programName = subprogramName
+
     actors = escape(programdata['actors'])
     producers = escape(programdata['producers'])
     category = escape(programdata['category'])

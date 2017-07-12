@@ -179,7 +179,7 @@
 {"Id":222,"Name":"국방TV","KT Name":"국방TV","KTCh":260,"LG Name":"국방TV","LGCh":174,"SK Name":"국방TV","SKCh":282,"Icon_url":"http://i.imgur.com/yyXkYzJ.png","Source":"SKY","ServiceId":698,"Enabled":0},
 {"Id":223,"Name":"국회방송","KT Name":"국회방송","KTCh":65,"LG Name":"국회방송","LGCh":172,"SK Name":"국회방송","SKCh":291,"Icon_url":"http://i.imgur.com/l1OEn7O.png","Source":"LG","ServiceId":717,"Enabled":0},
 {"Id":225,"Name":"내외경제TV","KT Name":"내외경제TV","KTCh":285,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/cQHPmCw.png","Source":"KT","ServiceId":285,"Enabled":0},
-{"Id":226,"Name":"다문화티브이","KT Name":"다문화티브이","KTCh":283,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/nZK3lCC.png","Source":"KT","ServiceId":283,"Enabled":1},
+{"Id":226,"Name":"다문화티브이","KT Name":"다문화티브이","KTCh":283,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/nZK3lCC.png","Source":"KT","ServiceId":283,"Enabled":0},
 {"Id":228,"Name":"대교 어린이TV","KT Name":"대교 어린이TV","KTCh":141,"LG Name":"어린이TV","LGCh":156,"SK Name":"어린이TV","SKCh":191,"Icon_url":"http://i.imgur.com/CETWIE6.png","Source":"SKY","ServiceId":17,"Enabled":0},
 {"Id":229,"Name":"동아TV","KT Name":"동아TV","KTCh":82,"LG Name":"동아TV","LGCh":84,"SK Name":"동아TV","SKCh":218,"Icon_url":"http://i.imgur.com/AlmV8jS.png","Source":"SKY","ServiceId":247,"Enabled":0},
 {"Id":230,"Name":"드라마H","KT Name":"드라마H","KTCh":70,"LG Name":"","LGCh":null,"SK Name":"드라마H","SKCh":46,"Icon_url":"http://i.imgur.com/xT7pVuI.png","Source":"SKY","ServiceId":287,"Enabled":0},

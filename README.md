@@ -1,5 +1,4 @@
 # EPG2XML
-
 이 프로그램은 EPG(Electronic Program Guide)를 웹상의 여러 소스에서 가져와서 XML로 출력하는 프로그램으로 python2.7 및 php5.4.45 이상에서 사용 가능하도록 제작되었다.
 
 python3과 php 5.4.45 이하에서는 정상적인 작동을 보장하지 못한다.

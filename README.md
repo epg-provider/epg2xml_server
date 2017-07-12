@@ -110,7 +110,7 @@ https://github.com/wonipapa/epg2xml/wiki
 https://github.com/wonipapa/epg2xml/wiki/FAQ
 
 ## 변경사항
- # Version 1.2.1
+ ### Version 1.2.1
   - SKB 함수 추가
   - 가져오는 날짜 최대 2일로 변경
   - 타이틀이 1부, 2부 등 을 포함할 때 1부, 2부를 서브타이틀로 이동
@@ -119,26 +119,26 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
   - Channel 소스 변경
   - GCN 채널 삭제
   - readme.txt Readme.md로 통합
- # Version 1.2.0
+ ### Version 1.2.0
   - 커넥션 관련 에러 예외 처리 추가
   - 채널 소스 변경
   - Channel.json release date 추가
- # Version 1.1.9
+ ### Version 1.1.9
   - 언어 버전 사항 체크
   - 필요 모듈 사항 체크
   - 버그 수정
   - php 버전 웹 버전 추가
   - php 버전 file_get_contents를 curl 사용으로 수정
- # Version 1.1.8
+ ### Version 1.1.8
   - KBS 함수 추가
   - 채널 변경 사항 반영
   - 스카이라이프 url 변경
   - EPG 누락 데이터 수정
- # Version 1.1.7
+ ### Version 1.1.7
   - PHP 7.0 지원
   - 채널 변경 사항 반영
   - 라디오 채널 추가
- # Version 1.1.6
+ ### Version 1.1.6
   - iptv 선택 항목에 ALL 추가
   - 에피소드 넘버 출력 수정
   - 시작 시간 에러 출력 수정
@@ -146,51 +146,51 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
   - 서브타이틀 추출 수정
   - 데이터 중복 출력 문제 수정
   - php 버전이 5.6.3 이전일 때 DOM access 관련 에러 수정
- # Version 1.1.5
+ ### Version 1.1.5
   - inline 변수 재추가
- # Version 1.1.4
+ ### Version 1.1.4
   - epg2xml.json 파일 도입
   - inline 변수 삭제
   - PHP 버전 추가
   - 버그 수정
- # Version 1.1.3
+ ### Version 1.1.3
   - 제목에 회차정보, 재방송 정보 추가시 오류 수정
- # Version 1.1.2
+ ### Version 1.1.2
   - 재방송정보, 회차정보 옵션 추가
- # Version 1.1.1
+ ### Version 1.1.1
   - sk 카테고리 오류 수정
- # Version 1.1.0
+ ### Version 1.1.0
   - 채널 아이콘 추가
   - 오류 메시지 통합
- # Version 1.0.9
+ ### Version 1.0.9
   - 소켓파일이 없을 때 오류 추가
   - 채널 변경 사항 반영
- # Version 1.0.8
+ ### Version 1.0.8
   - 정지 시간 추가
   - 오류 출력 구문 디버그시만 출력으로 변경
   - 채널 소스 변경
- # Version 1.0.7
+ ### Version 1.0.7
   - urllib2를 requests로 변경
   - User Agent 변경
   - 오류 처리 추가
   - 채널 변경 사항 반영
   - 채널 소스 변경
   - 지역 지상파 채널 추가
- # Version 1.0.6
+ ### Version 1.0.6
   - urllib를 urllib2로 변경
   - User Agent 추가
   - 채널 변경 사항 반영
- # Version 1.0.5
+ ### Version 1.0.5
   - epg.co.kr의 epg 정보 못가져오는 것 수정
- # Version 1.0.4
+ ### Version 1.0.4
   - KODI에서 사용가능하도록 수정
   - 제목에서 서브타이틀 및 회차 분리
   - 서브타이틀 추가
   - 출연, 제작진 개인별로 분리
- # Version 1.0.3
+ ### Version 1.0.3
   - Channel.json 파일 오류 수정 
   - LG를 소스로 하는 EPG 정보 기간 오류 수정
- # Version 1.0.2
+ ### Version 1.0.2
   - ISP별 분리된 채널통합
   - 개별 채널별 EPG 정보 수집가능하도록 Enabled 추가
   - getMyChannel 함수 삭제
@@ -200,11 +200,11 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
   - EPG 정보 가져오는 기간 설정 추가
   - 채널 아이콘 설정 URL 설정 추가
   - tvheadend 전용 카테고리 추가
- # Version 1.0.1
+ ### Version 1.0.1
   - EPG 소스 변경
   - 등록된 채널 정보만 EPG 정보 가져오도록 설정
   - IPTV별 개인화
- # Version 1.0.0
+ ### Version 1.0.0
   - first release
   - KBS 함수 추가
   - Channel.json 소스 변경

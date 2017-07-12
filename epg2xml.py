@@ -146,7 +146,7 @@ def GetEPGFromEPG(ChannelInfo):
         day = today + datetime.timedelta(days=k)
         params = {'beforegroup':'100', 'checkchannel':ServiceId, 'select_group':'100', 'start_date':day.strftime('%Y%m%d')}
         try:
-            response = requests.post(url, data=params, headers=ua, timeout=timeout)
+            response = requests.post(url, data=params, headers=ua, timeout=3)
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
@@ -819,7 +819,7 @@ argu2.add_argument('-o', '--outfile', metavar = default_xml_file, nargs = '?', c
 argu2.add_argument('-s', '--socket', metavar = default_xml_socket, nargs = '?', const = default_xml_socket, help = 'xmltv.sock(External: XMLTV)로 EPG정보 전송')
 argu3 = parser.add_argument_group('추가옵션')
 argu3.add_argument('--icon', dest = 'icon', metavar = "http://www.example.com/icon", help = '채널 아이콘 URL, 기본값: '+ default_icon_url, default = default_icon_url)
-argu3.add_argument('-l', '--limit', dest = 'limit', type=int, metavar = "1-2", choices = range(1,3), help = 'EPG 정보를 가져올 기간, 기본값: '+ str(default_fetch_limit), default = default_fetch_limit)
+argu3.add_argument('-l', '--limit', dest = 'limit', type=int, metavar = "1-7", choices = range(1,8), help = 'EPG 정보를 가져올 기간, 기본값: '+ str(default_fetch_limit), default = default_fetch_limit)
 argu3.add_argument('--rebroadcast', dest = 'rebroadcast', metavar = 'y, n', choices = 'yn', help = '제목에 재방송 정보 출력', default = default_rebroadcast)
 argu3.add_argument('--episode', dest = 'episode', metavar = 'y, n', choices = 'yn', help = '제목에 회차 정보 출력', default = default_episode)
 argu3.add_argument('--verbose', dest = 'verbose', metavar = 'y, n', choices = 'yn', help = 'EPG 정보 추가 출력', default = default_verbose)
@@ -896,8 +896,8 @@ else :
     sys.exit()
 
 if default_fetch_limit :
-    if not any(str(default_fetch_limit) in s for s in ['1', '2']):
-        printError("default_fetch_limit 는 1, 2만 가능합니다.")
+    if not any(str(default_fetch_limit) in s for s in ['1', '2', '3', '4', '5', '6', '7']):
+        printError("default_fetch_limit 는 1, 2, 3, 4, 5, 6, 7만 가능합니다.")
         sys.exit()
     else :
         period = int(default_fetch_limit)

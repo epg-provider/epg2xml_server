@@ -187,6 +187,8 @@ else :
                 else :
                     if(in_array($default_fetch_limit, array(1, 2, 3, 4, 5, 6, 7))) :
                         $period = $default_fetch_limit;
+                        $period = $period > 2 ? 2 : $period;
+                        
                     else :
                         printError("default_fetch_limit는 1, 2, 3, 4, 5, 6, 7만 가능합니다.");
                         exit;
@@ -377,6 +379,8 @@ function getEPG() {
             GetEPGFromLG($ChannelInfo);
         elseif($ChannelSource == 'SK') :
             GetEPGFromSK($ChannelInfo);
+        elseif($ChannelSource == 'SKB') :
+            GetEPGFromSKB($ChannelInfo);
         elseif($ChannelSource == 'SKY') :
             GetEPGFromSKY($ChannelInfo);
         elseif($ChannelSource == 'NAVER') :
@@ -455,8 +459,9 @@ function GetEPGFromEPG($ChannelInfo) {
                         $subprogramName = "";
                         $rating = 0;
                         $episode = "";
-                        $rebroadcast = False;                        
-                        preg_match('/<td height="25" valign="top">?(.*<a.*?">)?(.*?)\s*(&lt;(.*)&gt;)?\s*(\(재\))?\s*(\(([\d,]+)회\))?(<img.*?)?(<\/a>)?\s*<\/td>/', trim($dom->saveHTML($program)), $matches);
+                        $rebroadcast = False;  
+                        $pattern = '/<td height="25" valign="top">?(.*<a.*?">)?(.*?)\s*(&lt;(.*)&gt;)?\s*(\(재\))?\s*(\(([\d,]+)회\))?(<img.*?)?(<\/a>)?\s*<\/td>/';
+                        preg_match($pattern, trim($dom->saveHTML($program)), $matches);
                         if ($matches != NULL) :
                             if(isset($matches[2])) $programName = trim($matches[2]) ?: "";
                             if(isset($matches[4])) $subprogramName = trim($matches[4]) ?: "";
@@ -554,7 +559,8 @@ function GetEPGFromKT($ChannelInfo) {
     foreach($zipped as $epg) :
         $programName = "";
         $subprogramName = "";
-        preg_match('/^(.*?)( <(.*)>)?$/', $epg[0][0], $matches);
+        $pattern = '/^(.*?)( <(.*)>)?$/';
+        preg_match($pattern, $epg[0][0], $matches);
         if ($matches != NULL) :
            if(isset($matches[1])) $programName = $matches[1] ?: "";
            if(isset($matches[3])) $subprogramName = $matches[3] ?: "";
@@ -631,7 +637,8 @@ function GetEPGFromLG($ChannelInfo) {
     endforeach;
     $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
     foreach($zipped as $epg) :
-        preg_match('/(<재>?)?(.*?)(\[(.*)\])?\s?(\(([\d,]+)회\))?$/', $epg[0][0], $matches);
+        $pattern = '/(<재>?)?(.*?)(\[(.*)\])?\s?(\(([\d,]+)회\))?$/';
+        preg_match($pattern, $epg[0][0], $matches);
         $programName = "";
         $subprogramName = "";
         $episode = "";
@@ -701,7 +708,8 @@ function GetEPGFromSK($ChannelInfo) {
                         $subprogramName = "";
                         $episode = "";
                         $rebroadcast = False;
-                        preg_match('/^(.*?)(?:\s*[\(<]([\d,회]+)[\)>])?(?:\s*<([^<]*?)>)?(\((재)\))?$/', str_replace('...', '>', $program['programName']), $matches);
+                        $pattern = '/^(.*?)(?:\s*[\(<]([\d,회]+)[\)>])?(?:\s*<([^<]*?)>)?(\((재)\))?$/';
+                        preg_match($pattern, str_replace('...', '>', $program['programName']), $matches);
                         if ($matches != NULL) :
                             if(isset($matches[1])) $programName = trim($matches[1]) ?: "";
                             if(isset($matches[3])) $subprogramName = trim($matches[3]) ?: "";
@@ -743,6 +751,88 @@ function GetEPGFromSK($ChannelInfo) {
     } catch (Exception $e) {
         if($GLOBALS['debug']) printError($e->getMessage());
     }
+}
+
+// Get EPG data from SKB
+function GetEPGFromSKB($ChannelInfo) {
+    $ChannelId = $ChannelInfo[0];
+    $ChannelName = $ChannelInfo[1];
+    $ServiceId =  $ChannelInfo[3];
+    $epginfo = array();
+    foreach(range(1, $GLOBALS['period']) as $k) :
+        $url = "http://www.skbroadband.com/content/realtime/Channel_List.do";
+        $day = date("Ymd", strtotime("+".($k - 1)." days"));
+        $params = array(
+            'key_depth2' => $ServiceId,
+            'key_depth3' => $day,
+            'tab_gubun'  => 'lst'
+        );
+        $params = http_build_query($params);
+        $method = "POST";
+        try {
+            $response = getWeb($url, $params, $method);
+            if ($response === False && $GLOBALS['debug']) :
+                printError($ChannelName.HTTP_ERROR);
+            else :
+                $response = str_replace('charset="euc-kr"', 'charset="utf-8"', $response);
+                $dom = new DomDocument;
+                libxml_use_internal_errors(True);
+                $response = mb_convert_encoding($response, "UTF-8", "EUC-KR");
+                $dom->loadHTML($response);
+                $xpath = new DomXPath($dom);
+                $query = "//tr[@class='".$day."']";
+                $rows = $xpath->query($query);
+                foreach($rows as $row) :
+                    $cells = $row->getElementsByTagName('td');
+                    $pattern = '/^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$/';
+                    preg_match($pattern, trim($cells->item(0)->nodeValue), $matches);
+                    if ($matches != NULL) :
+                        if(isset($matches[1])) $programName = trim($matches[1]) ?: "";
+                        if(isset($matches[5])) $subprogramName = trim($matches[5]) ?: "";
+                        if(isset($matches[3])) $episode = $matches[3] ?: "";
+                        if(isset($matches[7])) $rebroadcast = $matches[7] ? True : False;
+                    endif;
+                    preg_match('/.*\s*([\d,]+)\s*.*/', $cells->item(1)->nodeValue, $rating);
+                    $startTime = $row->getElementsByTagName('th')->item(0)->nodeValue;
+                    $startTime = date("YmdHis", strtotime($day." ".$startTime));
+                    $rating = $rating[1];
+                    //programName, startTime, rating, subprogramName, rebroadcast, episode
+                    $epginfo[]= array($programName, $startTime, $rating, $subprogramName, $rebroadcast, $episode);
+                endforeach;
+            endif;
+        } catch (Exception $e) {
+            if($GLOBALS['debug']) printError($e->getMessage());
+        }
+    endforeach;
+    $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
+    foreach($zipped as $epg) :
+        $programName = trim($epg[0][0]) ?: "";
+        $subprogramName = trim($epg[0][3]) ?: "";
+        $episode = $epg[0][5] ?: "";
+        $rebroadcast = $epg[0][4] ? True: False;
+        $startTime = $epg[0][1] ?: "";
+        $endTime = $epg[1][1] ?: "";
+        $desc = "";
+        $actors = "";
+        $producers = "";
+        $category = "";
+        $rating = $epg[0][2] ?: 0;
+        $programdata = array(
+            'channelId'=> $ChannelId,
+            'startTime' => $startTime,
+            'endTime' => $endTime,
+            'programName' => $programName,
+            'subprogramName'=> $subprogramName,
+            'desc' => $desc,
+            'actors' => $actors,
+            'producers' => $producers,
+            'category' => $category,
+            'episode' => $episode,
+            'rebroadcast' => $rebroadcast,
+            'rating' => $rating
+        );
+        writeProgram($programdata);
+    endforeach;
 }
 
 // Get EPG data from SKY
@@ -958,7 +1048,8 @@ function GetEPGFromMbc($ChannelInfo) {
                             if($program['Channel'] == "CHAM" && $program['LiveDays'] == $dayofweek[date("w", strtotime($day))]) :
                                 $programName = "";
                                 $rebroadcast = False;
-                                preg_match('/^(.*?)(\(재\))?$/', htmlspecialchars_decode($program['ProgramTitle']), $matches);
+                                $pattern = '/^(.*?)(\(재\))?$/';
+                                preg_match($pattern, htmlspecialchars_decode($program['ProgramTitle']), $matches);
                                 if ($matches != NULL) :
                                     $programName = $matches[1];
                                     $rebroadcast = $matches[2] ? True : False;
@@ -1031,7 +1122,8 @@ function GetEPGFromMil($ChannelInfo) {
                         foreach($programs as $program) :
                             $programName = "";
                             $rebroadcast = False;
-                            preg_match('/^(.*?)(\(재\))?$/', htmlspecialchars_decode($program['program_title']), $matches);
+                            $pattern = '/^(.*?)(\(재\))?$/';
+                            preg_match($pattern, htmlspecialchars_decode($program['program_title']), $matches);
                             if ($matches != NULL) :
                                 $programName = $matches[1];
                                 $rebroadcast = $matches[2] ? True : False;
@@ -1232,8 +1324,16 @@ function writeProgram($programdata) {
     $ChannelId = $programdata['channelId'];
     $startTime = $programdata['startTime'];
     $endTime = $programdata['endTime'];
-    $programName = htmlspecialchars($programdata['programName'], ENT_XML1);
-    $subprogramName = htmlspecialchars($programdata['subprogramName'], ENT_XML1);
+    $programName = trim(htmlspecialchars($programdata['programName'], ENT_XML1));
+    $subprogramName = trim(htmlspecialchars($programdata['subprogramName'], ENT_XML1));
+    preg_match('/(.*) \(?(\d+부)\)?/', $programName, $matches);
+    if ($matches != NULL) :
+        if(isset($matches[1])) $programName = trim($matches[1]) ?: "";
+        if(isset($matches[2])) $subprogramName = trim($matches[2]." ".$subprogramName) ?: "";
+    endif;
+    if($programName == NULL):
+        $programName = $subprogramName;
+    endif;
     $actors = htmlspecialchars($programdata['actors'], ENT_XML1);
     $producers = htmlspecialchars($programdata['producers'], ENT_XML1);
     $category = htmlspecialchars($programdata['category'], ENT_XML1);

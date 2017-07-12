@@ -157,8 +157,7 @@ def GetEPGFromEPG(ChannelInfo):
                 thisday = day
                 row = tables[i].find_all('td', {'colspan':'2'})
                 for cell in row:
-                    hour = int(cell.text.strip().strip('시'))
-                  
+                    hour = int(cell.text.strip().strip('시'))                  
                     if(i == 1) : hour = 'AM ' + str(hour)
                     elif(i == 2) : hour = 'PM ' + str(hour)
                     elif(i == 3 and hour > 5 and hour < 12 ) : hour = 'PM ' + str(hour)
@@ -230,7 +229,8 @@ def GetEPGFromKT(ChannelInfo):
     for epg1, epg2 in zip(epginfo, epginfo[1:]):
         programName = ''
         subprogrmaName = ''
-        matches = re.match('^(.*?)( <(.*)>)?$', epg1[0].decode('string_escape'))
+        pattern = '^(.*?)( <(.*)>)?$'
+        matches = re.match(pattern, epg1[0].decode('string_escape'))
         if not (matches is None):
             programName = matches.group(1) if matches.group(1) else ''
             subprogramName = matches.group(3) if matches.group(3) else ''
@@ -285,7 +285,8 @@ def GetEPGFromLG(ChannelInfo):
         programName = ''
         subprogramName = ''
         episode = ''
-        matches = re.match('(<재>?)?(.*?)(\[(.*)\])?\s?(\(([\d,]+)회\))?$',  epg1[0].decode('string_escape'))
+        pattern = '(<재>?)?(.*?)(\[(.*)\])?\s?(\(([\d,]+)회\))?$'
+        matches = re.match(pattern,  epg1[0].decode('string_escape'))
         rebroadcast = False
         if not (matches is None):
             programName = matches.group(2) if matches.group(2) else ''
@@ -328,7 +329,8 @@ def GetEPGFromSK(ChannelInfo):
                     subprogramName = ''
                     episode = ''
                     rebroadcast = False
-                    matches = re.match('^(.*?)(?:\s*[\(<]([\d,회]+)[\)>])?(?:\s*<([^<]*?)>)?(\((재)\))?$', program['programName'].replace('...', '>').encode('utf-8'))
+                    pattern = '^(.*?)(?:\s*[\(<]([\d,회]+)[\)>])?(?:\s*<([^<]*?)>)?(\((재)\))?$'
+                    matches = re.match(pattern, program['programName'].replace('...', '>').encode('utf-8'))
                     if not (matches is None):
                         programName = matches.group(1).strip() if matches.group(1) else ''
                         subprogramName = matches.group(3).strip() if matches.group(3) else ''
@@ -378,7 +380,6 @@ def GetEPGFromSKB(ChannelInfo):
                 for row in html:
                     startTime = str(day) + ' ' + row.find('th').text
                     for cell in [row.find_all('td')]:
-                        pattern = "(.*?)\s*(\(([\d,]+)회\))?\s*(&lt;(.*)&gt;)?\s*(\(재\)?)"
                         pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"
                         matches = re.match(pattern, cell[0].text.decode('string_escape'))
                         if not(matches is None) :
@@ -538,7 +539,8 @@ def GetEPGFromMbc(ChannelInfo):
                     if program['Channel'] == "CHAM" and program['LiveDays'] == dayofweek[day.weekday()]:
                         programName = ''
                         rebroadcast = True
-                        matches = re.match('^(.*?)(\(재\))?$', unescape(program['ProgramTitle'].encode('utf-8', 'ignore')))
+                        pattern = '^(.*?)(\(재\))?$'
+                        matches = re.match(pattern, unescape(program['ProgramTitle'].encode('utf-8', 'ignore')))
                         if not(matches is None):
                             programName = matches.group(1)
                             rebroadcast = True if matches.group(2) else False
@@ -581,7 +583,8 @@ def GetEPGFromMil(ChannelInfo):
                 for program in data['resultList']:
                     programName = ''
                     rebroadcast = False
-                    matches = re.match('^(.*?)(\(재\))?$', unescape(program['program_title'].encode('utf-8', 'ignore')))
+                    pattern = '^(.*?)(\(재\))?$'
+                    matches = re.match(pattern, unescape(program['program_title'].encode('utf-8', 'ignore')))
                     if not(matches is None):
                         programName = matches.group(1)
                         rebroadcast = True if matches.group(2) else False
@@ -680,7 +683,8 @@ def GetEPGFromKbs(ChannelInfo):
                 for row in soup.find_all('li'):
                     programName = ''
                     startTime = ''
-                    matches = re.match('([0-2][0-9]:[0-5][0-9])[0-2][0-9]:[0-5][0-9]\[(.*)\] Broadcast', unescape(row.text.encode('utf-8', 'ignore')))
+                    pattern = '([0-2][0-9]:[0-5][0-9])[0-2][0-9]:[0-5][0-9]\[(.*)\] Broadcast'
+                    matches = re.match(pattern, unescape(row.text.encode('utf-8', 'ignore')))
                     if not(matches is None):
                         programName = unescape(matches.group(2))
                         startTime = str(day) + ' ' + matches.group(1)
@@ -716,8 +720,8 @@ def writeProgram(programdata):
     ChannelId = programdata['channelId']
     startTime = programdata['startTime']
     endTime = programdata['endTime']
-    programName = escape(programdata['programName'])
-    subprogramName = escape(programdata['subprogramName'])
+    programName = escape(programdata['programName']).strip()
+    subprogramName = escape(programdata['subprogramName']).strip()
 
     matches = re.match('(.*) \(?(\d+부)\)?', unescape(programName.encode('utf-8', 'ignore')))
     if not(matches is None):

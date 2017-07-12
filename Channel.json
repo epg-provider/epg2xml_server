@@ -96,12 +96,8 @@
 {"Id":116,"Name":"K-NET TV","KT Name":"K-NET TV","KTCh":230,"LG Name":"","LGCh":null,"SK Name":"","SKCh":null,"Icon_url":"http://i.imgur.com/GelnqjB.png","Source":"KT","ServiceId":230,"Enabled":0},
 {"Id":117,"Name":"KTV","KT Name":"KTV","KTCh":64,"LG Name":"KTV","LGCh":171,"SK Name":"KTV","SKCh":290,"Icon_url":"http://i.imgur.com/yUk2RhO.png","Source":"NAVER","ServiceId":815090,"Enabled":0},
 {"Id":118,"Name":"K-바둑","KT Name":"K-바둑","KTCh":121,"LG Name":"K-바둑","LGCh":107,"SK Name":"K-바둑","SKCh":241,"Icon_url":"http://i.imgur.com/EAk5ySy.png","Source":"SKY","ServiceId":170,"Enabled":0},
-<<<<<<< HEAD
-{"Id":119,"Name":"K쇼핑","KT Name":"K쇼핑","KTCh":20,"LG Name":"","LGCh":null,"SK Name":"K쇼핑","SKCh":25,"Icon_url":"http://i.imgur.com/6ORm0Rz.png","Source":"SK","ServiceId":333,"Enabled":0},e{"Id":121,"Name":"Mnet","KT Name":"Mnet","KTCh":27,"LG Name":"M.net","LGCh":22,"SK Name":"M.net","SKCh":27,"Icon_url":"http://i.imgur.com/putHm2b.png","Source":"SKY","ServiceId":273,"Enabled":0},
-=======
 {"Id":119,"Name":"K쇼핑","KT Name":"K쇼핑","KTCh":20,"LG Name":"","LGCh":null,"SK Name":"K쇼핑","SKCh":25,"Icon_url":"http://i.imgur.com/6ORm0Rz.png","Source":"SK","ServiceId":333,"Enabled":0},
 {"Id":121,"Name":"Mnet","KT Name":"Mnet","KTCh":27,"LG Name":"M.net","LGCh":22,"SK Name":"M.net","SKCh":27,"Icon_url":"http://i.imgur.com/putHm2b.png","Source":"SKY","ServiceId":273,"Enabled":0},
->>>>>>> 5540eb5078ac0d80b8b92e22b73e76807d1c5479
 {"Id":122,"Name":"MBC","KT Name":"MBC","KTCh":11,"LG Name":"MBC","LGCh":11,"SK Name":"MBC","SKCh":11,"Icon_url":"http://i.imgur.com/duig32i.png","Source":"SKY","ServiceId":797,"Enabled":1},
 {"Id":123,"Name":"MBC Every1","KT Name":"MBC Every1","KTCh":3,"LG Name":"MBC에브리원","LGCh":29,"SK Name":"MBC Every1","SKCh":28,"Icon_url":"http://i.imgur.com/oOnpFes.png","Source":"SKY","ServiceId":58,"Enabled":0},
 {"Id":124,"Name":"MBC MUSIC","KT Name":"MBC MUSIC","KTCh":97,"LG Name":"MBC뮤직","LGCh":99,"SK Name":"MBC Music","SKCh":231,"Icon_url":"http://i.imgur.com/6g56RDx.png","Source":"SKY","ServiceId":126,"Enabled":0},

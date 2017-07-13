@@ -35,7 +35,7 @@ except ImportError:
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.2.1'
+__version__ = '1.2.2'
 
 if not sys.version_info[:2] == (2, 7):
     print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
@@ -364,36 +364,38 @@ def GetEPGFromSKB(ChannelInfo):
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
     url = 'http://www.skbroadband.com/content/realtime/Channel_List.do'
+    url = 'http://m.skbroadband.com/content/realtime/Channel_List.do'
+    #?key_depth1=5100&key_depth2=430&key_depth3=20170715'
     epginfo = []
     for k in range(period):
         day = today + datetime.timedelta(days=k)
-        params = {'key_depth2': ServiceId, 'key_depth3': day.strftime('%Y%m%d'), 'tab_gubun':'lst'}
+        params = {'key_depth2': ServiceId, 'key_depth3': day.strftime('%Y%m%d')}
         try:
-            response = requests.post(url, data=params, headers=ua, timeout=timeout)
+            response = requests.get(url, params=params, headers=ua, timeout=timeout)
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
-            strainer = SoupStrainer('tr', {'class':day.strftime('%Y%m%d')})
+            strainer = SoupStrainer('div', {'id':'dawn'})
             soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
-            html =  soup.find_all('tr') if soup.find_all('tr') else ''
+            html =  soup.find_all('li') if soup.find_all('li') else ''
             if(html):
                 for row in html:
-                    startTime = str(day) + ' ' + row.find('th').text
-                    for cell in [row.find_all('td')]:
-                        pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"
-                        matches = re.match(pattern, cell[0].text.decode('string_escape'))
-                        if not(matches is None) :
-                            programName = matches.group(1) if matches.group(1) else ''
-                            subprogramName = matches.group(5) if matches.group(5) else ''
-                            rebroadcast = True if matches.group(7) else False
-                            episode = matches.group(3) if matches.group(3) else ''
-                        rating = re.match('.*\s*([\d,]+)\s*.*', cell[1].text.decode('string_escape'))
-                        if not(rating is None) :
-                            rating = int(rating.group(1))
-                        else :
-                            rating = 0
+                    startTime = str(day) + ' ' + row.find('span', {'class':'time'}).text
+                    cell = row.find('span', {'class':None}).text.decode('string_escape').strip()
+                    pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"
+                    matches = re.match(pattern, cell)
+                    if not(matches is None) :
+                        programName = matches.group(1) if matches.group(1) else ''
+                        subprogramName = matches.group(5) if matches.group(5) else ''
+                        rebroadcast = True if matches.group(7) else False
+                        episode = matches.group(3) if matches.group(3) else ''
+                    rating = row.find('span', {'class':re.compile('^watch.*$')})
+                    if not(rating is None) :
+                        rating = int(rating.text.decode('string_escape').replace('세','').strip())
+                    else :
+                        rating = 0
                         #programName, startTime, rating, subprogramName, rebroadcast, episode
-                        epginfo.append([programName, startTime, rating, subprogramName, rebroadcast, episode])
+                    epginfo.append([programName, startTime, rating, subprogramName, rebroadcast, episode])
             else:
                 if(debug): printError(ChannelName + CONTENT_ERROR)
                 else: pass
@@ -530,7 +532,7 @@ def GetEPGFromMbc(ChannelInfo):
     for k in range(period):
         day = today + datetime.timedelta(days=k)
         try:
-            response = requests.get(url, params=params, headers=ua)
+            response = requests.get(url, params=params, headers=ua, timeout=timeout)
             response.raise_for_status()
             json_data = response.text
             try:

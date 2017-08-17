@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#pooq, iscs
-#https://wapie.pooq.co.kr/v1/epgs30/C2301/?deviceTypeId=pc&marketTypeId=generic&apiAccessCredential=EEBE901F80B3A4C4E5322D58110BE95C&drm=WC&country=KOR&offset=0&limit=1000&startTime=2017%2F07%2F18+11%3A49&credential=none&endTime=2017%2F07%2F18+23%3A59
 from __future__ import print_function
 import imp
 import os
@@ -131,8 +129,10 @@ def getEpg():
         #    GetEPGFromTbroad(ChannelInfo)
         #elif ChannelSource == 'ISCS':
         #    GetEPGFromIscs(ChannelInfo)
-        elif ChannelSource == 'HCN':
-            GetEPGFromHcn(ChannelInfo)
+        #elif ChannelSource == 'HCN':
+        #    GetEPGFromHcn(ChannelInfo)
+        elif ChannelSource == 'POOQ':
+            GetEPGFromPooq(ChannelInfo)
         #elif ChannelSource == 'MBC':
         #    GetEPGFromMbc(ChannelInfo)
         #elif ChannelSource == 'MIL':
@@ -154,7 +154,7 @@ def GetEPGFromEPG(ChannelInfo):
         day = today + datetime.timedelta(days=k)
         params = {'beforegroup':'100', 'checkchannel[]':ServiceId, 'select_group':'100', 'start_date':day.strftime('%Y%m%d')}
         try:
-            response = requests.post(url, data=params, headers=ua, timeout=3)
+            response = requests.post(url, data=params, headers=ua, timeout=timeout)
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
@@ -491,6 +491,7 @@ def GetEPGFromNaver(ChannelInfo):
             for i, date in enumerate(data['displayDates']):
                 for j in range(0,24):
                     for program in data['schedules'][j][i]:
+                        #programName, startTime, episode, rebroadcast, rating
                         epginfo.append([program['title'], date['date'] + ' ' + program['startTime'], program['episode'].replace('회',''), program['isRerun'], program['grade']])
             for epg1, epg2 in zip(epginfo, epginfo[1:]):
                 programName = unescape(epg1[0]) if epg1[0] else ''
@@ -516,11 +517,61 @@ def GetEPGFromNaver(ChannelInfo):
         if(debug): printError(ChannelName + str(e))
         else: pass
 
-# Get EPG data from Iscs
+# Get EPG data from ISCS
 def GetEPGFromIscs(ChannelInfo):
-    url='http://service.iscs.co.kr/sub/channel_view.asp'
-    params = {'chan_idx':'242', 'source_id':'203', 'Chan_Date':'2017-04-18'}
-    pass
+    ChannelId = ChannelInfo[0]
+    ChannelName = ChannelInfo[1]
+    ServiceId =  ChannelInfo[3]
+    epginfo = []
+    url='https://www.iscs.co.kr/service/sub/ajax_channel_view.asp'
+    for k in range(period):
+        day = today + datetime.timedelta(days=k)
+        params = {'s_idx': ServiceId, 'C_date': day}
+        response = requests.post(url, data=params, headers=ua, timeout=timeout)
+        response.raise_for_status()
+        json_data = response.text
+        try:
+            data = json.loads(json_data, encoding='utf-8')
+            strainer = SoupStrainer('tbody')
+            soup = BeautifulSoup(data['html'], 'lxml', parse_only=strainer)
+            html =  soup.find_all('tr') if soup.find_all('tr') else ''
+            if(html) :
+                for row in html:
+                    startTime = str(day) + ' ' + row.find('td', {'class':'time'}).text
+                    programName = row.find('td', {'class':'name'}).text.decode('string_escape').strip()
+                    rating = row.find('span', {'class':'year'}).text.decode('string_escape').strip()
+                    if rating == '전체관람' : rating = 0
+                    else : rating = rating.replace('세이상', ' ')
+                    pattern = '^(.*?)(?:\(([\d,]+)회\))?(?:\((재)\))?$'
+                    matches = re.match(pattern, programName)
+                    if not(matches is None) :
+                        programName = matches.group(1) if matches.group(1) else ''
+                        rebroadcast = True if matches.group(3) else False
+                        episode = matches.group(2) if matches.group(2) else ''
+                    #programName, startTime, rating, rebroadcast, episode
+                    epginfo.append([programName, startTime, rating, rebroadcast, episode])
+            for epg1, epg2 in zip(epginfo, epginfo[1:]):
+                programName = unescape(epg1[0]) if epg1[0] else ''
+                subprogramName = ''
+                startTime = datetime.datetime.strptime(epg1[1], '%Y-%m-%d %H:%M')
+                startTime = startTime.strftime('%Y%m%d%H%M%S')
+                endTime = datetime.datetime.strptime(epg2[1], '%Y-%m-%d %H:%M')
+                endTime = endTime.strftime('%Y%m%d%H%M%S')
+                desc = ''
+                actors = ''
+                producers = ''
+                category = ''
+                episode = epg1[4]
+                rebroadcast = epg1[3]
+                rating = epg1[2]
+                programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
+                writeProgram(programdata)
+        except ValueError:
+            if(debug): printError(ChannelName + CONTENT_ERROR)
+            else: pass
+        except (requests.RequestException) as e:
+            if(debug): printError(ChannelName + str(e))
+            else: pass
 
 # Get EPG data from HCN
 def GetEPGFromHcn(ChannelInfo):
@@ -578,6 +629,9 @@ def GetEPGFromHcn(ChannelInfo):
 
 # Get EPG data from POOQ
 def GetEPGFromPooq(ChannelInfo):
+#pooq
+#https://wapie.pooq.co.kr/v1/epgs30/C2301/?deviceTypeId=pc&marketTypeId=generic&apiAccessCredential=EEBE901F80B3A4C4E5322D58110BE95C&drm=WC&country=KOR&offset=0&limit=1000&startTime=2017%2F07%2F18+11%3A49&credential=none&endTime=2017%2F07%2F18+23%3A59
+
     pass
 # Get EPG data from MBC
 def GetEPGFromMbc(ChannelInfo):

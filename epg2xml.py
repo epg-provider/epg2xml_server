@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+#pooq, iscs
+#https://wapie.pooq.co.kr/v1/epgs30/C2301/?deviceTypeId=pc&marketTypeId=generic&apiAccessCredential=EEBE901F80B3A4C4E5322D58110BE95C&drm=WC&country=KOR&offset=0&limit=1000&startTime=2017%2F07%2F18+11%3A49&credential=none&endTime=2017%2F07%2F18+23%3A59
 from __future__ import print_function
 import imp
-
 import os
 import sys
 import json
@@ -45,7 +45,7 @@ if not sys.version_info[:2] == (2, 7):
 debug = False
 today = datetime.date.today()
 ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
-timeout = 3
+timeout = 5
 CHANNEL_ERROR = ' 존재하지 않는 채널입니다.'
 CONTENT_ERROR = ' EPG 정보가 없습니다.'
 HTTP_ERROR = ' EPG 정보를 가져오는데 문제가 있습니다.'
@@ -59,7 +59,7 @@ def getEpg():
     ChannelInfos = []
     try:
         with open(Channelfile) as f: # Read Channel Information file
-            Channeldatas = json.load(f)
+            Channeldatajson = json.load(f)
     except EnvironmentError:
         printError("Channel." + JSON_FILE_ERROR)
         sys.exit()
@@ -69,9 +69,14 @@ def getEpg():
     print('<?xml version="1.0" encoding="UTF-8"?>')
     print('<!DOCTYPE tv SYSTEM "xmltv.dtd">\n')
     print('<tv generator-info-name="epg2xml ' + __version__ + '">')
+# My Channel 정의
+    MyChannelInfo = []
+    if MyChannels :
+        for MyChannel in MyChannels.split(','):
+            MyChannelInfo.append(int(MyChannel.strip()))
 
-    for Channeldata in Channeldatas: #Get Channel & Print Channel info
-        if Channeldata['Enabled'] == 1:
+    for Channeldata in Channeldatajson: #Get Channel & Print Channel info
+        if Channeldata['Enabled'] == 1 or Channeldata['Id'] in MyChannelInfo:
             ChannelId = Channeldata['Id']
             ChannelName = escape(Channeldata['Name'])
             ChannelSource = Channeldata['Source']
@@ -100,6 +105,7 @@ def getEpg():
                 else :
                     print('    <icon src="%s" />' % (ChannelIconUrl))
                 print('  </channel>')
+
     # Print Program Information
     for ChannelInfo in ChannelInfos:
         ChannelId = ChannelInfo[0]
@@ -109,28 +115,30 @@ def getEpg():
         if(debug) : printLog(ChannelName + ' 채널 EPG 데이터를 가져오고 있습니다')
         if ChannelSource == 'EPG':
             GetEPGFromEPG(ChannelInfo)
-        elif ChannelSource == 'KT':
-            GetEPGFromKT(ChannelInfo)
-        elif ChannelSource == 'LG':
-            GetEPGFromLG(ChannelInfo)
-        elif ChannelSource == 'SK':
-            GetEPGFromSK(ChannelInfo)
-        elif ChannelSource == 'SKB':
-            GetEPGFromSKB(ChannelInfo)
-        elif ChannelSource == 'SKY':
-            GetEPGFromSKY(ChannelInfo)
-        elif ChannelSource == 'NAVER':
-            GetEPGFromNaver(ChannelInfo)
-        elif ChannelSource == 'TBROAD':
-            GetEPGFromTbroad(ChannelInfo)
-        elif ChannelSource == 'ISCS':
-            GetEPGFromIscs(ChannelInfo)
-        elif ChannelSource == 'MBC':
-            GetEPGFromMbc(ChannelInfo)
-        elif ChannelSource == 'MIL':
-            GetEPGFromMil(ChannelInfo)
-        elif ChannelSource == 'IFM':
-            GetEPGFromIfm(ChannelInfo)
+        #elif ChannelSource == 'KT':
+        #    GetEPGFromKT(ChannelInfo)
+        #elif ChannelSource == 'LG':
+        #    GetEPGFromLG(ChannelInfo)
+        #elif ChannelSource == 'SK':
+        #    GetEPGFromSK(ChannelInfo)
+        #elif ChannelSource == 'SKB':
+        #    GetEPGFromSKB(ChannelInfo)
+        #elif ChannelSource == 'SKY':
+        #    GetEPGFromSKY(ChannelInfo)
+        #elif ChannelSource == 'NAVER':
+        #    GetEPGFromNaver(ChannelInfo)
+        #elif ChannelSource == 'TBROAD':
+        #    GetEPGFromTbroad(ChannelInfo)
+        #elif ChannelSource == 'ISCS':
+        #    GetEPGFromIscs(ChannelInfo)
+        elif ChannelSource == 'HCN':
+            GetEPGFromHcn(ChannelInfo)
+        #elif ChannelSource == 'MBC':
+        #    GetEPGFromMbc(ChannelInfo)
+        #elif ChannelSource == 'MIL':
+        #    GetEPGFromMil(ChannelInfo)
+        #elif ChannelSource == 'IFM':
+        #    GetEPGFromIfm(ChannelInfo)
         elif ChannelSource == 'KBS':
             GetEPGFromKbs(ChannelInfo)
     print('</tv>')
@@ -140,11 +148,11 @@ def GetEPGFromEPG(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
-    url = 'http://www.epg.co.kr/epg-cgi/extern/cnm_guide_type_v070530.cgi'
+    url = 'http://211.43.210.10:88/epg-cgi/extern/cnm_guide_type_v070530.php'
     epginfo = []
     for k in range(period):
         day = today + datetime.timedelta(days=k)
-        params = {'beforegroup':'100', 'checkchannel':ServiceId, 'select_group':'100', 'start_date':day.strftime('%Y%m%d')}
+        params = {'beforegroup':'100', 'checkchannel[]':ServiceId, 'select_group':'100', 'start_date':day.strftime('%Y%m%d')}
         try:
             response = requests.post(url, data=params, headers=ua, timeout=3)
             response.raise_for_status()
@@ -363,9 +371,7 @@ def GetEPGFromSKB(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
-    url = 'http://www.skbroadband.com/content/realtime/Channel_List.do'
     url = 'http://m.skbroadband.com/content/realtime/Channel_List.do'
-    #?key_depth1=5100&key_depth2=430&key_depth3=20170715'
     epginfo = []
     for k in range(period):
         day = today + datetime.timedelta(days=k)
@@ -510,17 +516,69 @@ def GetEPGFromNaver(ChannelInfo):
         if(debug): printError(ChannelName + str(e))
         else: pass
 
-# Get EPG data from Tbroad
-def GetEPGFromTbroad(ChannelInfo):
-    url='https://www.tbroad.com/chplan/selectRealTimeListForNormal.tb'
-    pass
-
 # Get EPG data from Iscs
 def GetEPGFromIscs(ChannelInfo):
     url='http://service.iscs.co.kr/sub/channel_view.asp'
     params = {'chan_idx':'242', 'source_id':'203', 'Chan_Date':'2017-04-18'}
     pass
 
+# Get EPG data from HCN
+def GetEPGFromHcn(ChannelInfo):
+    ChannelId = ChannelInfo[0]
+    ChannelName = ChannelInfo[1]
+    ServiceId =  ChannelInfo[3]
+    epginfo = []
+    url = 'https://www.hcn.co.kr/ur/bs/ch/channelInfo.hcn'
+    for k in range(period):
+        day = today + datetime.timedelta(days=k)
+        params = {'method': 'ajax_00', 'pageType': 'sheetList', 'ch_id': ServiceId, 'onairdate': day}
+        try:
+            response = requests.get(url, params=params, headers=ua, timeout=timeout)
+            response.raise_for_status()
+            html_data = response.content
+            data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
+            strainer = SoupStrainer('tr', {'class':''})
+            soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
+            html =  soup.find_all('tr') if soup.find_all('tr') else ''
+            if(html):
+                for row in html:
+                    startTime = str(day) + ' ' + row.find('td', {'class':'f'}).text
+                    programName = row.find('td', {'class':'left'}).text.decode('string_escape').strip()
+                    rating = 0
+                    rebroadcast = False
+                    for image in row.find_all('img', {'class':'vM'}, alt=True):
+                        rebroad = re.match('(재방송)',image['alt'].decode('string_escape').strip())
+                        if not (rebroad is None): rebroadcast = True
+                        grade = re.match('([\d,]+)',image['alt'])
+                        if not (grade is None): rating = int(grade.group(1))
+                    #programName, startTime, rating, rebroadcast
+                    epginfo.append([programName, startTime, rating, rebroadcast])
+            for epg1, epg2 in zip(epginfo, epginfo[1:]):
+                programName = unescape(epg1[0]) if epg1[0] else ''
+                subprogramName = ''
+                startTime = datetime.datetime.strptime(epg1[1], '%Y-%m-%d %H:%M')
+                startTime = startTime.strftime('%Y%m%d%H%M%S')
+                endTime = datetime.datetime.strptime(epg2[1], '%Y-%m-%d %H:%M')
+                endTime = endTime.strftime('%Y%m%d%H%M%S')
+                desc = ''
+                actors = ''
+                producers = ''
+                category = ''
+                episode = ''
+                rebroadcast = epg1[3]
+                rating = epg1[2]
+                programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
+                writeProgram(programdata)
+            else:
+                if(debug): printError(ChannelName + CONTENT_ERROR)
+                else: pass
+        except (requests.exceptions.RequestException) as e:
+            if(debug): printError(ChannelName + str(e))
+            else: pass        
+
+# Get EPG data from POOQ
+def GetEPGFromPooq(ChannelInfo):
+    pass
 # Get EPG data from MBC
 def GetEPGFromMbc(ChannelInfo):
     ChannelId = ChannelInfo[0]
@@ -717,6 +775,8 @@ def GetEPGFromKbs(ChannelInfo):
         programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
         writeProgram(programdata)
 
+
+
 # Write Program
 def writeProgram(programdata):
     ChannelId = programdata['channelId']
@@ -799,6 +859,7 @@ try:
     with open(Settingfile) as f: # Read Channel Information file
         Settings = json.load(f)
         MyISP = Settings['MyISP'] if 'MyISP' in Settings else ''
+        MyChannels = Settings['MyChannels'] if 'MyChannels' in Settings else ''
         default_output = Settings['output'] if 'output' in Settings else ''
         default_xml_file = Settings['default_xml_file'] if 'default_xml_file' in Settings else 'xmltv.xml'
         default_xml_socket = Settings['default_xml_socket'] if 'default_xml_socket' in Settings else 'xmltv.sock'
@@ -807,7 +868,6 @@ try:
         default_rebroadcast = Settings['default_rebroadcast'] if 'default_rebroadcast' in Settings else ''
         default_episode = Settings['default_episode'] if 'default_episode' in Settings else ''
         default_verbose = Settings['default_verbose'] if 'default_verbose' in Settings else ''
-
 except EnvironmentError:
     printError("epg2xml." + JSON_FILE_ERROR)
     sys.exit()

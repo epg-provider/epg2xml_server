@@ -121,8 +121,8 @@ def getEpg():
             GetEPGFromSK(ChannelInfo)
         elif ChannelSource == 'SKB':
             GetEPGFromSKB(ChannelInfo)
-        elif ChannelSource == 'SKY':
-            GetEPGFromSKY(ChannelInfo)
+        #elif ChannelSource == 'SKY':
+        #    GetEPGFromSKY(ChannelInfo)
         elif ChannelSource == 'NAVER':
             GetEPGFromNaver(ChannelInfo)
         elif ChannelSource == 'ISCS':
@@ -371,7 +371,7 @@ def GetEPGFromSKB(ChannelInfo):
                     startTime = str(day) + ' ' + row.find('span', {'class':'time'}).text
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
-                    row.find('span', {'class':'fullHD'}).decompose()
+                    row.find('span', {'class':['fullHD', 'UHD']}).decompose()
                     cell = row.find('span', {'class':None}).text.decode('string_escape').strip()
                     pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"
                     matches = re.match(pattern, cell)

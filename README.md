@@ -113,6 +113,10 @@ https://github.com/wonipapa/epg2xml/wiki
 https://github.com/wonipapa/epg2xml/wiki/FAQ
 
 ## 변경사항
+### Version 1.2.2
+  - My Channel 추가
+  - 소스 추가
+  - Channel.json 분리로 삭제
 ### Version 1.2.1
   - SKB 함수 추가
   - 가져오는 날짜 최대 2일로 변경
@@ -209,7 +213,3 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
   - IPTV별 개인화
 ### Version 1.0.0
   - first release
-  - KBS 함수 추가
-  - Channel.json 소스 변경
-  - 스카이라이프 url 변경
-  - EPG 누락 데이터 수정

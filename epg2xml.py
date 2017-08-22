@@ -121,8 +121,8 @@ def getEpg():
             GetEPGFromSK(ChannelInfo)
         elif ChannelSource == 'SKB':
             GetEPGFromSKB(ChannelInfo)
-        #elif ChannelSource == 'SKY':
-        #    GetEPGFromSKY(ChannelInfo)
+        elif ChannelSource == 'SKY':
+            GetEPGFromSKY(ChannelInfo)
         elif ChannelSource == 'NAVER':
             GetEPGFromNaver(ChannelInfo)
         elif ChannelSource == 'ISCS':

@@ -285,7 +285,7 @@ def GetEPGFromLG(ChannelInfo):
                         startTime = startTime.strftime('%Y%m%d%H%M%S')
                         rating = 0 if cell[1].find('span', {'class': 'tag cte_all'}).text.strip()=="All" else int(cell[1].find('span', {'class': 'tag cte_all'}).text.strip())
                         cell[1].find('span', {'class': 'tagGroup'}).decompose()
-                        pattern = '(<재>?)?(.*?)(?;\[(.*)\])?\s?(?:\(([\d,]+)회\))?$'
+                        pattern = '(<재>?)?(.*?)(?:\[(.*)\])?\s?(?:\(([\d,]+)회\))?$'
                         matches = re.match(pattern, cell[1].text.strip().decode('string_escape'))
                         if not (matches is None):
                             programName = matches.group(2).strip() if matches.group(2) else ''

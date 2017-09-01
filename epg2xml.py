@@ -809,13 +809,13 @@ def GetEPGFromKbs(ChannelInfo):
                         startTime = startTime.strftime('%Y%m%d%H%M%S')
                     #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                     epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
-                epgzip(epginfo)
             except ValueError:
                  if(debug): printError(ChannelName + CONTENT_ERROR)
                  else: pass
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
+    epgzip(epginfo)
 
 # Get EPG data from ARIRANG
 def GetEPGFromArirang(ChannelInfo):

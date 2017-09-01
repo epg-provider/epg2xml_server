@@ -1395,7 +1395,6 @@ function GetEPGFromKbs($ChannelInfo) {
                             //ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                          $epginfo[] = array($ChannelId, $startTime, $programName, $subprogramName, $desc, $actors, $producers, $category, $episode, $rebroadcast, $rating);
                         endforeach;
-                        epgzip($epginfo);
                     endif;
                 } catch(Exception $e) {
                     if($GLOBALS['debug']) printError($e->getMessage());
@@ -1405,6 +1404,7 @@ function GetEPGFromKbs($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
+    epgzip($epginfo);
 }
 
 function GetEPGFromArirang($ChannelInfo) {

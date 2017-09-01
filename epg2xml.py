@@ -910,6 +910,10 @@ def writeProgram(programdata):
     producers = escape(programdata['producers'])
     category = escape(programdata['category'])
     episode = programdata['episode']
+    if episode :
+        episode_ns = episode - 1
+        episode_ns = '0'+ '.' +  str(episode_ns) + '.' + '0' + '/' + '0'
+    episode_on = episode
     rebroadcast = programdata['rebroadcast']
     if episode and addepisode  == 'y': programName = programName + ' ('+ str(episode) + '회)'
     if rebroadcast  == True and addrebroadcast == 'y' : programName = programName + ' (재)'
@@ -950,12 +954,11 @@ def writeProgram(programdata):
                 for producer in producers.split(','):
                     if producer.strip(): print('      <producer>%s</producer>' % (producer).strip())
             print('    </credits>')
-
     if category: print('    <category lang="kr">%s</category>' % (category))
     if contentType: print('    <category lang="en">%s</category>' % (contentType))
-    if episode: print('    <episode-num system="onscreen">%s</episode-num>' % (episode))
+    if episode: print('    <episode-num system="xmltv_ns">%s</episode-num>' % (episode_ns))
+    if episode: print('    <episode-num system="onscreen">%s</episode-num>' % (episode_on))
     if rebroadcast: print('    <previously-shown />')
-
     if rating:
         print('    <rating system="KMRB">')
         print('      <value>%s</value>' % (rating))

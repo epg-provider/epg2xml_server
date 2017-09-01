@@ -1530,6 +1530,9 @@ function writeProgram($programdata) {
     $producers = htmlspecialchars($programdata['producers'], ENT_XML1);
     $category = htmlspecialchars($programdata['category'], ENT_XML1);
     $episode = $programdata['episode'];
+    $episode_ns = (int)$episode - 1;
+    $episode_ns = '0' . '.' . $episode_ns . '.' . '0' . '/' . '0';
+    $episode_on = $episode;
     $rebroadcast = $programdata['rebroadcast'];
     if($episode && $GLOBALS['addepisode'] == 'y') $programName = $programName." (".$episode."회)";
     if($rebroadcast == True && $GLOBALS['addrebroadcast'] == 'y') $programName = $programName." (재)";
@@ -1598,7 +1601,8 @@ function writeProgram($programdata) {
     endif;
     if($category) fprintf($fp, "    <category lang=\"kr\">%s</category>\n", $category);
     if($contentType) fprintf($fp, "    <category lang=\"en\">%s</category>\n", $contentType);
-    if($episode) fprintf($fp, "    <episode-num system=\"onscreen\">%s</episode-num>\n", $episode);
+    if($episode) fprintf($fp, "    <episode-num system=\"xmltv_ns\">%s</episode-num>\n", $episode_ns);
+    if($episode) fprintf($fp, "    <episode-num system=\"onscreen\">%s</episode-num>\n", $episode_on);
     if($rebroadcast) fprintf($fp, "    <previously-shown />\n");
     if($rating) :
         fprintf($fp, "    <rating system=\"KMRB\">\n");

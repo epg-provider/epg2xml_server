@@ -118,7 +118,7 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
 ### Version 1.2.2
   - My Channel 추가
   - 소스 추가
-  - Channel.json 분리로 삭제
+  - 에피소드 넘버 xmltv_ns 추가
 ### Version 1.2.1
   - SKB 함수 추가
   - 가져오는 날짜 최대 2일로 변경

@@ -953,13 +953,13 @@ function GetEPGFromIscs($ChannelInfo) {
                             printError($ChannelName.CHANNEL_ERROR);
                         endif;
                     else :
-                        $html = $data['html'];
+                        $response = $data['html'];
+                        $response = mb_convert_encoding($response, "HTML-ENTITIES", "UTF-8");
                         $pattern = '/<td class="name">(.*)<\/td>/';
-                        $html = preg_replace_callback($pattern, function($matches) { return '<td class="name">'.htmlspecialchars($matches[1]).'</td>';}, $html);
+                        $response = preg_replace_callback($pattern, function($matches) { return '<td class="name">'.htmlspecialchars($matches[1]).'</td>';}, $response);
                         $dom = new DomDocument;
                         libxml_use_internal_errors(True);
-                        $html = mb_convert_encoding($html, "HTML-ENTITIES", "UTF-8");
-                        if($dom->loadHTML($html)):
+                        if($dom->loadHTML($response)):
                             $xpath = new DomXPath($dom);
                             $query = "//div[@class='pp_tbl']/table/tbody/tr";
                             $rows = $xpath->query($query);
@@ -1019,9 +1019,9 @@ function GetEPGFromHcn($ChannelInfo) {
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
+                $response = mb_convert_encoding($response, "HTML-ENTITIES", "EUC-KR");
                 $dom = new DomDocument;
                 libxml_use_internal_errors(True);
-                $response = mb_convert_encoding($response, "HTML-ENTITIES", "EUC-KR");
                 if($dom->loadHTML($response)):
                     $xpath = new DomXPath($dom);
                     $query = "//tr[@class='']";
@@ -1034,10 +1034,12 @@ function GetEPGFromHcn($ChannelInfo) {
                         $startTime = $cells->item(0)->nodeValue ?: "";
                         $startTime = date("YmdHis", strtotime($day." ".$startTime));
                         $programName = trim($cells->item(1)->nodeValue) ?: "";
+                        $category = trim($cells->item(2)->nodeValue) ?: "";
+                        $category = preg_replace('/\(.*\)/', '', $category);
                         $images = $row->getElementsByTagName('img');
                         foreach($images as $image):
-                            preg_match('/re\.png/', $image->getAttribute('src'), $rebroadcast);
-                            if($rebroadcast != NULL) $rebroadcast = True;
+                            preg_match('/re\.png/', $image->getAttribute('src'), $rebroad);
+                            if($rebroad != NULL) $rebroadcast = True;
                             preg_match('/.*plus([\d,]+)\.png/', $image->getAttribute('src'), $grade);
                             if($grade != NULL) $rating = $grade[1];
                         endforeach;

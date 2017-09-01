@@ -579,6 +579,8 @@ def GetEPGFromHcn(ChannelInfo):
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
                     programName = row.find('td', {'class':'left'}).text.decode('string_escape').strip()
+                    category = row.find('td', {'class':'l'}).text.decode('string_escape').strip()
+                    category = re.sub('\(.*\)', '', category)
                     for image in row.find_all('img', {'class':'vM'}, alt=True):
                         rebroad = re.match('(재방송)',image['alt'].decode('string_escape').strip())
                         if not (rebroad is None): rebroadcast = True

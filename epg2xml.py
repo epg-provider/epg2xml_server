@@ -163,7 +163,7 @@ def GetEPGFromEPG(ChannelInfo):
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
             pattern = '<td height="25" valign=top >(.*)<\/td>'
-            data = re.sub(pattern, partial(replacement,txt='title'), data)
+            data = re.sub(pattern, partial(replacement, tag='td'), data)
             strainer = SoupStrainer('table', {'style':'margin-bottom:30'})
             soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
             html = soup.find_all('table', {'style':'margin-bottom:30'})
@@ -270,7 +270,7 @@ def GetEPGFromLG(ChannelInfo):
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
-            data = data.replace('<재>', '&lt;재&gt;')
+            data = data.replace('<재>', '&lt;재&gt;').replace(' [..','').replace(' (..', '')
             strainer = SoupStrainer('table')
             soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
             html = soup.find('table').tbody.find_all('tr') if soup.find('table') else ''
@@ -285,7 +285,7 @@ def GetEPGFromLG(ChannelInfo):
                         startTime = startTime.strftime('%Y%m%d%H%M%S')
                         rating = 0 if cell[1].find('span', {'class': 'tag cte_all'}).text.strip()=="All" else int(cell[1].find('span', {'class': 'tag cte_all'}).text.strip())
                         cell[1].find('span', {'class': 'tagGroup'}).decompose()
-                        pattern = '(<재>?)?(.*?)(?:\[(.*)\])?\s?(?:\(([\d,]+)회\))?$'
+                        pattern = '(<재>)?\s?(?:\[.*?\])?(.*?)(?:\[(.*)\])?\s?(?:\(([\d,]+)회\))?$'
                         matches = re.match(pattern, cell[1].text.strip().decode('string_escape'))
                         if not (matches is None):
                             programName = matches.group(2).strip() if matches.group(2) else ''
@@ -368,6 +368,17 @@ def GetEPGFromSKB(ChannelInfo):
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
+            data = re.sub('<!--(.*?)-->', '', data, 0, re.I|re.S)
+            data = re.sub('<span></span>', '', data)
+            data = re.sub('<span class="title">', '<span>', data)
+            data = re.sub('<span class="explan">화면해설</span>','',data)
+            data = re.sub('<span class="caption">자막방송</span>','',data)
+            data = re.sub('<span class="fullHD">Full HD</span>','',data)
+            data = re.sub('<span class="UHD">UHD</span>','',data)
+            data = re.sub('<span class="nowon">now on</span>','',data)
+            pattern = '<span>(.*)<\/span>'
+            data = re.sub(pattern, partial(replacement, tag='span'), data)
+            #print(data)
             strainer = SoupStrainer('div', {'id':'dawn'})
             soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
             html =  soup.find_all('li') if soup.find_all('li') else ''
@@ -379,9 +390,7 @@ def GetEPGFromSKB(ChannelInfo):
                     startTime = str(day) + ' ' + row.find('span', {'class':'time'}).text
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
-                    if row.find('span', {'class':['caption', 'explan', 'fullHD', 'UHD', 'nowon']}) :
-                        row.find('span', {'class':['caption', 'explan', 'fullHD', 'UHD', 'nowon']}).decompose()
-                    cell = row.find('span', {'class':None}).text.decode('string_escape').strip()
+                    cell = row.find('span', {'class':'title'}).text.decode('string_escape').strip()
                     pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"
                     matches = re.match(pattern, cell)
                     if not(matches is None) :
@@ -394,13 +403,13 @@ def GetEPGFromSKB(ChannelInfo):
                         rating = int(rating.text.decode('string_escape').replace('세','').strip())
                     #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                     epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
-                epgzip(epginfo)
             else:
                 if(debug): printError(ChannelName + CONTENT_ERROR)
                 else: pass
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass        
+    epgzip(epginfo)
 
 # Get EPG data from SKY
 def GetEPGFromSKY(ChannelInfo):
@@ -510,7 +519,7 @@ def GetEPGFromIscs(ChannelInfo):
         try:
             data = json.loads(json_data, encoding='utf-8')
             pattern = '<td class="name">(.*)<\/td>'
-            data['html'] = re.sub(pattern, partial(replacement, txt='name'), data['html'])
+            data['html'] = re.sub(pattern, partial(replacement, tag='td'), data['html'])
             strainer = SoupStrainer('tbody')
             soup = BeautifulSoup(data['html'], 'lxml', parse_only=strainer)
             html =  soup.find_all('tr') if soup.find_all('tr') else ''
@@ -522,7 +531,7 @@ def GetEPGFromIscs(ChannelInfo):
                     startTime = str(day) + ' ' + row.find('td', {'class':'time'}).text
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
-                    programName = row.find('td', {'class':'name'}).text.decode('string_escape').strip()
+                    programName = row.find('td', {'class':'title'}).text.decode('string_escape').strip()
                     rating = row.find('span', {'class':'year'}).text.decode('string_escape').strip()
                     if rating == '전체관람' : rating = 0
                     else : rating = rating.replace('세이상', ' ')
@@ -888,7 +897,7 @@ def writeProgram(programdata):
     subprogramName = escape(programdata['subprogramName']).strip()
     matches = re.match('(.*) \(?(\d+부)\)?', unescape(programName.encode('utf-8', 'ignore')))
     if not(matches is None):
-        programName = escape(matches.group(1));
+        programName = escape(matches.group(1)).strip();
         subprogramName = escape(matches.group(2)) + ' ' + subprogramName
         subprogramName = subprogramName.strip()
     if programName is None:
@@ -905,7 +914,7 @@ def writeProgram(programdata):
     else :
         rating = '%s세 이상 관람가' % (programdata['rating'])
     if addverbose == 'y':
-        desc = escape(programdata['programName'])
+        desc = escape(programdata['programName']).strip()
         if subprogramName : desc = desc + '\n부제 : ' + subprogramName
         if rebroadcast == True and addrebroadcast == 'y' : desc = desc + '\n방송 : 재방송'
         if episode : desc = desc + '\n회차 : ' + str(episode) + '회'
@@ -917,11 +926,10 @@ def writeProgram(programdata):
         desc =''
     if programdata['desc'] : desc = desc + '\n' + escape(programdata['desc'])
     desc = re.sub(' +',' ', desc)
-    #desc = re.sub('\s+','\s', desc)
     contentTypeDict={'교양':'Arts / Culture (without music)', '만화':'Cartoons / Puppets', '교육':'Education / Science / Factual topics', '취미':'Leisure hobbies', '드라마':'Movie / Drama', '영화':'Movie / Drama', '음악':'Music / Ballet / Dance', '뉴스':'News / Current affairs', '다큐':'Documentary', '라이프':'Documentary', '시사/다큐':'Documentary', '연예':'Show / Game show', '스포츠':'Sports', '홈쇼핑':'Advertisement / Shopping'}
     contentType = ''
     for key, value in contentTypeDict.iteritems():
-        if category.startswith(key):
+        if key in category:
             contentType = value
     print('  <programme start="%s +0900" stop="%s +0900" channel="%s">' % (startTime, endTime, ChannelId))
     print('    <title lang="kr">%s</title>' % (programName))
@@ -956,10 +964,11 @@ def printLog(*args):
 def printError(*args):
     print("Error : ", *args, file=sys.stderr)
 
-def replacement(match, txt):
+def replacement(match, tag):
     if not(match is None):
+        tag = tag.strip()
         programName = unescape(match.group(1)).replace('<','&lt;').replace('>','&gt;').strip()
-        programName = '<td class="'+ txt.strip() + '">' + programName + '</td>'
+        programName = '<'+ tag + ' class="title">' + programName + '</' + tag + '>'
         return programName
     else:
         return '';

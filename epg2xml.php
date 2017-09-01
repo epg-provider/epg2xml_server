@@ -588,10 +588,10 @@ function GetEPGFromLG($ChannelInfo) {
                 printError($ChannelName.HTTP_ERROR);
             else :
                 $response = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'.$response;
-                $dom = new DomDocument;
-                libxml_use_internal_errors(True);
                 $response = mb_convert_encoding($response, "UTF-8", "EUC-KR");
                 $response = str_replace(array('<재>', ' [..', ' (..'), array('&lt;재&gt;', '', ''), $response);
+                $dom = new DomDocument;
+                libxml_use_internal_errors(True);
                 if($dom->loadHTML($response)):
                     $xpath = new DomXPath($dom);
                     $query = "//div[@class='tblType list']/table/tbody/tr";
@@ -603,7 +603,7 @@ function GetEPGFromLG($ChannelInfo) {
                         $cells = $row->getElementsByTagName('td');
                         $startTime = date("YmdHis", strtotime($day." ".trim($cells->item(0)->nodeValue)));
                         $programName = trim($cells->item(1)->childNodes->item(0)->nodeValue);
-                        $pattern = '/(<재>?)?(.*?)(?:\[(.*)\])?\s?(?:\(([\d,]+)회\))?$/';
+                        $pattern = '/(<재>)?\s?(?:\[.*?\])?(.*?)(?:\[(.*)\])?\s?(?:\(([\d,]+)회\))?$/';
                         preg_match($pattern, $programName, $matches);
                         if ($matches != NULL) :
                             if(isset($matches[2])) $programName = trim($matches[2]) ?: "";
@@ -726,9 +726,13 @@ function GetEPGFromSKB($ChannelInfo) {
                 printError($ChannelName.HTTP_ERROR);
             else :
                 $response = str_replace('charset="euc-kr"', 'charset="utf-8"', $response);
+                $response = mb_convert_encoding($response, "UTF-8", "EUC-KR");
+                $response = preg_replace('/<!--(.*?)-->/is', '', $response);
+                $response = preg_replace('/<span><\/span>/is', '', $response);
+                $pattern = '/<span>(.*)<\/span>/';
+                $response = preg_replace_callback($pattern, function($matches) { return '<span class="title">'.htmlspecialchars($matches[1], ENT_NOQUOTES).'</span>';}, $response);
                 $dom = new DomDocument;
                 libxml_use_internal_errors(True);
-                $response = mb_convert_encoding($response, "UTF-8", "EUC-KR");
                 if($dom->loadHTML($response)):
                     $xpath = new DomXPath($dom);
                     $query = "//span[@class='caption' or @class='explan' or @class='fullHD' or @class='UHD' or @class='nowon']";
@@ -758,7 +762,6 @@ function GetEPGFromSKB($ChannelInfo) {
                         //ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                         $epginfo[] = array($ChannelId, $startTime, $programName, $subprogramName, $desc, $actors, $producers, $category, $episode, $rebroadcast, $rating);
                     endforeach;
-                    epgzip($epginfo);
                 else :
                     if($GLOBALS['debug']) printError($ChannelName.CONTENT_ERROR);
                 endif;
@@ -767,6 +770,7 @@ function GetEPGFromSKB($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
+    epgzip($epginfo);
 }
 
 // Get EPG data from SKY
@@ -1535,7 +1539,7 @@ function writeProgram($programdata) {
         $rating = sprintf("%s세 이상 관람가", $programdata['rating']);
     endif;
     if($GLOBALS['addverbose'] == 'y') :
-        $desc = htmlspecialchars($programdata['programName'], ENT_XML1);
+        $desc = trim(htmlspecialchars($programdata['programName'], ENT_XML1));
         if($subprogramName)  $desc = $desc."\n부제 : ".$subprogramName;
         if($rebroadcast == True && $GLOBALS['addrebroadcast']  == 'y') $desc = $desc."\n방송 : 재방송";
         if($episode) $desc = $desc."\n회차 : ".$episode."회";

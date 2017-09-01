@@ -951,9 +951,9 @@ function GetEPGFromIscs($ChannelInfo) {
                         endif;
                     else :
                         $response = $data['html'];
-                        $response = mb_convert_encoding($response, "HTML-ENTITIES", "UTF-8");
                         $pattern = '/<td class="name">(.*)<\/td>/';
                         $response = preg_replace_callback($pattern, function($matches) { return '<td class="name">'.htmlspecialchars($matches[1]).'</td>';}, $response);
+                        $response = mb_convert_encoding($response, "HTML-ENTITIES", "UTF-8");
                         $dom = new DomDocument;
                         libxml_use_internal_errors(True);
                         if($dom->loadHTML($response)):

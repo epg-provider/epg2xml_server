@@ -1091,7 +1091,6 @@ if default_fetch_limit :
         sys.exit()
     else :
         period = int(default_fetch_limit)
-        #if period > 2 : period = 2
 else :
     printError("epg2xml.json 파일의 default_fetch_limit항목이 없습니다.");
     sys.exit()

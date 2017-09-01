@@ -1,8 +1,7 @@
 #!/usr/bin/env php
 <?php
 @date_default_timezone_set('Asia/Seoul');
-//error_reporting(E_ALL ^ E_NOTICE);
-error_reporting(E_ALL);
+error_reporting(E_ALL ^ E_NOTICE);
 define("VERSION", "1.2.2");
 
 $debug = False;
@@ -189,7 +188,6 @@ else :
                 else :
                     if(in_array($default_fetch_limit, array(1, 2, 3, 4, 5, 6, 7))) :
                         $period = $default_fetch_limit;
-                        //$period = $period > 2 ? 2 : $period;
                         
                     else :
                         printError("default_fetch_limit는 1, 2, 3, 4, 5, 6, 7만 가능합니다.");
@@ -379,7 +377,6 @@ function getEPG() {
         $ChannelSource =  $ChannelInfo[2];
         $ChannelServiceId =  $ChannelInfo[3];
         if($GLOBALS['debug']) printLog($ChannelName.' 채널 EPG 데이터를 가져오고 있습니다');
-        
         if($ChannelSource == 'EPG') :
             GetEPGFromEPG($ChannelInfo);
         elseif($ChannelSource == 'KT') :
@@ -1479,6 +1476,7 @@ function GetEPGFromArirang($ChannelInfo) {
         }
     endforeach;
 }
+
 # Zip epginfo
 function epgzip($epginfo) {
     #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
@@ -1632,6 +1630,7 @@ function getWeb($url, $params, $method) {
 function printLog($string) {
     fwrite(STDERR, $string."\n");
 }
+
 function printError($string) {
     fwrite(STDERR, "Error : ".$string."\n");
 }

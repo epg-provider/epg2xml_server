@@ -911,7 +911,7 @@ def writeProgram(programdata):
     category = escape(programdata['category'])
     episode = programdata['episode']
     if episode :
-        episode_ns = episode - 1
+        episode_ns = int(episode) - 1
         episode_ns = '0'+ '.' +  str(episode_ns) + '.' + '0' + '/' + '0'
         episode_on = episode
     rebroadcast = programdata['rebroadcast']

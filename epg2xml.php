@@ -1104,7 +1104,7 @@ function GetEPGFromPooq($ChannelInfo) {
                             $endTime = $program['startDate']." ".$program['endTime'];
                             $endTime = date("YmdHis", strtotime($endTime));
                             $pattern = '/^(.*?)(?:([\d,]+)회)?(?:\((재)\))?$/';
-                            $programName = $program['programTitle'];
+                            $programName = str_replace("\r\n", "", $program['programTitle']);
                             preg_match($pattern, $programName, $matches);
                             if($matches !== NULL) :
                                 if(isset($matches[1])) $programName = trim($matches[1]) ?: "";
@@ -1546,8 +1546,8 @@ function writeProgram($programdata) {
         if($rebroadcast == True && $GLOBALS['addrebroadcast']  == 'y') $desc = $desc."\n방송 : 재방송";
         if($episode) $desc = $desc."\n회차 : ".$episode."회";
         if($category) $desc = $desc."\n장르 : ".$category;
-        if($actors) $desc = $desc."\n출연 : ".$actors;
-        if($producers) $desc = $desc."\n제작 : ".$producers;
+        if($actors) $desc = $desc."\n출연 : ".trim($actors);
+        if($producers) $desc = $desc."\n제작 : ".trim($producers);
         $desc = $desc."\n등급 : ".$rating;
     else:
         $desc = "";

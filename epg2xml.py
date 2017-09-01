@@ -627,11 +627,12 @@ def GetEPGFromPooq(ChannelInfo):
                         endTime = program['startDate'] + ' ' + program['endTime']
                         endTime = datetime.datetime.strptime(endTime, '%Y-%m-%d %H:%M')
                         endTime = endTime.strftime('%Y%m%d%H%M%S')
+                        programName = program['programTitle'].replace("\r\n", "").encode('utf-8');
                         pattern = '^(.*?)(?:([\d,]+)회)?(?:\((재)\))?$'
-                        matches = re.match(pattern, program['programTitle'].encode('utf-8'))
+                        matches = re.match(pattern, programName)
                         if not(matches is None) :
-                            programName = matches.group(1) if matches.group(1) else ''
-                            episode = matches.group(2) if matches.group(2) else ''
+                            programName = matches.group(1).strip() if matches.group(1) else ''
+                            episode = matches.group(2).strip() if matches.group(2) else ''
                             rebroadcast = True if matches.group(3) else False
                         actors = program['programStaring'].strip(',').strip() if program['programStaring'] else ''
                         desc = program['programSummary'].strip() if program['programSummary'] else ''
@@ -922,8 +923,8 @@ def writeProgram(programdata):
         if rebroadcast == True and addrebroadcast == 'y' : desc = desc + '\n방송 : 재방송'
         if episode : desc = desc + '\n회차 : ' + str(episode) + '회'
         if category : desc = desc + '\n장르 : ' + category
-        if actors : desc = desc + '\n출연 : ' + actors
-        if producers : desc = desc + '\n제작 : ' + producers
+        if actors : desc = desc + '\n출연 : ' + actors.strip()
+        if producers : desc = desc + '\n제작 : ' + producers.strip()
         desc = desc + '\n등급 : ' + rating
     else:
         desc =''

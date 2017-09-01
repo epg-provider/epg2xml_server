@@ -22,7 +22,7 @@ epg2xml.php와 동일하다.
 epg2xml.json 안의 항목이 설정 가능한 항목이다. 
 <pre>
 MyISP : 사용하는 ISP를 넣는다 .(ALL, KT, LG, SK가 사용가능하다)
-MyChannels : EPG 정보를 가져오고자 하는 채널 ID를 넣는다. ("1, 2, 3, 4" 또는 "1,2,3,4"
+MyChannels : EPG 정보를 가져오고자 하는 채널 ID를 넣는다. ("1, 2, 3, 4" 또는 "1,2,3,4")
 default_icon_url : 채널별 아이콘이 있는 url을 설정할 수 있다. 아이콘의 이름은 json 파일에 있는 Id.png로 기본설정되어 있다.
 default_rebroadcast : 제목에 재방송 정보 출력
 default_episode : 제목에 회차정보 출력

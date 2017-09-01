@@ -913,7 +913,7 @@ def writeProgram(programdata):
     if episode :
         episode_ns = episode - 1
         episode_ns = '0'+ '.' +  str(episode_ns) + '.' + '0' + '/' + '0'
-    episode_on = episode
+        episode_on = episode
     rebroadcast = programdata['rebroadcast']
     if episode and addepisode  == 'y': programName = programName + ' ('+ str(episode) + '회)'
     if rebroadcast  == True and addrebroadcast == 'y' : programName = programName + ' (재)'

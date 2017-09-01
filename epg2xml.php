@@ -1530,9 +1530,11 @@ function writeProgram($programdata) {
     $producers = htmlspecialchars($programdata['producers'], ENT_XML1);
     $category = htmlspecialchars($programdata['category'], ENT_XML1);
     $episode = $programdata['episode'];
-    $episode_ns = (int)$episode - 1;
-    $episode_ns = '0' . '.' . $episode_ns . '.' . '0' . '/' . '0';
-    $episode_on = $episode;
+    if($episode) :
+        $episode_ns = (int)$episode - 1;
+        $episode_ns = '0' . '.' . $episode_ns . '.' . '0' . '/' . '0';
+        $episode_on = $episode;
+    endif;
     $rebroadcast = $programdata['rebroadcast'];
     if($episode && $GLOBALS['addepisode'] == 'y') $programName = $programName." (".$episode."회)";
     if($rebroadcast == True && $GLOBALS['addrebroadcast'] == 'y') $programName = $programName." (재)";

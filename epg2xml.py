@@ -495,13 +495,13 @@ def GetEPGFromNaver(ChannelInfo):
                         rating = program['grade']
                          #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                         epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
-            epgzip(epginfo)
         except ValueError:
              if(debug): printError(ChannelName + CONTENT_ERROR)
              else: pass
     except (requests.RequestException) as e:
         if(debug): printError(ChannelName + str(e))
         else: pass
+    epgzip(epginfo)
 
 # Get EPG data from ISCS
 def GetEPGFromIscs(ChannelInfo):
@@ -543,13 +543,14 @@ def GetEPGFromIscs(ChannelInfo):
                         rebroadcast = True if matches.group(3) else False
                     #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                     epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
-                epgzip(epginfo)
+
         except ValueError:
             if(debug): printError(ChannelName + CONTENT_ERROR)
             else: pass
         except (requests.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
+    epgzip(epginfo)
 
 # Get EPG data from HCN
 def GetEPGFromHcn(ChannelInfo):
@@ -585,13 +586,13 @@ def GetEPGFromHcn(ChannelInfo):
                         if not (grade is None): rating = int(grade.group(1))
                     #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                     epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
-                epgzip(epginfo)
             else:
                 if(debug): printError(ChannelName + CONTENT_ERROR)
                 else: pass
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass        
+    epgzip(epginfo)
 
 # Get EPG data from POOQ
 def GetEPGFromPooq(ChannelInfo):

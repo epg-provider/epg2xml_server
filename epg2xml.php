@@ -914,7 +914,6 @@ function GetEPGFromNaver($ChannelInfo) {
                             endforeach;
                         endfor;
                     endfor;
-                    epgzip($epginfo);
                 endif;
              } catch(Exception $e) {
                 if($GLOBALS['debug']) printError($e->getMessage());
@@ -923,6 +922,7 @@ function GetEPGFromNaver($ChannelInfo) {
     } catch (Exception $e) {
         if($GLOBALS['debug']) printError($e->getMessage());
     }
+    epgzip($epginfo);
 }
 
 // Get EPG data from Iscs
@@ -982,7 +982,6 @@ function GetEPGFromIscs($ChannelInfo) {
                                 //ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                                 $epginfo[] = array($ChannelId, $startTime, $programName, $subprogramName, $desc, $actors, $producers, $category, $episode, $rebroadcast, $rating);
                             endforeach;
-                            epgzip($epginfo);
                         else :
                             if($GLOBALS['debug']) printError($ChannelName.CONTENT_ERROR);
                         endif;
@@ -995,6 +994,7 @@ function GetEPGFromIscs($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
+    epgzip($epginfo);
 }
 
 // Get EPG data from Hcn
@@ -1044,7 +1044,6 @@ function GetEPGFromHcn($ChannelInfo) {
                         //ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                         $epginfo[] = array($ChannelId, $startTime, $programName, $subprogramName, $desc, $actors, $producers, $category, $episode, $rebroadcast, $rating);
                     endforeach;
-                    epgzip($epginfo);
                 else :
                     if($GLOBALS['debug']) printError($ChannelName.CONTENT_ERROR);
                 endif;
@@ -1053,6 +1052,7 @@ function GetEPGFromHcn($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
+    epgzip($epginfo);
 }
 
 // Get EPG data from POOQ

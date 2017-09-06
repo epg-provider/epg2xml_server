@@ -1514,6 +1514,7 @@ function epgzip($epginfo) {
         writeProgram($programdata);
     endforeach;
 }
+
 function writeProgram($programdata) {
     $fp = $GLOBALS['fp'];
     $ChannelId = $programdata['channelId'];
@@ -1616,6 +1617,7 @@ function writeProgram($programdata) {
     endif;
     fprintf($fp, "  </programme>\n");
 }
+
 function getWeb($url, $params, $method) {
     $ch = curl_init();
     if($method == "GET"):
@@ -1644,8 +1646,7 @@ function printError($string) {
     fwrite(STDERR, "Error : ".$string."\n");
 }
 
-function _microtime()
-{
+function _microtime() {
     list($usec, $sec) = explode(" ", microtime());
     return ($sec.(int)($usec*1000));
 }

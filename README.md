@@ -23,6 +23,7 @@ epg2xml.json 안의 항목이 설정 가능한 항목이다.
 <pre>
 MyISP : 사용하는 ISP를 넣는다 .(ALL, KT, LG, SK가 사용가능하다)
 MyChannels : EPG 정보를 가져오고자 하는 채널 ID를 넣는다. ("1, 2, 3, 4" 또는 "1,2,3,4")
+output : EPG 정보 출력방향 (d: 화면 출력, o: 파일 출력, s:소켓출력)
 default_icon_url : 채널별 아이콘이 있는 url을 설정할 수 있다. 아이콘의 이름은 json 파일에 있는 Id.png로 기본설정되어 있다.
 default_rebroadcast : 제목에 재방송 정보 출력
 default_episode : 제목에 회차정보 출력
@@ -66,9 +67,9 @@ ex : http://domain/epg2xml.php?i=ALL&l=2
 ## 사용방법
 
 ### tv_grab_file 사용시 (https://github.com/nurtext/tv_grab_file_synology)
-tv_grab_file 안의 cat xmltv.xml 또는 wget 부분을 아래와 같이 변경해준다.  
+tv_grab_file 안의 cat xmltv.xml 또는 wget 이 있는 부분을 아래와 같이 변경해준다.  
 python 경로와 php의 경로는 /usr/bin에 있고, epg2xml 파일은 /home/hts에 있는 것으로 가정했다.  
-
+이 경우 epg2xml.json의 output을 d로 해야 한다.
 #### PYTHON의 경우
 <pre>
 /usr/bin/python /home/hts/epg2xml.py 또는
@@ -106,7 +107,7 @@ wget -O - http://domain/epg2xml.php?i=ALL&l=2
 php web 버전은 xmltv.sock을 지원하지 않는다.
 
 ## 라이센스
-BSD
+BSD 3-clause "New" or "Revised" License
 
 ## WIKI
 https://github.com/wonipapa/epg2xml/wiki
@@ -119,6 +120,7 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
   - My Channel 추가
   - 소스 추가
   - 에피소드 넘버 xmltv_ns 추가
+  - PHP 공용함수 분리
 ### Version 1.2.1
   - SKB 함수 추가
   - 가져오는 날짜 최대 2일로 변경

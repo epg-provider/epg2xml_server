@@ -758,7 +758,7 @@ function GetEPGFromPooq($ChannelInfo) {
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
     $today = date("Ymd");
-    $lastday = date("Ymd", strtotime("+".($GLOBALS['period'] - 1)." days"));
+    $lastday = date("Ymd", strtotime("+".($GLOBALS['period'])." days"));
     $url = "https://wapie.pooq.co.kr/v1/epgs30/".$ServiceId."/";
     $params = array(
         'deviceTypeId'=> 'pc',
@@ -796,8 +796,6 @@ function GetEPGFromPooq($ChannelInfo) {
                         if(in_array($program['startDate'] , $date_list)) :
                             $startTime = $program['startDate']." ".$program['startTime'];
                             $startTime = date("YmdHis", strtotime($startTime));
-                            $endTime = $program['startDate']." ".$program['endTime'];
-                            $endTime = date("YmdHis", strtotime($endTime));
                             $pattern = '/^(.*?)(?:([\d,]+)회)?(?:\((재)\))?$/';
                             $programName = str_replace("\r\n", "", $program['programTitle']);
                             preg_match($pattern, $programName, $matches);
@@ -809,21 +807,8 @@ function GetEPGFromPooq($ChannelInfo) {
                             if($program['programStaring']) $actors = trim($program['programStaring'], ',');
                             if($program['programSummary']) $desc = trim($program['programSummary']);
                             $rating = $program['age'];
-                            $programdata = array(
-                                'channelId'=> $ChannelId,
-                                'startTime' => $startTime,
-                                'endTime' => $endTime,
-                                'programName' => $programName,
-                                'subprogramName'=> $subprogramName,
-                                'desc' => $desc,
-                                'actors' => $actors,
-                                'producers' => $producers,
-                                'category' => $category,
-                                'episode' => $episode,
-                                'rebroadcast' => $rebroadcast,
-                                'rating' => $rating
-                            );
-                            writeProgram($programdata);
+                            //ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
+                            $epginfo[] = array($ChannelId, $startTime, $programName, $subprogramName, $desc, $actors, $producers, $category, $episode, $rebroadcast, $rating);
                             usleep(1000);
                         endif;
                     endforeach;
@@ -835,6 +820,7 @@ function GetEPGFromPooq($ChannelInfo) {
     } catch (Exception $e) {
         if($GLOBALS['debug']) printError($e->getMessage());
     }
+    epgzip($epginfo);
 }
 
 // Get EPG data from MBC

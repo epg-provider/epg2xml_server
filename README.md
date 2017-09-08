@@ -121,6 +121,7 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
   - 소스 추가
   - 에피소드 넘버 xmltv_ns 추가
   - PHP 공용함수 분리
+  - POOQ 함수 수정
 ### Version 1.2.1
   - SKB 함수 추가
   - 가져오는 날짜 최대 2일로 변경

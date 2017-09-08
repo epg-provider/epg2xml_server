@@ -38,7 +38,7 @@ except ImportError:
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.2.2'
+__version__ = '1.2.2p1'
 
 if not sys.version_info[:2] == (2, 7):
     print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
@@ -606,7 +606,8 @@ def GetEPGFromPooq(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
-    lastday = today + datetime.timedelta(days=period-1)
+    epginfo = []
+    lastday = today + datetime.timedelta(days=period)
     url = 'https://wapie.pooq.co.kr/v1/epgs30/' + str(ServiceId) + '/'
     params = {'deviceTypeId': 'pc', 'marketTypeId': 'generic', 'apiAccessCredential': 'EEBE901F80B3A4C4E5322D58110BE95C', 'offset': '0', 'limit': '1000', 'startTime': today.strftime('%Y/%m/%d') + ' 00:00', 'endTime': lastday.strftime('%Y/%m/%d') + ' 00:00'}
     date_list = [(today + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(0, period)]
@@ -629,9 +630,6 @@ def GetEPGFromPooq(ChannelInfo):
                         startTime = program['startDate'] + ' ' + program['startTime']
                         startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                         startTime = startTime.strftime('%Y%m%d%H%M%S')
-                        endTime = program['startDate'] + ' ' + program['endTime']
-                        endTime = datetime.datetime.strptime(endTime, '%Y-%m-%d %H:%M')
-                        endTime = endTime.strftime('%Y%m%d%H%M%S')
                         programName = program['programTitle'].replace("\r\n", "").encode('utf-8');
                         pattern = '^(.*?)(?:([\d,]+)회)?(?:\((재)\))?$'
                         matches = re.match(pattern, programName)
@@ -642,8 +640,8 @@ def GetEPGFromPooq(ChannelInfo):
                         actors = program['programStaring'].strip(',').strip() if program['programStaring'] else ''
                         desc = program['programSummary'].strip() if program['programSummary'] else ''
                         rating = int(program['age'])
-                        programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
-                        writeProgram(programdata)
+                        #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
+                        epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
                         time.sleep(0.001)
         except ValueError:
             if(debug): printError(ChannelName + CONTENT_ERROR)
@@ -651,6 +649,7 @@ def GetEPGFromPooq(ChannelInfo):
     except (requests.exceptions.RequestException) as e:
         if(debug): printError(ChannelName + str(e))
         else: pass
+    epgzip(epginfo)
 
 # Get EPG data from MBC
 def GetEPGFromMbc(ChannelInfo):

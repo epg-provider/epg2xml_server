@@ -636,7 +636,9 @@ function GetEPGFromIscs($ChannelInfo) {
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
     $epginfo = array();
+    $epginfo2 = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
+        $istomorrow = False;
         $url = "http://m.iscs.co.kr/sub/02/data.asp";
         $day = date("Y-m-d", strtotime("+".($k - 1)." days"));
         $params = array(
@@ -664,7 +666,13 @@ function GetEPGFromIscs($ChannelInfo) {
                             $startTime = $endTime = $programName = $subprogramName = $desc = $actors = $producers = $category = $episode = "";
                             $rebroadcast = False;
                             $rating = 0;
-                            $startTime = date("YmdHis", strtotime($day." ".$program['Time']));
+                            if(startsWith($program['Time'], '1') || startsWith($program['Time'], '2')) $istomorrow = True;
+                            if(startsWith($program['Time'], '0') && $istomorrow == True) :
+//                                $thisday = date("Ymd", strtotime($day." +1 days"));
+                                $startTime = date("YmdHis", strtotime($day." +1 days"." ".$program['Time']));
+                            else :
+                                $startTime = date("YmdHis", strtotime($day." ".$program['Time']));
+                            endif;
                             $pattern = '/^(.*?)(?:\(([\d,]+)회\))?(?:\((재)\))?$/';
                             preg_match($pattern, trim($program['Pg_Name']), $matches);
                             if ($matches != NULL) :
@@ -690,7 +698,9 @@ function GetEPGFromIscs($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
-    epgzip($epginfo);
+    $epginfo2 =  array_map("unserialize", array_unique(array_map("serialize", $epginfo)));
+    epgzip($epginfo2);
+
 }
 
 // Get EPG data from Hcn
@@ -1111,8 +1121,6 @@ function GetEPGFromArirang($ChannelInfo) {
             else :
                 $dom = new DomDocument;
                 libxml_use_internal_errors(True);
-                //echo $response;
-
                 $response = mb_convert_encoding($response, "HTML-ENTITIES", "EUC-KR");
                 if($dom->loadHTML($response)):
                     $xpath = new DomXPath($dom);
@@ -1169,6 +1177,7 @@ function GetEPGFromArirang($ChannelInfo) {
 
 # Zip epginfo
 function epgzip($epginfo) {
+    if($epginfo == NULL) $epginfo = array();
     #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
     $zipped = array_slice(array_map(NULL, $epginfo, array_slice($epginfo,1)),0,-1);
     foreach($zipped as $epg) :
@@ -1346,5 +1355,9 @@ function printError($string) {
 function _microtime() {
     list($usec, $sec) = explode(" ", microtime());
     return ($sec.(int)($usec*1000));
+}
+
+function startsWith($haystack, $needle) {
+    return !strncmp($haystack, $needle, strlen($needle));
 }
 ?>

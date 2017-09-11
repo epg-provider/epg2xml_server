@@ -46,14 +46,14 @@ endif;
 //사용방법
 $usage = <<<USAGE
 usage: epg2xml.php [-h] -i {ALL, KT,LG,SK}
-                  (-v | -d | -o [xmltv.xml] | -s [xmltv.sock]) [-l 1-7]
+                  (-v | -d | -o [xmltv.xml] | -s [xmltv.sock]) [-l 1-2]
                   [--icon http://www.example.com/icon] [--verbose y, n]
 USAGE;
 
 //도움말
 $help = <<<HELP
 usage: epg2xml.php [-h] -i {ALL, KT,LG,SK}
-                  (-v | -d | -o [xmltv.xml] | -s [xmltv.sock]) [-l 1-7]
+                  (-v | -d | -o [xmltv.xml] | -s [xmltv.sock]) [-l 1-2]
                   [--icon http://www.example.com/icon] [--verbose y, n]
 EPG 정보를 출력하는 방법을 선택한다
 optional arguments:
@@ -65,7 +65,7 @@ optional arguments:
   IPTV 선택
   -i {ALL, KT,LG,SK}         사용하는 IPTV : ALL, KT, LG, SK
 추가옵션:
-  -l 1-7, --limit 1-7   EPG 정보를 가져올 기간, 기본값: 2
+  -l 1-2, --limit 1-2   EPG 정보를 가져올 기간, 기본값: 2
   --icon http://www.example.com/icon
                         채널 아이콘 URL, 기본값:
   --rebroadcast y, n    재방송정보 제목에 추가 출력
@@ -187,11 +187,11 @@ else :
                     printError("epg2xml.json 파일의 default_fetch_limit항목이 없습니다.");
                     exit;
                 else :
-                    if(in_array($default_fetch_limit, array(1, 2, 3, 4, 5, 6, 7))) :
+                    if(in_array($default_fetch_limit, array(1, 2))) :
                         $period = $default_fetch_limit;
                         $period = $period > 2 ? 2 : $period;
                     else :
-                        printError("default_fetch_limit는 1, 2, 3, 4, 5, 6, 7만 가능합니다.");
+                        printError("default_fetch_limit는 1, 2만 가능합니다.");
                         exit;
                     endif;
                 endif;

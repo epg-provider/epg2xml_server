@@ -38,7 +38,7 @@ except ImportError:
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.2.2p2'
+__version__ = '1.2.3'
 
 if not sys.version_info[:2] == (2, 7):
     print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
@@ -981,7 +981,7 @@ def writeProgram(programdata):
             print('    </credits>')
     if category: print('    <category lang="kr">%s</category>' % (category))
     if contentType: print('    <category lang="en">%s</category>' % (contentType))
-    if episode: print('    <episode-num system="xmltv_ns">%s</episode-num>' % (episode_ns))
+    if episode and addxmltvns == 'y' : print('    <episode-num system="xmltv_ns">%s</episode-num>' % (episode_ns))
     if episode: print('    <episode-num system="onscreen">%s</episode-num>' % (episode_on))
     if rebroadcast: print('    <previously-shown />')
     if rating:
@@ -1027,6 +1027,7 @@ try:
         default_rebroadcast = Settings['default_rebroadcast'] if 'default_rebroadcast' in Settings else ''
         default_episode = Settings['default_episode'] if 'default_episode' in Settings else ''
         default_verbose = Settings['default_verbose'] if 'default_verbose' in Settings else ''
+        default_xmltvns = Settings['default_xmltvns'] if 'default_xmltvns' in Settings else ''
 except EnvironmentError:
     printError("epg2xml." + JSON_FILE_ERROR)
     sys.exit()
@@ -1048,6 +1049,7 @@ argu3.add_argument('-l', '--limit', dest = 'limit', type=int, metavar = "1-7", c
 argu3.add_argument('--rebroadcast', dest = 'rebroadcast', metavar = 'y, n', choices = 'yn', help = '제목에 재방송 정보 출력', default = default_rebroadcast)
 argu3.add_argument('--episode', dest = 'episode', metavar = 'y, n', choices = 'yn', help = '제목에 회차 정보 출력', default = default_episode)
 argu3.add_argument('--verbose', dest = 'verbose', metavar = 'y, n', choices = 'yn', help = 'EPG 정보 추가 출력', default = default_verbose)
+argu3.add_argument('--xmltvns', dest = 'xmltvns', metavar = 'y, n', choices = 'yn', help = '회차정보 xmltv_ns 출력', default = default_xmltvns)
 
 args = parser.parse_args()
 if args.MyISP : MyISP = args.MyISP
@@ -1064,6 +1066,7 @@ if args.limit : default_fetch_limit = args.limit
 if args.rebroadcast : default_rebroadcast = args.rebroadcast
 if args.episode : default_episode = args.episode
 if args.verbose : default_verbose = args.verbose
+if args.xmltvns : default_xmltvns = args.xmltvns
 
 if MyISP:
     if not any(MyISP in s for s in ['ALL', 'KT', 'LG', 'SK']):
@@ -1116,6 +1119,16 @@ if default_verbose :
         sys.exit()
     else :
         addverbose = default_verbose
+else :
+    printError("epg2xml.json 파일의 default_verbose항목이 없습니다.");
+    sys.exit()
+
+if default_xmltvns :
+    if not any(default_xmltvns in s for s in ['y', 'n']):
+        printError("default_xmltvns는 y, n만 가능합니다.")
+        sys.exit()
+    else :
+        addxmltvns = default_xmltvns
 else :
     printError("epg2xml.json 파일의 default_verbose항목이 없습니다.");
     sys.exit()

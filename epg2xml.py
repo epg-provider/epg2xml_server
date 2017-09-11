@@ -38,7 +38,7 @@ except ImportError:
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.2.2p1'
+__version__ = '1.2.2p2'
 
 if not sys.version_info[:2] == (2, 7):
     print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
@@ -173,7 +173,7 @@ def GetEPGFromEPG(ChannelInfo):
                     thisday = day
                     row = html[i].find_all('td', {'colspan':'2'})
                     for cell in row:
-                        hour = int(cell.text.strip().strip('시'))                  
+                        hour = int(cell.text.strip().strip('시'))
                         if(i == 1) : hour = 'AM ' + str(hour)
                         elif(i == 2) : hour = 'PM ' + str(hour)
                         elif(i == 3 and hour > 5 and hour < 12 ) : hour = 'PM ' + str(hour)
@@ -518,8 +518,10 @@ def GetEPGFromIscs(ChannelInfo):
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
     epginfo = []
+    epginfo2 = []
     url='http://m.iscs.co.kr/sub/02/data.asp'
     for k in range(period):
+        istomorrow = False
         day = today + datetime.timedelta(days=k)
         params = {'Exec_Mode': 'view', 'Source_Id': ServiceId, 'Ch_Day': day}
         response = requests.post(url, data=params, headers=ua, timeout=timeout)
@@ -533,7 +535,12 @@ def GetEPGFromIscs(ChannelInfo):
                     startTime = endTime = programName = subprogramName = desc = actors = producers = category = episode = ''
                     rebroadcast = False
                     rating = 0
-                    startTime = str(day) + ' ' + program['Time']
+                    if program['Time'].startswith('1') or program['Time'].startswith('2'):
+                        istomorrow = True
+                    if program['Time'].startswith('0') and istomorrow == True:
+                        startTime = str(day + datetime.timedelta(days=1)) + ' ' + program['Time']
+                    else:
+                        startTime = str(day) + ' ' + program['Time']
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
                     pattern = '^(.*?)(?:\(([\d,]+)회\))?(?:\((재)\))?$';
@@ -555,7 +562,10 @@ def GetEPGFromIscs(ChannelInfo):
         except (requests.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
-    epgzip(epginfo)
+    for i in epginfo:
+        if not i in epginfo2:
+            epginfo2.append(i)
+    epgzip(epginfo2)
 
 # Get EPG data from HCN
 def GetEPGFromHcn(ChannelInfo):

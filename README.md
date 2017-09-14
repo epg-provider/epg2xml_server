@@ -123,9 +123,11 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
 
 ## 변경사항
 ### Version 1.2.3
+  - PHP 통합
   - 소스 추가
   - Channel.json Enabled 항목 제거
   - 에피소드 넘버 xmltv_ns 옵션 항목 추가
+  - 가져오는 날짜 최대 7일로 변경
 ### Version 1.2.2
   - My Channel 추가
   - 소스 추가

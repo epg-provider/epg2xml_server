@@ -38,13 +38,12 @@ except ImportError:
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.2.3'
-
 if not sys.version_info[:2] == (2, 7):
     print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
     sys.exit()
 
 # Set variable
+__version__ = '1.2.3'
 debug = False
 today = datetime.date.today()
 ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
@@ -77,9 +76,8 @@ def getEpg():
     if MyChannels :
         for MyChannel in MyChannels.split(','):
             MyChannelInfo.append(int(MyChannel.strip()))
-
     for Channeldata in Channeldatajson: #Get Channel & Print Channel info
-        if Channeldata['Enabled'] == 1 or Channeldata['Id'] in MyChannelInfo:
+        if Channeldata['Id'] in MyChannelInfo:
             ChannelId = Channeldata['Id']
             ChannelName = escape(Channeldata['Name'])
             ChannelSource = Channeldata['Source']
@@ -565,7 +563,8 @@ def GetEPGFromIscs(ChannelInfo):
     for i in epginfo:
         if not i in epginfo2:
             epginfo2.append(i)
-    epgzip(epginfo2)
+    epginfo = epginfo2
+    epgzip(epginfo)
 
 # Get EPG data from HCN
 def GetEPGFromHcn(ChannelInfo):
@@ -591,6 +590,8 @@ def GetEPGFromHcn(ChannelInfo):
                     startTime = endTime = programName = subprogramName = desc = actors = producers = category = episode = ''
                     rebroadcast = False
                     rating = 0
+                    if 'noData' in row['class']:
+                        continue
                     startTime = str(day) + ' ' + row.find('span', {'class':'progTime'}).text.strip()
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
@@ -982,7 +983,7 @@ def writeProgram(programdata):
     if category: print('    <category lang="kr">%s</category>' % (category))
     if contentType: print('    <category lang="en">%s</category>' % (contentType))
     if episode and addxmltvns == 'y' : print('    <episode-num system="xmltv_ns">%s</episode-num>' % (episode_ns))
-    if episode: print('    <episode-num system="onscreen">%s</episode-num>' % (episode_on))
+    if episode and addxmltvns != 'y' : print('    <episode-num system="onscreen">%s</episode-num>' % (episode_on))
     if rebroadcast: print('    <previously-shown />')
     if rating:
         print('    <rating system="KMRB">')
@@ -1017,17 +1018,17 @@ ChannelInfos = []
 try:
     with open(Settingfile) as f: # Read Channel Information file
         Settings = json.load(f)
-        MyISP = Settings['MyISP'] if 'MyISP' in Settings else ''
+        MyISP = Settings['MyISP'] if 'MyISP' in Settings else 'ALL'
         MyChannels = Settings['MyChannels'] if 'MyChannels' in Settings else ''
-        default_output = Settings['output'] if 'output' in Settings else ''
+        default_output = Settings['output'] if 'output' in Settings else 'd'
         default_xml_file = Settings['default_xml_file'] if 'default_xml_file' in Settings else 'xmltv.xml'
         default_xml_socket = Settings['default_xml_socket'] if 'default_xml_socket' in Settings else 'xmltv.sock'
         default_icon_url = Settings['default_icon_url'] if 'default_icon_url' in Settings else None
-        default_fetch_limit = Settings['default_fetch_limit'] if 'default_fetch_limit' in Settings else ''
-        default_rebroadcast = Settings['default_rebroadcast'] if 'default_rebroadcast' in Settings else ''
-        default_episode = Settings['default_episode'] if 'default_episode' in Settings else ''
-        default_verbose = Settings['default_verbose'] if 'default_verbose' in Settings else ''
-        default_xmltvns = Settings['default_xmltvns'] if 'default_xmltvns' in Settings else ''
+        default_fetch_limit = Settings['default_fetch_limit'] if 'default_fetch_limit' in Settings else '2'
+        default_rebroadcast = Settings['default_rebroadcast'] if 'default_rebroadcast' in Settings else 'y'
+        default_episode = Settings['default_episode'] if 'default_episode' in Settings else 'y'
+        default_verbose = Settings['default_verbose'] if 'default_verbose' in Settings else 'n'
+        default_xmltvns = Settings['default_xmltvns'] if 'default_xmltvns' in Settings else 'n'
 except EnvironmentError:
     printError("epg2xml." + JSON_FILE_ERROR)
     sys.exit()
@@ -1045,7 +1046,7 @@ argu2.add_argument('-o', '--outfile', metavar = default_xml_file, nargs = '?', c
 argu2.add_argument('-s', '--socket', metavar = default_xml_socket, nargs = '?', const = default_xml_socket, help = 'xmltv.sock(External: XMLTV)로 EPG정보 전송')
 argu3 = parser.add_argument_group('추가옵션')
 argu3.add_argument('--icon', dest = 'icon', metavar = "http://www.example.com/icon", help = '채널 아이콘 URL, 기본값: '+ default_icon_url, default = default_icon_url)
-argu3.add_argument('-l', '--limit', dest = 'limit', type=int, metavar = "1-2", choices = range(1,3), help = 'EPG 정보를 가져올 기간, 기본값: '+ str(default_fetch_limit), default = default_fetch_limit)
+argu3.add_argument('-l', '--limit', dest = 'limit', type=int, metavar = "1-7", choices = range(1,8), help = 'EPG 정보를 가져올 기간, 기본값: '+ str(default_fetch_limit), default = default_fetch_limit)
 argu3.add_argument('--rebroadcast', dest = 'rebroadcast', metavar = 'y, n', choices = 'yn', help = '제목에 재방송 정보 출력', default = default_rebroadcast)
 argu3.add_argument('--episode', dest = 'episode', metavar = 'y, n', choices = 'yn', help = '제목에 회차 정보 출력', default = default_episode)
 argu3.add_argument('--verbose', dest = 'verbose', metavar = 'y, n', choices = 'yn', help = 'EPG 정보 추가 출력', default = default_verbose)
@@ -1139,7 +1140,6 @@ if default_fetch_limit :
         sys.exit()
     else :
         period = int(default_fetch_limit)
-        if period > 2 : period = 2
 else :
     printError("epg2xml.json 파일의 default_fetch_limit항목이 없습니다.");
     sys.exit()
@@ -1163,4 +1163,8 @@ elif output == "socket" :
     else :
         printError("epg2xml.json 파일의 default_xml_socket항목이 없습니다.");
         sys.exit()
-getEpg()
+#getEpg()
+it= [1,2,3,4,5]
+
+for cur, next in pairs(it):
+    print (cur, next)

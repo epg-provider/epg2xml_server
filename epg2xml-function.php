@@ -729,7 +729,7 @@ function GetEPGFromHcn($ChannelInfo) {
                 libxml_use_internal_errors(True);
                 if($dom->loadHTML($response)):
                     $xpath = new DomXPath($dom);
-                    $query = "//li";
+                    $query = "//li[@class!='noData']";
                     $rows = $xpath->query($query);
                     foreach($rows as $row) :
                         $startTime = $endTime = $programName = $subprogramName = $desc = $actors = $producers = $category = $episode = "";
@@ -738,8 +738,6 @@ function GetEPGFromHcn($ChannelInfo) {
                         $startTime = trim($xpath->query("span[@class='progTime']", $row)->item(0)->nodeValue) ?: "";
                         $startTime = date("YmdHis", strtotime($day." ".$startTime));
                         $programName = trim($xpath->query("span[@class='progTitle']", $row)->item(0)->nodeValue) ?: "";
-                        //$category = trim($cells->item(2)->nodeValue) ?: "";
-                        //$category = preg_replace('/\(.*\)/', '', $category);
                         $images = $row->getElementsByTagName('img');
                         foreach($images as $image):
                             preg_match('/re\.png/', $image->getAttribute('src'), $rebroad);

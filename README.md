@@ -130,6 +130,7 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
   - PHP 공용함수 분리
   - POOQ 함수 기간에 관계없이 하루만 가져오는 것 수정
   - ISCS 함수 수정
+  - HCN 함수 수정
 ### Version 1.2.1
   - SKB 함수 추가
   - 가져오는 날짜 최대 2일로 변경

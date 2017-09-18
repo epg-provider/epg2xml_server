@@ -584,7 +584,7 @@ def GetEPGFromHcn(ChannelInfo):
             html_data = response.content
             data = html_data
             strainer = SoupStrainer('li')
-            soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
+            soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
             html =  soup.find_all('li') if soup.find_all('li') else ''
             if(html) :
                 for row in html:

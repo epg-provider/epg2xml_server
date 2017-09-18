@@ -38,7 +38,7 @@ except ImportError:
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-__version__ = '1.2.2p2'
+__version__ = '1.2.2p3'
 
 if not sys.version_info[:2] == (2, 7):
     print("Error : ", "python 2.7 버전이 필요합니다.", file=sys.stderr)
@@ -584,13 +584,15 @@ def GetEPGFromHcn(ChannelInfo):
             html_data = response.content
             data = html_data
             strainer = SoupStrainer('li')
-            soup = BeautifulSoup(data, 'lxml', parse_only=strainer, from_encoding='utf-8')
+            soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
             html =  soup.find_all('li') if soup.find_all('li') else ''
             if(html) :
                 for row in html:
                     startTime = endTime = programName = subprogramName = desc = actors = producers = category = episode = ''
                     rebroadcast = False
                     rating = 0
+                    if 'noData' in row['class']:
+                        continue
                     startTime = str(day) + ' ' + row.find('span', {'class':'progTime'}).text.strip()
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')

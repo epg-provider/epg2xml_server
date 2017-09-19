@@ -34,7 +34,7 @@ default_icon_url : 채널별 아이콘이 있는 url을 설정할 수 있다. �
 default_rebroadcast : 제목에 재방송 정보 출력
 default_episode : 제목에 회차정보 출력
 default_verbose : EPG 정보 상세 출력
-default_fetch_limit : EPG 데이터 가져오는 기간이다.
+default_fetch_limit : EPG 데이터 가져오는 기간.
 default_xml_filename : EPG 저장시 기본 저장 이름으로 tvheadend 서버가 쓰기가 가능한 경로로 설정해야 한다.
 default_xml_socket   : External XMLTV 사용시 xmltv.sock가 있는 경로로 설정해준다.
 </pre>
@@ -42,10 +42,6 @@ default_xml_socket   : External XMLTV 사용시 xmltv.sock가 있는 경로로 �
 ### Channel.json
 Channel.json 파일의 최신버전은 https://github.com/wonipapa/Channel.json 에서 다운받을 수 있다.  
 Channel.json 파일을 텍스트 편집기로 열어보면 각채널별 정보가 들어 있다.  
-이중 Enabled:1로 되어 있는 부분을 Enabled:0으로 바꾸면 EPG정보를 가져오지 않는다.  
-필요없는 채널정보를 가져오지 않게 하는 것으로 EPG 정보 수집시 시간을 단축할 수 있다.  
-삭제된 채널등으로 인해서 오류 발생시에도 Enabled:0으로 변경하면 오류 발생을 차단할 수 있다.  
-1.2.3 버전부터 Enabled 항목은 없어질 예정이다.  
 
 ## 옵션 소개
 ### epg2xml.py, epg2xml.php 옵션
@@ -90,8 +86,8 @@ python 경로와 php의 경로는 /usr/bin에 있고, epg2xml 파일은 /home/ht
 
 #### PHP WEB의 경우
 <pre>
-wget -O - http://domain/epg2xml.php 또는
-wget -O - http://domain/epg2xml.php?i=ALL&l=2
+wget -O - http://domain/epg2xml-web.php 또는
+wget -O - http://domain/epg2xml-web.php?i=ALL&l=2
 </pre>
 
 ### XMLTV SOCKET 사용시
@@ -123,7 +119,8 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
 
 ## 변경사항
 ### Version 1.2.3
-  - PHP 통합
+  - PHP 버전통합
+  - PYTHON 버전 html Parser 변수 추가
   - 소스 추가
   - Channel.json Enabled 항목 제거
   - 에피소드 넘버 xmltv_ns 옵션 항목 추가

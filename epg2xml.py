@@ -236,17 +236,17 @@ def GetEPGFromKT(ChannelInfo):
                     for cell in [row.find_all('td')]:
                         startTime = endTime = programName = subprogramName = desc = actors = producers = category = episode = ''
                         rebroadcast = False
-                        rating = 0
-                        for minute, program, cateogry in zip(cell[1].find_all('p'), cell[2].find_all('p'), cell[3].find_all('p')):
+                        for minute, program, category in zip(cell[1].find_all('p'), cell[2].find_all('p'), cell[3].find_all('p')):
                             startTime = str(day) + ' ' + cell[0].text.strip() + ':' + minute.text.strip()
                             startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                             startTime = startTime.strftime('%Y%m%d%H%M%S')
-                            programName = program.text.strip()
-                            cateogry = cateogry.text.strip()
+                            programName = program.text.replace('방송중 ', '').strip()
+                            category = category.text.strip()
                             for image in [program.find_all('img', alt=True)]:
                                 rating = 0
                                 grade = re.match('([\d,]+)',image[0]['alt'])
                                 if not (grade is None): rating = int(grade.group(1))
+                                else: rating = 0
                             #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                             epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
                             time.sleep(0.001)
@@ -1077,7 +1077,6 @@ try:
         Settings = json.load(f)
         MyISP = Settings['MyISP'] if 'MyISP' in Settings else 'ALL'
         MyChannels = Settings['MyChannels'] if 'MyChannels' in Settings else ''
-        MergeChannels = Settings['MergeChannels'] if 'MergeChannels' in Settings else ''
         default_output = Settings['output'] if 'output' in Settings else 'd'
         default_xml_file = Settings['default_xml_file'] if 'default_xml_file' in Settings else 'xmltv.xml'
         default_xml_socket = Settings['default_xml_socket'] if 'default_xml_socket' in Settings else 'xmltv.sock'

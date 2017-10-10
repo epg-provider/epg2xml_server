@@ -86,7 +86,6 @@ try {
             $default_episode = $Settings['default_episode'] ?: "y";
             $default_verbose = $Settings['default_verbose'] ?: "n";
             $default_xmltvns = $Settings['default_xmltvns'] ?: "n";
-
             $userISP = !empty($_GET['i']) ? $_GET['i'] : (!empty($args['i']) ? $args['i'] : "");
             $user_output = "";
             $user_xml_file = "";
@@ -534,49 +533,52 @@ function GetEPGFromKT($ChannelInfo) {
     $ServiceId =  $ChannelInfo[3];
     $epginfo = array();
     foreach(range(1, $GLOBALS['period']) as $k) :
-        $url = "http://tv.olleh.com/renewal_sub/liveTv/pop_schedule_week.asp";
+        $url = "http://tv.kt.com/tv/channel/pSchedule.asp";
         $day = date("Ymd", strtotime("+".($k - 1)." days"));
         $params = array(
-            'ch_name' => '',
-            'ch_no' => $ServiceId,
-            'nowdate'=> $day,
-            'seldatie' => $day,
-            'tab_no' => '1'
+            'ch_type' => '1',
+            'view_type' => '1',
+            'service_ch_no' => $ServiceId,
+            'seldate' => $day
         );
         $params = http_build_query($params);
-        $method = "GET";
+        $method = "POST";
         try {
             $response = getWeb($url, $params, $method);
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
-                $response = str_replace("charset=euc-kr", "charset=utf-8", $response);
-                $response = mb_convert_encoding($response, "UTF-8", "EUC-KR");
+                $response = mb_convert_encoding($response, "HTML-ENTITIES", "EUC-KR");
                 $dom = new DomDocument;
                 libxml_use_internal_errors(True);
                 if($dom->loadHTML($response)):
                     $xpath = new DomXPath($dom);
-                    $query = "//table[@id='pop_day']/tbody/tr";
+                    $query = "//tbody/tr";
                     $rows = $xpath->query($query);
                     foreach($rows as $row) :
                         $startTime = $endTime = $programName = $subprogramName = $desc = $actors = $producers = $category = $episode = "";
                         $rebroadcast = False;
                         $rating = 0;
                         $cells = $row->getElementsByTagName('td');
-                        //programName, startTime, rating, category
-                        $startTime = date("YmdHis", strtotime($day." ".trim($cells->item(0)->nodeValue)));
-                        $pattern = '/^(.*?)( <(.*)>)?$/';
-                        $programName = trim($cells->item(1)->nodeValue);
-                        preg_match($pattern, $programName, $matches);
-                        if ($matches != NULL) :
-                           if(isset($matches[1])) $programName = $matches[1] ?: "";
-                           if(isset($matches[3])) $subprogramName = $matches[3] ?: "";
-                        endif;
-                        $category = trim($cells->item(4)->nodeValue);
-                        $rating = str_replace("all", 0, str_replace("세 이상", "", trim($cells->item(2)->nodeValue)));
-                        //ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
-                        $epginfo[] = array($ChannelId, $startTime, $programName, $subprogramName, $desc, $actors, $producers, $category, $episode, $rebroadcast, $rating);
-                        usleep(1000);
+                        $programs = array_map(null, iterator_to_array($xpath->query('p', $cells->item(1))), iterator_to_array($xpath->query('p', $cells->item(2))), iterator_to_array($xpath->query('p', $cells->item(3))));
+                        foreach($programs as $program):
+                            $hour = trim($cells->item(0)->nodeValue);
+                            $minute = trim($program[0]->nodeValue);
+                            $startTime = date("YmdHis", strtotime($day.$hour.$minute."00"));
+                            $programName = trim($program[1]->nodeValue);
+                            $images = $program[1]->getElementsByTagName('img')->item(0);
+                            preg_match('/([\d,]+)/', $images->getAttribute('alt'), $grade);
+                            if($grade != NULL):
+                                $rating = $grade[1];
+                            else:
+                                $rating = 0;
+                            endif;
+                            $programName = str_replace("방송중 ", "", $programName);
+                            $category = trim($program[2]->nodeValue);
+                            //ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
+                            $epginfo[] = array($ChannelId, $startTime, $programName, $subprogramName, $desc, $actors, $producers, $category, $episode, $rebroadcast, $rating);
+                            usleep(1000);
+                        endforeach;
                     endforeach;
                 else :
                     if($GLOBALS['debug']) printError($ChannelName.CONTENT_ERROR);

@@ -56,7 +56,6 @@ SOCKET_ERROR = 'xmltv.sock 파일을 찾을 수 없습니다.'
 JSON_FILE_ERROR = 'json 파일을 읽을 수 없습니다.'
 JSON_SYNTAX_ERROR = 'json 파일 형식이 잘못되었습니다.'
 
-
 # Get epg data
 def getEpg():
     Channelfile = os.path.dirname(os.path.abspath(__file__)) + '/Channel.json'
@@ -220,38 +219,37 @@ def GetEPGFromKT(ChannelInfo):
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
     epginfo = []
-    url = 'http://tv.olleh.com/renewal_sub/liveTv/pop_schedule_week.asp'
+    url = 'http://tv.kt.com/tv/channel/pSchedule.asp'
     for k in range(period):
         day = today + datetime.timedelta(days=k)
-        params = {'ch_name':'', 'ch_no':ServiceId, 'nowdate':day.strftime('%Y%m%d'), 'seldatie':day.strftime('%Y%m%d'), 'tab_no':'1'}
+        params = {'ch_type':'1', 'view_type':'1', 'service_ch_no':ServiceId, 'seldate':day.strftime('%Y%m%d')}
         try:
-            response = requests.get(url, params=params, headers=ua, timeout=timeout)
+            response = requests.post(url, data=params, headers=ua, timeout=timeout)
             response.raise_for_status()
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
-            strainer = SoupStrainer('table', {'id':'pop_day'})
+            strainer = SoupStrainer('tbody')
             soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
-            html = soup.find('table', {'id':'pop_day'}).tbody.find_all('tr') if soup.find('table', {'id':'pop_day'}) else ''
+            html = soup.find_all('tr') if soup.find('tbody') else ''
             if(html):
                 for row in html:
                     for cell in [row.find_all('td')]:
                         startTime = endTime = programName = subprogramName = desc = actors = producers = category = episode = ''
                         rebroadcast = False
                         rating = 0
-                        startTime = str(day) + ' ' + cell[0].text
-                        startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
-                        startTime = startTime.strftime('%Y%m%d%H%M%S')
-                        pattern = '^(.*?)( <(.*)>)?$'
-                        matches = re.match(pattern, cell[1].text.decode('string_escape'))
-                        if not (matches is None):
-                            programName = matches.group(1) if matches.group(1) else ''
-                            subprogramName = matches.group(3) if matches.group(3) else ''
-                        category = cell[4].text
-                        matches = re.match('(\d+)', cell[2].text)
-                        if not(matches is None): rating = int(matches.group())
-                        #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
-                        epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
-                        time.sleep(0.001)
+                        for minute, program, cateogry in zip(cell[1].find_all('p'), cell[2].find_all('p'), cell[3].find_all('p')):
+                            startTime = str(day) + ' ' + cell[0].text.strip() + ':' + minute.text.strip()
+                            startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
+                            startTime = startTime.strftime('%Y%m%d%H%M%S')
+                            programName = program.text.strip()
+                            cateogry = cateogry.text.strip()
+                            for image in [program.find_all('img', alt=True)]:
+                                rating = 0
+                                grade = re.match('([\d,]+)',image[0]['alt'])
+                                if not (grade is None): rating = int(grade.group(1))
+                            #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
+                            epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
+                            time.sleep(0.001)
             else:
                 if(debug): printError(ChannelName + CONTENT_ERROR)
                 else: pass
@@ -1079,6 +1077,7 @@ try:
         Settings = json.load(f)
         MyISP = Settings['MyISP'] if 'MyISP' in Settings else 'ALL'
         MyChannels = Settings['MyChannels'] if 'MyChannels' in Settings else ''
+        MergeChannels = Settings['MergeChannels'] if 'MergeChannels' in Settings else ''
         default_output = Settings['output'] if 'output' in Settings else 'd'
         default_xml_file = Settings['default_xml_file'] if 'default_xml_file' in Settings else 'xmltv.xml'
         default_xml_socket = Settings['default_xml_socket'] if 'default_xml_socket' in Settings else 'xmltv.sock'

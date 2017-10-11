@@ -121,12 +121,13 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
 ## 변경사항
 ### Version 1.2.3
   - PHP 버전통합
-  - PYTHON 버전 html Parser 변수 추가
-  - 소스 추가
+  - PYTHON 버전 html Parser 변수 추가(libxml지원안하는 기기 편의 지원)
+  - everyontv 함수 추가
   - Channel.json Enabled 항목 제거
-  - 에피소드 넘버 xmltv_ns 옵션 항목 추가
+  - 에피소드 넘버 xmltv_ns 옵션 항목 추가 (epg2xml.json)
   - 가져오는 날짜 최대 7일로 변경
   - KT 함수 수정
+  - PHP 버전 socket 사용시 화면에 출력되는 문제 해결
 ### Version 1.2.2
   - My Channel 추가
   - 소스 추가

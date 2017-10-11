@@ -4,7 +4,7 @@
 error_reporting(E_ALL ^ E_NOTICE);
 
 @set_time_limit(0);
-define("VERSION", "1.2.3");
+define("VERSION", "1.2.3p1");
 $debug = False;
 $ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'";
 $timeout = 5;
@@ -166,7 +166,7 @@ try {
                             $output = "file";
                             break;
                         case "s" :
-                            $output = "display";
+                            $output = "socket";
                             break;
                     endswitch;
                 else :
@@ -298,7 +298,7 @@ elseif($output == "file") :
         exit;
     endif;
 elseif($output == "socket") :
-    if($default_xml_socket && php_sapi_name() != "cli") :
+    if($default_xml_socket && php_sapi_name() == "cli") :
         $default_xml_socket = "unix://".$default_xml_socket;
         $fp = @fsockopen($default_xml_socket, -1, $errno, $errstr, 30);
         if ($fp === False) :

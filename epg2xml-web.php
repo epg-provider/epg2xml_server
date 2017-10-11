@@ -4,7 +4,7 @@
 error_reporting(E_ALL ^ E_NOTICE);
 
 @set_time_limit(0);
-define("VERSION", "1.2.3p1");
+define("VERSION", "1.2.3p2");
 $debug = False;
 $ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'";
 $timeout = 5;
@@ -551,7 +551,7 @@ function GetEPGFromKT($ChannelInfo) {
                 $response = mb_convert_encoding($response, "HTML-ENTITIES", "EUC-KR");
                 $dom = new DomDocument;
                 libxml_use_internal_errors(True);
-                if($dom->loadHTML($response)):
+                if($dom->loadHTML('<?xml encoding="utf-8" ?>'.$response)):
                     $xpath = new DomXPath($dom);
                     $query = "//tbody/tr";
                     $rows = $xpath->query($query);
@@ -611,12 +611,11 @@ function GetEPGFromLG($ChannelInfo) {
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
-                $response = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'.$response;
                 $response = mb_convert_encoding($response, "UTF-8", "EUC-KR");
                 $response = str_replace(array('<재>', ' [..', ' (..'), array('&lt;재&gt;', '', ''), $response);
                 $dom = new DomDocument;
                 libxml_use_internal_errors(True);
-                if($dom->loadHTML($response)):
+                if($dom->loadHTML('<?xml encoding="utf-8" ?>'.$response)):
                     $xpath = new DomXPath($dom);
                     $query = "//div[@class='tblType list']/table/tbody/tr";
                     $rows = $xpath->query($query);
@@ -759,7 +758,7 @@ function GetEPGFromSKB($ChannelInfo) {
                 $response = preg_replace_callback($pattern, function($matches) { return '<span class="title">'.htmlspecialchars($matches[1], ENT_NOQUOTES).'</span>';}, $response);
                 $dom = new DomDocument;
                 libxml_use_internal_errors(True);
-                if($dom->loadHTML($response)):
+                if($dom->loadHTML('<?xml encoding="utf-8" ?>'.$response)):
                     $xpath = new DomXPath($dom);
                     $query = "//span[@class='caption' or @class='explan' or @class='fullHD' or @class='UHD' or @class='nowon']";
                     $spans = $xpath->query($query);

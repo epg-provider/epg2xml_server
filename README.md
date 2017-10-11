@@ -128,6 +128,7 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
   - 가져오는 날짜 최대 7일로 변경
   - KT 함수 수정
   - PHP 버전 socket 사용시 화면에 출력되는 문제 해결
+  - PHP 버전 한글 깨지는 문제 수정
 ### Version 1.2.2
   - My Channel 추가
   - 소스 추가

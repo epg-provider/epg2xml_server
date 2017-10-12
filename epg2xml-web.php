@@ -4,7 +4,7 @@
 error_reporting(E_ALL ^ E_NOTICE);
 
 @set_time_limit(0);
-define("VERSION", "1.2.3p2");
+define("VERSION", "1.2.3p3");
 $debug = False;
 $ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'";
 $timeout = 5;
@@ -659,7 +659,7 @@ function GetEPGFromSK($ChannelInfo) {
     $ServiceId =  $ChannelInfo[3];
     $today = date("Ymd");
     $lastday = date("Ymd", strtotime("+".($GLOBALS['period'] - 1)." days"));
-    $url = "http://m.btvplus.co.kr/Common/Inc/IFGetData.asp";
+	$url = "http://m.btvplus.co.kr/common/inc/IFGetData.do";
     $params = array(
         'variable' => 'IF_LIVECHART_DETAIL',
         'pcode' => '|^|start_time='.$today.'00|^|end_time='.$lastday.'24|^|svc_id='.$ServiceId

@@ -659,7 +659,7 @@ function GetEPGFromSK($ChannelInfo) {
     $ServiceId =  $ChannelInfo[3];
     $today = date("Ymd");
     $lastday = date("Ymd", strtotime("+".($GLOBALS['period'] - 1)." days"));
-	$url = "http://m.btvplus.co.kr/common/inc/IFGetData.do";
+    $url = "http://m.btvplus.co.kr/common/inc/IFGetData.do";
     $params = array(
         'variable' => 'IF_LIVECHART_DETAIL',
         'pcode' => '|^|start_time='.$today.'00|^|end_time='.$lastday.'24|^|svc_id='.$ServiceId

@@ -43,7 +43,7 @@ if not sys.version_info[:2] == (2, 7):
     sys.exit()
 
 # Set variable
-__version__ = '1.2.3'
+__version__ = '1.2.3p3'
 debug = False
 today = datetime.date.today()
 ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
@@ -313,7 +313,7 @@ def GetEPGFromSK(ChannelInfo):
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
     lastday = today + datetime.timedelta(days=period-1)
-    url = 'http://m.btvplus.co.kr/Common/Inc/IFGetData.asp'
+    url = 'http://m.btvplus.co.kr/common/inc/IFGetData.do'
     params = {'variable': 'IF_LIVECHART_DETAIL', 'pcode':'|^|start_time=' + today.strftime('%Y%m%d') + '00|^|end_time='+ lastday.strftime('%Y%m%d') + '24|^|svc_id=' + str(ServiceId)}
     try:
         response = requests.post(url, data=params, headers=ua, timeout=timeout)
@@ -348,7 +348,7 @@ def GetEPGFromSK(ChannelInfo):
                     producers = program['directorName'].replace('...','').strip(', ')  if program['directorName'] else ''
                     if not (program['mainGenreName'] is None) :
                         category = program['mainGenreName']
-                    rating = int(program['ratingCd']) if program['programName'] else 0
+                    rating = int(program['ratingCd']) if program['ratingCd'] else 0
                     programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
                     writeProgram(programdata)
                     time.sleep(0.001)

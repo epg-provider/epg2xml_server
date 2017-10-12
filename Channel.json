@@ -343,5 +343,5 @@
 { "Id": 455, "Name": "Now제주TV", "KT Name": "Now제주TV", "KTCh": 94, "LG Name": "", "LGCh": null, "SK Name": "", "SKCh": null, "Radio Name": "", "RadioCh": null, "Icon_url": "https://i.imgur.com/aIvnsge.png", "Source": "KT", "ServiceId": "94" },
 { "Id": 456, "Name": "Lifetime", "KT Name": "Lifetime", "KTCh": 78, "LG Name": "", "LGCh": null, "SK Name": "", "SKCh": null, "Radio Name": "", "RadioCh": null, "Icon_url": "https://i.imgur.com/vh1U91w.png", "Source": "KT", "ServiceId": "78" },
 { "Id": 457, "Name": "플레이런TV", "KT Name": "플레이런TV", "KTCh": 155, "LG Name": "플레이런TV", "LGCh": 161, "SK Name": "플레이런TV", "SKCh": 201, "Radio Name": "", "RadioCh": null, "Icon_url": "https://i.imgur.com/nrtT3Wm.png", "Source": "LG", "ServiceId": "772" },
-{ "Id": 458, "Name": "BET", "KT Name": "", "KTCh": null, "LG Name": "", "LGCh": null, "SK Name": "BET", "SKCh": 239, "Radio Name": "", "RadioCh": null, "Icon_url": "https://i.imgur.com/nrtT3Wm.png", "Source": "SKB", "ServiceId": "788" }
+{ "Id": 458, "Name": "BET", "KT Name": "", "KTCh": null, "LG Name": "", "LGCh": null, "SK Name": "BET", "SKCh": 239, "Radio Name": "", "RadioCh": null, "Icon_url": "https://i.imgur.com/cb61Swx.png", "Source": "SKB", "ServiceId": "788" }
 ]

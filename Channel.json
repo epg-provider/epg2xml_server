@@ -341,7 +341,7 @@
 { "Id": 453, "Name": "다큐원", "KT Name": "다큐원", "KTCh": 269, "LG Name": "", "LGCh": null, "SK Name": "다큐원", "SKCh": 283, "Radio Name": "", "RadioCh": null, "Icon_url": "http://i.imgur.com/1EZs0Tn.png", "Source": "SK", "ServiceId": "257" },
 { "Id": 454, "Name": "Discovery Science", "KT Name": "DSC Science", "KTCh": 222, "LG Name": "", "LGCh": null, "SK Name": "", "SKCh": null, "Radio Name": "", "RadioCh": null, "Icon_url": "http://i.imgur.com/3UfATJL.png", "Source": "KT", "ServiceId": "222" },
 { "Id": 455, "Name": "Now제주TV", "KT Name": "Now제주TV", "KTCh": 94, "LG Name": "", "LGCh": null, "SK Name": "", "SKCh": null, "Radio Name": "", "RadioCh": null, "Icon_url": "https://i.imgur.com/aIvnsge.png", "Source": "KT", "ServiceId": "94" },
-{ "Id": 456, "Name": "Lifetime", "KT Name": "Lifetime", "KTCh": 78, "LG Name": "", "LGCh": null, "SK Name": "", "SKCh": null, "Radio Name": "", "RadioCh": null, "Icon_url": "https://i.imgur.com/vh1U91w.png", "Source": "KT", "ServiceId": "78" },
+{ "Id": 456, "Name": "Lifetime", "KT Name": "Lifetime", "KTCh": 78, "LG Name": "라이프타임", "LGCh": 83, "SK Name": "라이프타임", "SKCh": 213, "Radio Name": "", "RadioCh": null, "Icon_url": "https://i.imgur.com/vh1U91w.png", "Source": "KT", "ServiceId": "78" },
 { "Id": 457, "Name": "플레이런TV", "KT Name": "플레이런TV", "KTCh": 155, "LG Name": "플레이런TV", "LGCh": 161, "SK Name": "플레이런TV", "SKCh": 201, "Radio Name": "", "RadioCh": null, "Icon_url": "https://i.imgur.com/nrtT3Wm.png", "Source": "LG", "ServiceId": "772" },
 { "Id": 458, "Name": "BET", "KT Name": "", "KTCh": null, "LG Name": "", "LGCh": null, "SK Name": "BET", "SKCh": 239, "Radio Name": "", "RadioCh": null, "Icon_url": "https://i.imgur.com/cb61Swx.png", "Source": "SKB", "ServiceId": "788" }
 ]

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from __future__ import print_function
 import imp
 import os
@@ -43,7 +44,7 @@ if not sys.version_info[:2] == (2, 7):
     sys.exit()
 
 # Set variable
-__version__ = '1.2.3p3'
+__version__ = '1.2.3p4'
 debug = False
 today = datetime.date.today()
 ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
@@ -137,6 +138,8 @@ def getEpg():
             GetEPGFromPooq(ChannelInfo)
         elif ChannelSource == 'EVERYON':
             GetEPGFromEveryon(ChannelInfo)
+        elif ChannelSource == 'OKSUSU':
+            GetEPGFromOksusu(ChannelInfo)
         elif ChannelSource == 'MBC':
             GetEPGFromMbc(ChannelInfo)
         elif ChannelSource == 'MIL':
@@ -211,7 +214,8 @@ def GetEPGFromEPG(ChannelInfo):
                 else: pass
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
-    epgzip(epginfo)
+    if(epginfo) :
+        epgzip(epginfo)
 
 # Get EPG data from KT
 def GetEPGFromKT(ChannelInfo):
@@ -256,7 +260,8 @@ def GetEPGFromKT(ChannelInfo):
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
-    epgzip(epginfo)
+    if(epginfo) :
+        epgzip(epginfo)
 
 # Get EPG data from LG
 def GetEPGFromLG(ChannelInfo):
@@ -305,7 +310,8 @@ def GetEPGFromLG(ChannelInfo):
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
-    epgzip(epginfo)
+    if(epginfo) :
+        epgzip(epginfo)
 
 # Get EPG data from SK
 def GetEPGFromSK(ChannelInfo):
@@ -416,7 +422,8 @@ def GetEPGFromSKB(ChannelInfo):
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
-    epgzip(epginfo)
+    if(epginfo) :
+        epgzip(epginfo)
 
 # Get EPG data from SKY
 def GetEPGFromSKY(ChannelInfo):
@@ -510,7 +517,8 @@ def GetEPGFromNaver(ChannelInfo):
     except (requests.RequestException) as e:
         if(debug): printError(ChannelName + str(e))
         else: pass
-    epgzip(epginfo)
+    if(epginfo) :
+        epgzip(epginfo)
 
 # Get EPG data from ISCS
 def GetEPGFromIscs(ChannelInfo):
@@ -562,11 +570,12 @@ def GetEPGFromIscs(ChannelInfo):
         except (requests.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
-    for i in epginfo:
-        if not i in epginfo2:
-            epginfo2.append(i)
-    epginfo = epginfo2
-    epgzip(epginfo)
+    if(epginfo) :
+        for i in epginfo:
+            if not i in epginfo2:
+                epginfo2.append(i)
+        epginfo = epginfo2
+        epgzip(epginfo)
 
 # Get EPG data from HCN
 def GetEPGFromHcn(ChannelInfo):
@@ -611,7 +620,8 @@ def GetEPGFromHcn(ChannelInfo):
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
-    epgzip(epginfo)  
+    if(epginfo) :
+        epgzip(epginfo)
 
 # Get EPG data from POOQ
 def GetEPGFromPooq(ChannelInfo):
@@ -661,7 +671,8 @@ def GetEPGFromPooq(ChannelInfo):
     except (requests.exceptions.RequestException) as e:
         if(debug): printError(ChannelName + str(e))
         else: pass
-    epgzip(epginfo)
+    if(epginfo) :
+        epgzip(epginfo)
 
 # Get EPG data from EVERYON
 def GetEPGFromEveryon(ChannelInfo):
@@ -701,10 +712,63 @@ def GetEPGFromEveryon(ChannelInfo):
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
-    a = epgzip(epginfo)
-    for i, j in a:
-        print(i[1], j[1])
-        print(i[2], j[2])
+    if(epginfo) :
+        epgzip(epginfo)
+
+# Get EPG data from OKSUSU
+def GetEPGFromOksusu(ChannelInfo):
+    ChannelId = ChannelInfo[0]
+    ChannelName = ChannelInfo[1]
+    ServiceId =  ChannelInfo[3]
+    lastday = today + datetime.timedelta(days=period-1)
+    url = 'http://seg.oksusu.com:8080/seg/index.php'
+    params = {'svc_id': ServiceId, 'start_time': today.strftime('%Y%m%d') + '00', 'end_time': lastday.strftime('%Y%m%d') + '24', 'tgroup': 'oksusutest_02|null', 'IF': 'IF-NSMEPG-003', 'response_format': 'json', 'm': 'ch_epg', 'ver': '1.0'}
+    try:
+        response = requests.get(url, params=params, headers=ua, timeout=timeout)
+        response.raise_for_status()
+        json_data = response.text
+        try:
+            data = json.loads(json_data, encoding='utf-8')
+            if (data['channel'] is None) :
+                 if(debug): printError(ChannelName + CONTENT_ERROR)
+                 else: pass
+            else :
+                programs = data['channel']['programs']
+                for program in programs:
+                    startTime = endTime = programName = subprogramName = desc = actors = producers = category = episode = ''
+                    rebroadcast = False
+                    rating = 0
+                    programName = program['programName'].replace('...', '>').encode('utf-8')
+                    pattern = '^(.*?)(?:\s*[\(<]([\d,회]+)[\)>])?(?:\s*<([^<]*?)>)?(\((재)\))?$'
+                    matches = re.match(pattern, programName)
+                    if not (matches is None):
+                        programName = matches.group(1).strip() if matches.group(1) else ''
+                        subprogramName = matches.group(3).strip() if matches.group(3) else ''
+                        episode = matches.group(2).replace('회', '') if matches.group(2) else ''
+                        episode = '' if episode== '0' else episode
+                        rebroadcast = True if matches.group(5) else False
+                    startTime = datetime.datetime.fromtimestamp(int(program['startTime'])/1000)
+                    startTime = startTime.strftime('%Y%m%d%H%M%S')
+                    endTime = datetime.datetime.fromtimestamp(int(program['endTime'])/1000)
+                    endTime = endTime.strftime('%Y%m%d%H%M%S')
+                    desc = program['synopsis'] if program['synopsis'] else ''
+                    actors = program['actorName'].replace('...','').strip(', ') if program['actorName'] else ''
+                    producers = program['directorName'].replace('...','').strip(', ')  if program['directorName'] else ''
+                    if not (program['mainGenreName'] is None) :
+                        category = program['mainGenreName']
+                    rating = int(program['ratingCd']) if program['ratingCd'] else 0
+                    if(rating == 1):
+                        rating = 0
+                    programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
+                    writeProgram(programdata)
+                    time.sleep(0.001)
+        except ValueError:
+            if(debug): printError(ChannelName + CONTENT_ERROR)
+            else: pass
+    except (requests.exceptions.RequestException) as e:
+        if(debug): printError(ChannelName + str(e))
+        else: pass
+
 # Get EPG data from MBC
 def GetEPGFromMbc(ChannelInfo):
     ChannelId = ChannelInfo[0]
@@ -878,7 +942,8 @@ def GetEPGFromKbs(ChannelInfo):
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
-    epgzip(epginfo)
+    if(epginfo) :
+        epgzip(epginfo)
 
 # Get EPG data from ARIRANG
 def GetEPGFromArirang(ChannelInfo):

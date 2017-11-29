@@ -2,9 +2,8 @@
 @mb_internal_encoding("UTF-8");
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
-
 @set_time_limit(0);
-define("VERSION", "1.2.3p3");
+define("VERSION", "1.2.3p4");
 $debug = False;
 $ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'";
 $timeout = 5;
@@ -415,10 +414,10 @@ function getEPG() {
             GetEPGFromIscs($ChannelInfo);
         elseif($ChannelSource == 'HCN') :
             GetEPGFromHcn($ChannelInfo);
-        elseif($ChannelSource == 'POOQ') :
-            GetEPGFromPooq($ChannelInfo);
         elseif($ChannelSource == 'EVERYON') :
             GetEPGFromEveryon($ChannelInfo);
+        elseif($ChannelSource == 'OKSUSU') :
+            GetEPGFromOksusu($ChannelInfo);
         elseif($ChannelSource == 'MBC') :
             GetEPGFromMbc($ChannelInfo);
         elseif($ChannelSource == 'MIL'):
@@ -523,7 +522,7 @@ function GetEPGFromEPG($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
-    epgzip($epginfo);
+    if($epginfo) epgzip($epginfo);
 }
 
 // Get EPG data from KT
@@ -588,7 +587,7 @@ function GetEPGFromKT($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
-    epgzip($epginfo);
+    if($epginfo) epgzip($epginfo);
 }
 
 // Get EPG data from LG
@@ -649,7 +648,7 @@ function GetEPGFromLG($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
-    epgzip($epginfo);
+    if($epginfo) epgzip($epginfo);
 }
 
 // Get EPG data from SK
@@ -796,7 +795,7 @@ function GetEPGFromSKB($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
-    epgzip($epginfo);
+    if($epginfo) epgzip($epginfo);
 }
 
 // Get EPG data from SKY
@@ -893,8 +892,8 @@ function GetEPGFromNaver($ChannelInfo) {
     $ServiceId =  $ChannelInfo[3];
     $epginfo = array();
     $totaldate = array();
+    $url = "https://search.naver.com/p/csearch/content/batchrender_ssl.nhn";
     foreach(range(1, $GLOBALS['period']) as $k) :
-        $url = "https://search.naver.com/p/csearch/content/batchrender_ssl.nhn";
         $day = date("Ymd", strtotime("+".($k - 1)." days"));
         $totaldate[] = $day;
     endforeach;
@@ -955,7 +954,7 @@ function GetEPGFromNaver($ChannelInfo) {
     } catch (Exception $e) {
         if($GLOBALS['debug']) printError($e->getMessage());
     }
-    epgzip($epginfo);
+    if($epginfo) epgzip($epginfo);
 }
 
 // Get EPG data from Iscs
@@ -1026,7 +1025,7 @@ function GetEPGFromIscs($ChannelInfo) {
         }
     endforeach;
     $epginfo=  array_map("unserialize", array_unique(array_map("serialize", $epginfo)));
-    epgzip($epginfo);
+    if($epginfo) epgzip($epginfo);
 }
 
 // Get EPG data from Hcn
@@ -1083,7 +1082,7 @@ function GetEPGFromHcn($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
-    epgzip($epginfo);
+    if($epginfo) epgzip($epginfo);
 }
 
 // Get EPG data from POOQ
@@ -1154,7 +1153,7 @@ function GetEPGFromPooq($ChannelInfo) {
     } catch (Exception $e) {
         if($GLOBALS['debug']) printError($e->getMessage());
     }
-    epgzip($epginfo);
+    if($epginfo) epgzip($epginfo);
 }
 
 # Get EPG data from EVERYON
@@ -1207,7 +1206,91 @@ function GetEPGFromEveryon($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
-    epgzip($epginfo);
+    if($epginfo) epgzip($epginfo);
+}
+
+// Get EPG data from OKSUSU
+function GetEPGFromOksusu($ChannelInfo) {
+    $ChannelId = $ChannelInfo[0];
+    $ChannelName = $ChannelInfo[1];
+    $ServiceId =  $ChannelInfo[3];
+    $today = date("Ymd");
+    $lastday = date("Ymd", strtotime("+".($GLOBALS['period'] - 1)." days"));
+    $url = "http://seg.oksusu.com:8080/seg/index.php'";
+    $params = array(
+        'svc_id' => $ServiceId,
+        'start_time' => $today.'00',
+        'end_time' => $lastday.'24',
+        'tgroup' => 'oksusutest_02|null',
+        'IF' => 'IF-NSMEPG-003',
+        'response_format' => 'json', 
+        'm' => 'ch_epg',
+        'ver' => '1.0'
+    );
+    $params = http_build_query($params);
+    $method = "POST";
+    try {
+        $response = getWeb($url, $params, $method);
+        if ($response === False && $GLOBALS['debug']) :
+            printError($ChannelName.HTTP_ERROR);
+        else :
+            try {
+                $data = json_decode($response, TRUE);
+                if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
+                if($data['channel'] == NULL) :
+                    if($GLOBALS['debug']) : 
+                        printError($ChannelName.CHANNEL_ERROR);
+                    endif;
+                else :
+                    $programs = $data['channel']['programs'];
+                    foreach ($programs as $program) :
+                        $startTime = $endTime = $programName = $subprogramName = $desc = $actors = $producers = $category = $episode = "";
+                        $rebroadcast = False;
+                        $rating = 0;
+                        $pattern = '/^(.*?)(?:\s*[\(<]([\d,회]+)[\)>])?(?:\s*<([^<]*?)>)?(\((재)\))?$/';
+                        preg_match($pattern, str_replace('...', '>', $program['programName']), $matches);
+                        if ($matches != NULL) :
+                            if(isset($matches[1])) $programName = trim($matches[1]) ?: "";
+                            if(isset($matches[3])) $subprogramName = trim($matches[3]) ?: "";
+                            if(isset($matches[2])) $episode = str_replace("회", "", $matches[2]) ?: "";
+                            if(isset($matches[5])) $rebroadcast = $matches[5] ? True : False;
+                        endif;
+                        $startTime = date("YmdHis",$program['startTime']/1000);
+                        $endTime = date("YmdHis",$program['endTime']/1000);
+                        $desc = $program['synopsis'] ?: "";
+                        $actors =trim(str_replace('...','',$program['actorName']), ', ') ?: "";
+                        $producers = trim(str_replace('...','',$program['directorName']), ', ') ?: "";
+                        if ($program['mainGenreName'] != NULL) :
+                            $category = $program['mainGenreName'];
+                        else:
+                            $category = "";
+                        endif;
+                        $rating = $program['ratingCd'] ?: 0;
+                        $programdata = array(
+                            'channelId'=> $ChannelId,
+                            'startTime' => $startTime,
+                            'endTime' => $endTime,
+                            'programName' => $programName,
+                            'subprogramName'=> $subprogramName,
+                            'desc' => $desc,
+                            'actors' => $actors,
+                            'producers' => $producers,
+                            'category' => $category,
+                            'episode' => $episode,
+                            'rebroadcast' => $rebroadcast,
+                            'rating' => $rating
+                        );
+                        writeProgram($programdata);
+                        usleep(1000);
+                    endforeach;
+                endif;
+            } catch(Exception $e) {
+                if($GLOBALS['debug']) printError($e->getMessage());
+            }
+        endif;
+    } catch (Exception $e) {
+        if($GLOBALS['debug']) printError($e->getMessage());
+    }
 }
 
 // Get EPG data from MBC
@@ -1477,7 +1560,7 @@ function GetEPGFromKbs($ChannelInfo) {
             if($GLOBALS['debug']) printError($e->getMessage());
         }
     endforeach;
-    epgzip($epginfo);
+    if($epginfo) epgzip($epginfo);
 }
 
 function GetEPGFromArirang($ChannelInfo) {

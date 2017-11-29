@@ -938,25 +938,6 @@ def GetEPGFromArirang(ChannelInfo):
             else: pass
 
 # Zip epginfo
-def epgzip1(epginfo):
-    #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
-    for epg1, epg2 in zip(epginfo, epginfo[1:]):
-        programdata = {}
-        ChannelId = epg1[0]
-        startTime = epg1[1] if epg1[1] else ''
-        endTime = epg2[1] if epg2[1] else ''
-        programName = epg1[2] if epg1[2] else ''
-        subprogramName = epg1[3] if epg1[3] else ''
-        desc = epg1[4] if epg1[4] else ''
-        actors = epg1[5] if epg1[5] else ''
-        producers = epg1[6] if epg1[6] else ''
-        category = epg1[7] if epg1[7] else ''
-        episode = epg1[8] if epg1[8] else ''
-        rebroadcast = True if epg1[9] else False
-        rating = int(epg1[10]) if epg1[10] else 0
-        programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
-        writeProgram(programdata)
-
 def epgzip(epginfo):
     epginfo = iter(epginfo)
     epg1 = next(epginfo)

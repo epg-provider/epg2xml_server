@@ -132,6 +132,7 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
   - SK 함수 수정(p3)
   - 이터레이션 수정(p4)
   - oksusu함수 추가(p4)
+  - PHP 버전 Pooq함수 복구(p5)
 ### Version 1.2.2
   - My Channel 추가
   - 소스 추가

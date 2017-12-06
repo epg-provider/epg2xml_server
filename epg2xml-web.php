@@ -3,7 +3,7 @@
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
 @set_time_limit(0);
-define("VERSION", "1.2.3p4");
+define("VERSION", "1.2.3p5");
 $debug = False;
 $ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'";
 $timeout = 5;
@@ -414,6 +414,8 @@ function getEPG() {
             GetEPGFromIscs($ChannelInfo);
         elseif($ChannelSource == 'HCN') :
             GetEPGFromHcn($ChannelInfo);
+        elseif($ChannelSource == 'POOQ') :
+            GetEPGFromPooq($ChannelInfo);
         elseif($ChannelSource == 'EVERYON') :
             GetEPGFromEveryon($ChannelInfo);
         elseif($ChannelSource == 'OKSUSU') :

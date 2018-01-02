@@ -1021,40 +1021,6 @@ function GetEPGFromIscs($ChannelInfo) {
                         else :
                             if($GLOBALS['debug']) printError($ChannelName.CONTENT_ERROR);
                         endif;
-
-
-
-
-
-/*
-                        print_r($programs);
-                        foreach($programs as $program) :
-                            $startTime = $endTime = $programName = $subprogramName = $desc = $actors = $producers = $category = $episode = "";
-                            $rebroadcast = False;
-                            $rating = 0;
-                            if(startsWith($program['Time'], '1') || startsWith($program['Time'], '2')) $istomorrow = True;
-                            if(startsWith($program['Time'], '0') && $istomorrow == True) :
-                                $startTime = date("YmdHis", strtotime($day." +1 days"." ".$program['Time']));
-                            else :
-                                $startTime = date("YmdHis", strtotime($day." ".$program['Time']));
-                            endif;
-                            $pattern = '/^(.*?)(?:\(([\d,]+)회\))?(?:\((재)\))?$/';
-                            preg_match($pattern, trim($program['Pg_Name']), $matches);
-                            if ($matches != NULL) :
-                                if(isset($matches[1])) $programName = trim($matches[1]) ?: "";
-                                if(isset($matches[2])) $episode = $matches[2] ?: "";
-                                if(isset($matches[3])) $rebroadcast = $matches[3] ? True : False;
-                            endif;
-                            if($program['Rating'] == '모든연령'):
-                                $rating = 0;
-                            else:
-                                $rating = str_replace("세이상","", $program['Rating']);
-                            endif;
-                            //ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
-                            $epginfo[] = array($ChannelId, $startTime, $programName, $subprogramName, $desc, $actors, $producers, $category, $episode, $rebroadcast, $rating);
-                            usleep(1000);
-                        endforeach;
-                        */
                     endif;
                 } catch(Exception $e) {
                     if($GLOBALS['debug']) printError($e->getMessage());

@@ -140,10 +140,6 @@ def getEpg():
             GetEPGFromEveryon(ChannelInfo)
         elif ChannelSource == 'OKSUSU':
             GetEPGFromOksusu(ChannelInfo)
-        elif ChannelSource == 'CCS':
-            GetEPGFromCcs(ChannelInfo)
-        elif ChannelSource == 'OLLEH':
-            GetEPGFromOlleh(ChannelInfo)
         elif ChannelSource == 'MBC':
             GetEPGFromMbc(ChannelInfo)
         elif ChannelSource == 'MIL':
@@ -769,18 +765,6 @@ def GetEPGFromOksusu(ChannelInfo):
     except (requests.exceptions.RequestException) as e:
         if(debug): printError(ChannelName + str(e))
         else: pass
-
-#Get EPG data from CCS
-def GetEPGFromCcs(ChannelInfo):
-    pass
-
-#Get EPG data from OLLEH
-def GetEPGFromOlleh(ChannelInfo):
-    pass
-
-#Get EPG data from DLIVE
-def GetEPGFromDlive(ChannelInfo):
-    pass
 
 # Get EPG data from MBC Radio
 def GetEPGFromMbc(ChannelInfo):

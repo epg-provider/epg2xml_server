@@ -809,7 +809,7 @@ def GetEPGFromMbc(ChannelInfo):
             else: pass
 
 # Get EPG data from MIL Radio
-def GetEPGFromMilRadio(ChannelInfo):
+def GetEPGFromMil(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
@@ -858,7 +858,7 @@ def GetEPGFromMilRadio(ChannelInfo):
             else: pass
 
 # Get EPG data from IFM Radio
-def GetEPGFromIfmRadio(ChannelInfo):
+def GetEPGFromIfm(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
@@ -903,7 +903,7 @@ def GetEPGFromIfmRadio(ChannelInfo):
             else: pass
 
 # Get EPG data from KBS Radio
-def GetEPGFromKbsRadio(ChannelInfo):
+def GetEPGFromKbs(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
@@ -943,7 +943,7 @@ def GetEPGFromKbsRadio(ChannelInfo):
         epgzip(epginfo)
 
 # Get EPG data from ARIRANG Radio
-def GetEPGFromArirangRadio(ChannelInfo):
+def GetEPGFromArirang(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]

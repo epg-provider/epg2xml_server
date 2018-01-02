@@ -145,17 +145,15 @@ def getEpg():
         elif ChannelSource == 'OLLEH':
             GetEPGFromOlleh(ChannelInfo)
         elif ChannelSource == 'MBC':
-            GetEPGFromMbcRadio(ChannelInfo)
+            GetEPGFromMbc(ChannelInfo)
         elif ChannelSource == 'MIL':
-            GetEPGFromMilRadio(ChannelInfo)
+            GetEPGFromMil(ChannelInfo)
         elif ChannelSource == 'IFM':
-            GetEPGFromIfmRadio(ChannelInfo)
+            GetEPGFromIfm(ChannelInfo)
         elif ChannelSource == 'KBS':
-            GetEPGFromKbsRadio(ChannelInfo)
+            GetEPGFromKbs(ChannelInfo)
         elif ChannelSource == 'ARIRANG':
-            GetEPGFromArirangRadio(ChannelInfo)
-        elif ChannelSource == 'TBS':
-            GetEPGFromTbsRadio(ChannelInfo)
+            GetEPGFromArirang(ChannelInfo)
     print('</tv>')
 
 # Get EPG data from epg.co.kr
@@ -1016,10 +1014,6 @@ def GetEPGFromArirangRadio(ChannelInfo):
         except (requests.exceptions.RequestException) as e:
             if(debug): printError(ChannelName + str(e))
             else: pass
-
-#Get EPG data from TBS
-def GetEPGFromTbs(ChannelInfo):
-    pass
 
 # Zip epginfo
 def epgzip(epginfo):

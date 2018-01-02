@@ -44,7 +44,7 @@ if not sys.version_info[:2] == (2, 7):
     sys.exit()
 
 # Set variable
-__version__ = '1.2.3p5'
+__version__ = '1.2.4'
 debug = False
 today = datetime.date.today()
 ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
@@ -390,7 +390,6 @@ def GetEPGFromSKB(ChannelInfo):
             data = re.sub('<span class="nowon">now on</span>','',data)
             pattern = '<span>(.*)<\/span>'
             data = re.sub(pattern, partial(replacement, tag='span'), data)
-            #print(data)
             strainer = SoupStrainer('div', {'id':'dawn'})
             soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
             html =  soup.find_all('li') if soup.find_all('li') else ''
@@ -527,40 +526,38 @@ def GetEPGFromIscs(ChannelInfo):
     ServiceId =  ChannelInfo[3]
     epginfo = []
     epginfo2 = []
-    url='http://m.iscs.co.kr/sub/02/data.asp'
+    url='https://www.iscs.co.kr/service/sub/ajax_channel_view.asp'
     for k in range(period):
         istomorrow = False
         day = today + datetime.timedelta(days=k)
-        params = {'Exec_Mode': 'view', 'Source_Id': ServiceId, 'Ch_Day': day}
+        params = {'s_idx': ServiceId, 'c_date': day}
         response = requests.post(url, data=params, headers=ua, timeout=timeout)
         response.raise_for_status()
         json_data = response.text
         try:
             data = json.loads(json_data, encoding='utf-8')
-            if(data['total'] > 0 ):
-                programs = data['list']
-                for program in programs:
+            if(data['result'] > 0 ):
+                htmls = data['html']
+                strainer = SoupStrainer('tbody')
+                soup = BeautifulSoup(htmls, htmlparser, parse_only=strainer)
+                html =  soup.find_all('tr') if soup.find_all('tr') else ''
+                for row in html:
                     startTime = endTime = programName = subprogramName = desc = actors = producers = category = episode = ''
                     rebroadcast = False
                     rating = 0
-                    if program['Time'].startswith('1') or program['Time'].startswith('2'):
-                        istomorrow = True
-                    if program['Time'].startswith('0') and istomorrow == True:
-                        startTime = str(day + datetime.timedelta(days=1)) + ' ' + program['Time']
-                    else:
-                        startTime = str(day) + ' ' + program['Time']
+                    startTime = str(day) + ' ' + row.find('td', {'class':'time'}).text
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
                     pattern = '^(.*?)(?:\(([\d,]+)회\))?(?:\((재)\))?$';
-                    matches = re.match(pattern, program['Pg_Name'].decode('string_escape').strip())
+                    matches = re.match(pattern, row.find('td', {'class':'name'}).text.strip().encode('utf-8'))
                     if not(matches is None) :
                         programName = matches.group(1) if matches.group(1) else ''
                         episode = matches.group(2) if matches.group(2) else ''
                         rebroadcast = True if matches.group(3) else False
-                    if program['Rating'].decode('string_escape').strip() == '모든연령':
+                    if row.find('span', {'class':'ru5'}).text.strip() == '전체관람':
                         rating = 0
                     else:
-                        rating = program['Rating'].replace('세이상','')
+                        rating = row.find('span', {'class':'ru5'}).text.strip().replace('세이상','')
                     #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                     epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
                     time.sleep(0.001)
@@ -652,7 +649,7 @@ def GetEPGFromPooq(ChannelInfo):
                         startTime = program['startDate'] + ' ' + program['startTime']
                         startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                         startTime = startTime.strftime('%Y%m%d%H%M%S')
-                        programName = program['programTitle'].replace("\r\n", "").encode('utf-8');
+                        programName = program['programTitle'].replace("\r\n", "").encode('utf-8')
                         pattern = '^(.*?)(?:([\d,]+)회)?(?:\((재)\))?$'
                         matches = re.match(pattern, programName)
                         if not(matches is None) :
@@ -769,7 +766,7 @@ def GetEPGFromOksusu(ChannelInfo):
         if(debug): printError(ChannelName + str(e))
         else: pass
 
-# Get EPG data from MBC
+# Get EPG data from MBC Radio
 def GetEPGFromMbc(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
@@ -811,7 +808,7 @@ def GetEPGFromMbc(ChannelInfo):
             if(debug): printError(ChannelName + str(e))
             else: pass
 
-# Get EPG data from MIL
+# Get EPG data from MIL Radio
 def GetEPGFromMil(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
@@ -860,7 +857,7 @@ def GetEPGFromMil(ChannelInfo):
             if(debug): printError(ChannelName + str(e))
             else: pass
 
-# Get EPG data from IFM
+# Get EPG data from IFM Radio
 def GetEPGFromIfm(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
@@ -905,7 +902,7 @@ def GetEPGFromIfm(ChannelInfo):
             if(debug): printError(ChannelName + str(e))
             else: pass
 
-# Get EPG data from KBS
+# Get EPG data from KBS Radio
 def GetEPGFromKbs(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
@@ -945,7 +942,7 @@ def GetEPGFromKbs(ChannelInfo):
     if(epginfo) :
         epgzip(epginfo)
 
-# Get EPG data from ARIRANG
+# Get EPG data from ARIRANG Radio
 def GetEPGFromArirang(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]

@@ -1299,7 +1299,7 @@ function GetEPGFromOksusu($ChannelInfo) {
     }
 }
 
-// Get EPG data from MBC
+// Get EPG data from MBC Radio
 function GetEPGFromMbc($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
@@ -1371,7 +1371,7 @@ function GetEPGFromMbc($ChannelInfo) {
     endforeach;
 }
 
-// Get EPG data from MIL
+// Get EPG data from MIL Radio
 function GetEPGFromMil($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
@@ -1443,7 +1443,7 @@ function GetEPGFromMil($ChannelInfo) {
     endforeach;
 }
 
-// Get EPG data from IFM
+// Get EPG data from IFM Radio
 function GetEPGFromIfm($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
@@ -1511,7 +1511,7 @@ function GetEPGFromIfm($ChannelInfo) {
     endforeach;
 }
 
-// Get EPG data from KBS
+// Get EPG data from KBS Radio
 function GetEPGFromKbs($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];
@@ -1569,6 +1569,7 @@ function GetEPGFromKbs($ChannelInfo) {
     if($epginfo) epgzip($epginfo);
 }
 
+// Get EPG data from Arirang Radio
 function GetEPGFromArirang($ChannelInfo) {
     $ChannelId = $ChannelInfo[0];
     $ChannelName = $ChannelInfo[1];

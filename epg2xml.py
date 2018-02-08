@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
@@ -44,7 +44,7 @@ if not sys.version_info[:2] == (2, 7):
     sys.exit()
 
 # Set variable
-__version__ = '1.2.4'
+__version__ = '1.2.4p1'
 debug = False
 today = datetime.date.today()
 ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
@@ -392,6 +392,7 @@ def GetEPGFromSKB(ChannelInfo):
             data = re.sub(pattern, partial(replacement, tag='span'), data)
             strainer = SoupStrainer('div', {'id':'dawn'})
             soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
+            soup = soup.prettify()
             html =  soup.find_all('li') if soup.find_all('li') else ''
             if(html):
                 for row in html:
@@ -401,14 +402,17 @@ def GetEPGFromSKB(ChannelInfo):
                     startTime = str(day) + ' ' + row.find('span', {'class':'time'}).text
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
-                    cell = row.find('span', {'class':'title'}).text.decode('string_escape').strip()
-                    pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"
-                    matches = re.match(pattern, cell)
-                    if not(matches is None) :
-                        programName = matches.group(1) if matches.group(1) else ''
-                        subprogramName = matches.group(5) if matches.group(5) else ''
-                        rebroadcast = True if matches.group(7) else False
-                        episode = matches.group(3) if matches.group(3) else ''
+                    cell = row.find('span', {'class':'title'})
+                    print(cell)
+                    if(cell):
+                        cell = cell.text.decode('string_escape').strip()
+                        pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"
+                        matches = re.match(pattern, cell)
+                        if not(matches is None) :
+                            programName = matches.group(1) if matches.group(1) else ''
+                            subprogramName = matches.group(5) if matches.group(5) else ''
+                            rebroadcast = True if matches.group(7) else False
+                            episode = matches.group(3) if matches.group(3) else ''
                     rating = row.find('span', {'class':re.compile('^watch.*$')})
                     if not(rating is None) :
                         rating = int(rating.text.decode('string_escape').replace('세','').strip())
@@ -459,7 +463,7 @@ def GetEPGFromSKY(ChannelInfo):
                         desc = description if description else ''
                         if desc:
                             if summary : desc = desc + '\n' + summary
-                        else: 
+                        else:
                             desc = summary
                         category = program['program_category1']
                         episode = program['episode_id'] if program['episode_id'] else ''

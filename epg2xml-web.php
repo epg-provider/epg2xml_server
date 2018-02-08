@@ -3,7 +3,7 @@
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
 @set_time_limit(0);
-define("VERSION", "1.2.4");
+define("VERSION", "1.2.4p1");
 $debug = False;
 $ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'";
 $timeout = 5;
@@ -353,14 +353,14 @@ function getEPG() {
     fprintf($fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     fprintf($fp, "<!DOCTYPE tv SYSTEM \"xmltv.dtd\">\n\n");
     fprintf($fp, "<tv generator-info-name=\"epg2xml %s\">\n", VERSION);
- 
+
     foreach ($Channeldatajson as $Channeldata) : //Get Channel & Print Channel info
         if(in_array($Channeldata['Id'], $MyChannelInfo)) :
             $ChannelId = $Channeldata['Id'];
             $ChannelName = htmlspecialchars($Channeldata['Name'], ENT_XML1);
             $ChannelSource = $Channeldata['Source'];
             $ChannelServiceId = $Channeldata['ServiceId'];
-            $ChannelIconUrl = htmlspecialchars($Channeldata['Icon_url'], ENT_XML1);            
+            $ChannelIconUrl = htmlspecialchars($Channeldata['Icon_url'], ENT_XML1);
             if($MyISP != "ALL" && $Channeldata[$MyISP.'Ch'] != Null):
                 $ChannelInfos[] = array($ChannelId,  $ChannelName, $ChannelSource, $ChannelServiceId);
                 $Channelnumber = $Channeldata[$MyISP.'Ch'];
@@ -676,7 +676,7 @@ function GetEPGFromSK($ChannelInfo) {
                 $data = json_decode($response, TRUE);
                 if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
                 if($data['channel'] == NULL) :
-                    if($GLOBALS['debug']) : 
+                    if($GLOBALS['debug']) :
                         printError($ChannelName.CHANNEL_ERROR);
                     endif;
                 else :
@@ -909,7 +909,7 @@ function GetEPGFromNaver($ChannelInfo) {
         'u4' => $GLOBALS['period'],
         'u5' => $ServiceId,
         'u6' => 1,
-        'u7' => $ChannelName."편성표", 
+        'u7' => $ChannelName."편성표",
         'u8' => $ChannelName."편성표",
         'where' => 'nexearch'
     );
@@ -927,7 +927,7 @@ function GetEPGFromNaver($ChannelInfo) {
                 $data = json_decode($response, TRUE);
                 if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
                  if($data['displayDates'][0]['count'] == 0) :
-                    if($GLOBALS['debug']) : 
+                    if($GLOBALS['debug']) :
                         printError($ChannelName.CHANNEL_ERROR);
                     endif;
                 else :
@@ -969,7 +969,7 @@ function GetEPGFromIscs($ChannelInfo) {
     foreach(range(1, $GLOBALS['period']) as $k) :
         $istomorrow = False;
         $url = "https://www.iscs.co.kr/service/sub/ajax_channel_view.asp";
-        $day = date("Y-m-d", strtotime("+".($k - 1)." days"));
+        $day = date("Y-m-d", strtotime("+".($k - 2)." days"));
         $params = array(
             's_idx' => $ServiceId,
             'c_date' => $day
@@ -1123,7 +1123,7 @@ function GetEPGFromPooq($ChannelInfo) {
                 $data = json_decode($response, TRUE);
                 if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
                 if($data['result']['count'] == 0) :
-                    if($GLOBALS['debug']) : 
+                    if($GLOBALS['debug']) :
                         printError($ChannelName.CHANNEL_ERROR);
                     endif;
                 else :
@@ -1229,7 +1229,7 @@ function GetEPGFromOksusu($ChannelInfo) {
         'end_time' => $lastday.'24',
         'tgroup' => 'oksusutest_02|null',
         'IF' => 'IF-NSMEPG-003',
-        'response_format' => 'json', 
+        'response_format' => 'json',
         'm' => 'ch_epg',
         'ver' => '1.0'
     );
@@ -1244,7 +1244,7 @@ function GetEPGFromOksusu($ChannelInfo) {
                 $data = json_decode($response, TRUE);
                 if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
                 if($data['channel'] == NULL) :
-                    if($GLOBALS['debug']) : 
+                    if($GLOBALS['debug']) :
                         printError($ChannelName.CHANNEL_ERROR);
                     endif;
                 else :
@@ -1322,7 +1322,7 @@ function GetEPGFromMbc($ChannelInfo) {
                     $data = json_decode($response, TRUE);
                     if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
                     if(count($data['Programs']) == 0) :
-                        if($GLOBALS['debug']) : 
+                        if($GLOBALS['debug']) :
                             printError($ChannelName.CHANNEL_ERROR);
                         endif;
                     else :
@@ -1393,7 +1393,7 @@ function GetEPGFromMil($ChannelInfo) {
                     $data = json_decode($response, TRUE);
                     if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
                     if(count($data['resultList']) == 0) :
-                        if($GLOBALS['debug']) : 
+                        if($GLOBALS['debug']) :
                             printError($ChannelName.CHANNEL_ERROR);
                         endif;
                     else :
@@ -1467,7 +1467,7 @@ function GetEPGFromIfm($ChannelInfo) {
                     $data = json_decode($response, TRUE);
                     if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
                     if(count($data['hybMusicInfoList']) == 0) :
-                        if($GLOBALS['debug']) : 
+                        if($GLOBALS['debug']) :
                             printError($ChannelName.CHANNEL_ERROR);
                         endif;
                     else :
@@ -1534,7 +1534,7 @@ function GetEPGFromKbs($ChannelInfo) {
                     $data = json_decode($response, TRUE);
                     if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
                     if(count($data['schedule']) == 0) :
-                        if($GLOBALS['debug']) : 
+                        if($GLOBALS['debug']) :
                             printError($ChannelName.CHANNEL_ERROR);
                         endif;
                     else :
@@ -1675,7 +1675,7 @@ function epgzip($epginfo) {
         );
         writeProgram($programdata);
         $epg1 = $epg2;
-    endforeach;    
+    endforeach;
 }
 
 function writeProgram($programdata) {

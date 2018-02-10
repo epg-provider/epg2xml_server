@@ -392,7 +392,6 @@ def GetEPGFromSKB(ChannelInfo):
             data = re.sub(pattern, partial(replacement, tag='span'), data)
             strainer = SoupStrainer('div', {'id':'dawn'})
             soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
-            soup = soup.prettify()
             html =  soup.find_all('li') if soup.find_all('li') else ''
             if(html):
                 for row in html:

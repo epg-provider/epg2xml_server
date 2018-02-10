@@ -392,7 +392,6 @@ def GetEPGFromSKB(ChannelInfo):
             data = re.sub(pattern, partial(replacement, tag='span'), data)
             strainer = SoupStrainer('div', {'id':'dawn'})
             soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
-            soup = soup.prettify()
             html =  soup.find_all('li') if soup.find_all('li') else ''
             if(html):
                 for row in html:
@@ -403,7 +402,6 @@ def GetEPGFromSKB(ChannelInfo):
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
                     cell = row.find('span', {'class':'title'})
-                    print(cell)
                     if(cell):
                         cell = cell.text.decode('string_escape').strip()
                         pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"

@@ -402,7 +402,6 @@ def GetEPGFromSKB(ChannelInfo):
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
                     cell = row.find('span', {'class':'title'})
-                    print(cell)
                     if(cell):
                         cell = cell.text.decode('string_escape').strip()
                         pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"

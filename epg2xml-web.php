@@ -3,7 +3,7 @@
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
 @set_time_limit(0);
-define("VERSION", "1.2.4p1");
+define("VERSION", "1.2.5");
 $debug = False;
 $ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'";
 $timeout = 5;
@@ -752,30 +752,31 @@ function GetEPGFromSKB($ChannelInfo) {
                 printError($ChannelName.HTTP_ERROR);
             else :
                 $response = str_replace('charset="euc-kr"', 'charset="utf-8"', $response);
-                $response = mb_convert_encoding($response, "UTF-8", "EUC-KR");
                 $response = preg_replace('/<!--(.*?)-->/is', '', $response);
                 $response = preg_replace('/<span><\/span>/is', '', $response);
+                //$response = preg_replace('/<strong class="hide">프로그램 안내<\/strong>/is', '', $response);
+                //$response = preg_replace('/<span.*\\/span>/is', '', $response);
                 $pattern = '/<span>(.*)<\/span>/';
                 $response = preg_replace_callback($pattern, function($matches) { return '<span class="title">'.htmlspecialchars($matches[1], ENT_NOQUOTES).'</span>';}, $response);
                 $dom = new DomDocument;
                 libxml_use_internal_errors(True);
                 if($dom->loadHTML('<?xml encoding="utf-8" ?>'.$response)):
                     $xpath = new DomXPath($dom);
-                    $query = "//span[@class='caption' or @class='explan' or @class='fullHD' or @class='UHD' or @class='nowon']";
+                    $query = "//span[@class='caption' or @class='explan' or @class='fullHD' or @class='UHD' or @class='nowon' or @class='flag_box']";
                     $spans = $xpath->query($query);
                     foreach($spans as $span) :
                         $span->parentNode->removeChild( $span);
                     endforeach;
-                    $query = "//div[@id='dawn']/ul/li";
+                    $query = "//div[@id='uiScheduleTabContent']/div/ol/li";
                     $rows = $xpath->query($query);
                     foreach($rows as $row) :
                         $startTime = $endTime = $programName = $subprogramName = $desc = $actors = $producers = $category = $episode = "";
                         $rebroadcast = False;
                         $rating = 0;
-                        $cells = $row->getElementsByTagName('span');
+                        $cells = $row->getElementsByTagName('p');
                         $startTime = $cells->item(0)->nodeValue ?: "";
                         $startTime = date("YmdHis", strtotime($day." ".$startTime));
-                        $programName = trim($cells->item(2)->nodeValue) ?: "";
+                        $programName = trim($cells->item(1)->nodeValue) ?: "";
                         $pattern = '/^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$/';
                         preg_match($pattern, $programName, $matches);
                         if ($matches != NULL) :
@@ -969,7 +970,7 @@ function GetEPGFromIscs($ChannelInfo) {
     foreach(range(1, $GLOBALS['period']) as $k) :
         $istomorrow = False;
         $url = "https://www.iscs.co.kr/service/sub/ajax_channel_view.asp";
-        $day = date("Y-m-d", strtotime("+".($k - 2)." days"));
+        $day = date("Y-m-d", strtotime("+".($k - 1)." days"));
         $params = array(
             's_idx' => $ServiceId,
             'c_date' => $day

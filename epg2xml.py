@@ -44,7 +44,7 @@ if not sys.version_info[:2] == (2, 7):
     sys.exit()
 
 # Set variable
-__version__ = '1.2.4p2'
+__version__ = '1.2.5'
 debug = False
 today = datetime.date.today()
 ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
@@ -388,20 +388,22 @@ def GetEPGFromSKB(ChannelInfo):
             data = re.sub('<span class="fullHD">Full HD</span>','',data)
             data = re.sub('<span class="UHD">UHD</span>','',data)
             data = re.sub('<span class="nowon">now on</span>','',data)
+            data = re.sub('<span class="flag_box">','',data)
+            data = re.sub('<strong class="hide">프로그램 안내</strong>', '',data)
             pattern = '<span>(.*)<\/span>'
             data = re.sub(pattern, partial(replacement, tag='span'), data)
-            strainer = SoupStrainer('div', {'id':'dawn'})
+            strainer = SoupStrainer('div', {'id':'uiScheduleTabContent'})
             soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
-            html =  soup.find_all('li') if soup.find_all('li') else ''
+            html =  soup.find_all('li',{'class':'list'}) if soup.find_all('li') else ''
             if(html):
                 for row in html:
                     startTime = endTime = programName = subprogramName = desc = actors = producers = category = episode = ''
                     rebroadcast = False
                     rating = 0
-                    startTime = str(day) + ' ' + row.find('span', {'class':'time'}).text
+                    startTime = str(day) + ' ' + row.find('p', {'class':'time'}).text
                     startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
-                    cell = row.find('span', {'class':'title'})
+                    cell = row.find('p', {'class':'cont'})
                     if(cell):
                         cell = cell.text.decode('string_escape').strip()
                         pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"
@@ -461,7 +463,7 @@ def GetEPGFromSKY(ChannelInfo):
                         desc = description if description else ''
                         if desc:
                             if summary : desc = desc + '\n' + summary
-                        else:
+                        else: 
                             desc = summary
                         category = program['program_category1']
                         episode = program['episode_id'] if program['episode_id'] else ''

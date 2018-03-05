@@ -389,8 +389,6 @@ def GetEPGFromSKB(ChannelInfo):
             data = re.sub('<span class="round_flag flag11">(.*?)</span>', '', data)
             data = re.sub('<span class="round_flag flag12">(.*?)</span>', '', data)
             data = re.sub('<strong class="hide">프로그램 안내</strong>', '', data)
-            #pattern = '<span>(.*)<\/span>'
-            #data = re.sub(pattern, partial(replacement, tag='span'), data)
             strainer = SoupStrainer('div', {'id':'uiScheduleTabContent'})
             soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
             html =  soup.find_all('li',{'class':'list'}) if soup.find_all('li') else ''

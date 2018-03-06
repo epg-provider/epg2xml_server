@@ -3,7 +3,7 @@
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
 @set_time_limit(0);
-define("VERSION", "1.2.5");
+define("VERSION", "1.2.5p1");
 $debug = False;
 $ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'";
 $timeout = 5;
@@ -751,18 +751,22 @@ function GetEPGFromSKB($ChannelInfo) {
             if ($response === False && $GLOBALS['debug']) :
                 printError($ChannelName.HTTP_ERROR);
             else :
-                $response = str_replace('charset="euc-kr"', 'charset="utf-8"', $response);
+				$response = str_replace('charset="EUC-KR"', 'charset="UTF-8"', $response);
+				$response = mb_convert_encoding($response, "UTF-8", "EUC-KR");
                 $response = preg_replace('/<!--(.*?)-->/is', '', $response);
-                $response = preg_replace('/<span><\/span>/is', '', $response);
-                //$response = preg_replace('/<strong class="hide">프로그램 안내<\/strong>/is', '', $response);
-                //$response = preg_replace('/<span.*\\/span>/is', '', $response);
-                $pattern = '/<span>(.*)<\/span>/';
-                $response = preg_replace_callback($pattern, function($matches) { return '<span class="title">'.htmlspecialchars($matches[1], ENT_NOQUOTES).'</span>';}, $response);
+                $response = preg_replace('/<span class="round_flag flag02">(.*?)<\/span>/', '', $response);
+                $response = preg_replace('/<span class="round_flag flag03">(.*?)<\/span>/', '', $response);
+                $response = preg_replace('/<span class="round_flag flag04">(.*?)<\/span>/', '', $response);
+                $response = preg_replace('/<span class="round_flag flag09">(.*?)<\/span>/', '', $response);
+                $response = preg_replace('/<span class="round_flag flag10">(.*?)<\/span>/', '', $response);
+                $response = preg_replace('/<span class="round_flag flag11">(.*?)<\/span>/', '', $response);
+                $response = preg_replace('/<span class="round_flag flag12">(.*?)<\/span>/', '', $response);
+                $response = preg_replace('/<strong class="hide">프로그램 안내<\/strong>/', '', $response);
                 $dom = new DomDocument;
                 libxml_use_internal_errors(True);
                 if($dom->loadHTML('<?xml encoding="utf-8" ?>'.$response)):
                     $xpath = new DomXPath($dom);
-                    $query = "//span[@class='caption' or @class='explan' or @class='fullHD' or @class='UHD' or @class='nowon' or @class='flag_box']";
+                    $query = "//span[@class='caption' or @class='explan' or @class='fullHD' or @class='UHD' or @class='nowon']";
                     $spans = $xpath->query($query);
                     foreach($spans as $span) :
                         $span->parentNode->removeChild( $span);
@@ -776,7 +780,7 @@ function GetEPGFromSKB($ChannelInfo) {
                         $cells = $row->getElementsByTagName('p');
                         $startTime = $cells->item(0)->nodeValue ?: "";
                         $startTime = date("YmdHis", strtotime($day." ".$startTime));
-                        $programName = trim($cells->item(1)->nodeValue) ?: "";
+                        $programName = trim($cells->item(1)->childNodes->item(0)->nodeValue) ?: "";
                         $pattern = '/^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$/';
                         preg_match($pattern, $programName, $matches);
                         if ($matches != NULL) :
@@ -784,8 +788,8 @@ function GetEPGFromSKB($ChannelInfo) {
                             if(isset($matches[5])) $subprogramName = trim($matches[5]) ?: "";
                             if(isset($matches[3])) $episode = $matches[3] ?: "";
                             if(isset($matches[7])) $rebroadcast = $matches[7] ? True : False;
-                        endif;
-                        if($cells->length > 3) $rating = str_replace('세', '', $cells->item(3)->nodeValue)  ?: 0;
+						endif;
+                        if(trim($cells->item(1)->childNodes->item(1)->nodeValue)) $rating = str_replace('세 이상', '', trim($cells->item(1)->childNodes->item(1)->nodeValue))  ?: 0;
                         //ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                         $epginfo[] = array($ChannelId, $startTime, $programName, $subprogramName, $desc, $actors, $producers, $category, $episode, $rebroadcast, $rating);
                         usleep(1000);

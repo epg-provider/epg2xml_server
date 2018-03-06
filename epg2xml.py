@@ -44,7 +44,7 @@ if not sys.version_info[:2] == (2, 7):
     sys.exit()
 
 # Set variable
-__version__ = '1.2.5'
+__version__ = '1.2.5p1'
 debug = False
 today = datetime.date.today()
 ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
@@ -381,17 +381,14 @@ def GetEPGFromSKB(ChannelInfo):
             html_data = response.content
             data = unicode(html_data, 'euc-kr', 'ignore').encode('utf-8', 'ignore')
             data = re.sub('<!--(.*?)-->', '', data, 0, re.I|re.S)
-            data = re.sub('<span></span>', '', data)
-            data = re.sub('<span class="title">', '<span>', data)
-            data = re.sub('<span class="explan">화면해설</span>','',data)
-            data = re.sub('<span class="caption">자막방송</span>','',data)
-            data = re.sub('<span class="fullHD">Full HD</span>','',data)
-            data = re.sub('<span class="UHD">UHD</span>','',data)
-            data = re.sub('<span class="nowon">now on</span>','',data)
-            data = re.sub('<span class="flag_box">','',data)
-            data = re.sub('<strong class="hide">프로그램 안내</strong>', '',data)
-            pattern = '<span>(.*)<\/span>'
-            data = re.sub(pattern, partial(replacement, tag='span'), data)
+            data = re.sub('<span class="round_flag flag02">(.*?)</span>', '', data)
+            data = re.sub('<span class="round_flag flag03">(.*?)</span>', '', data)
+            data = re.sub('<span class="round_flag flag04">(.*?)</span>', '', data)
+            data = re.sub('<span class="round_flag flag09">(.*?)</span>', '', data)
+            data = re.sub('<span class="round_flag flag10">(.*?)</span>', '', data)
+            data = re.sub('<span class="round_flag flag11">(.*?)</span>', '', data)
+            data = re.sub('<span class="round_flag flag12">(.*?)</span>', '', data)
+            data = re.sub('<strong class="hide">프로그램 안내</strong>', '', data)
             strainer = SoupStrainer('div', {'id':'uiScheduleTabContent'})
             soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
             html =  soup.find_all('li',{'class':'list'}) if soup.find_all('li') else ''
@@ -405,6 +402,8 @@ def GetEPGFromSKB(ChannelInfo):
                     startTime = startTime.strftime('%Y%m%d%H%M%S')
                     cell = row.find('p', {'class':'cont'})
                     if(cell):
+                        if cell.find('span'):
+                            cell.span.decompose()
                         cell = cell.text.decode('string_escape').strip()
                         pattern = "^(.*?)(\(([\d,]+)회\))?(<(.*)>)?(\((재)\))?$"
                         matches = re.match(pattern, cell)
@@ -413,9 +412,10 @@ def GetEPGFromSKB(ChannelInfo):
                             subprogramName = matches.group(5) if matches.group(5) else ''
                             rebroadcast = True if matches.group(7) else False
                             episode = matches.group(3) if matches.group(3) else ''
-                    rating = row.find('span', {'class':re.compile('^watch.*$')})
+                    rating = row.find('i', {'class':'hide'})
                     if not(rating is None) :
-                        rating = int(rating.text.decode('string_escape').replace('세','').strip())
+                        rating = int(rating.text.decode('string_escape').replace('세 이상','').strip())
+
                     #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
                     epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
                     time.sleep(0.001)

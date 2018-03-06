@@ -120,6 +120,7 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
 ## 변경사항
 ### Version 1.2.5
   - SKB 함수 수정
+  - SKB 함수 수정(p1)
 ### Version 1.2.4
   - ISCS 함수 수정
   - SKB 함수 수정(p1)

@@ -3,7 +3,7 @@
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
 @set_time_limit(0);
-define("VERSION", "1.2.5p1");
+define("VERSION", "1.2.5p2");
 $debug = False;
 $ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'";
 $timeout = 5;
@@ -811,7 +811,7 @@ function GetEPGFromSKY($ChannelInfo) {
     $ChannelName = $ChannelInfo[1];
     $ServiceId =  $ChannelInfo[3];
     foreach(range(1, $GLOBALS['period']) as $k) :
-        $url = "http://www.skylife.co.kr/channel/epg/channelScheduleListJson.do";
+        $url = "http://www.skylife.co.kr/channel/epglist/channelScheduleListJson.do";
         $day = date("Y-m-d", strtotime("+".($k - 1)." days"));
         $params = array(
             'area' => 'in',

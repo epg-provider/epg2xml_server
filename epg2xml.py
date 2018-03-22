@@ -44,7 +44,7 @@ if not sys.version_info[:2] == (2, 7):
     sys.exit()
 
 # Set variable
-__version__ = '1.2.5p1'
+__version__ = '1.2.5p2'
 debug = False
 today = datetime.date.today()
 ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
@@ -433,7 +433,7 @@ def GetEPGFromSKY(ChannelInfo):
     ChannelId = ChannelInfo[0]
     ChannelName = ChannelInfo[1]
     ServiceId =  ChannelInfo[3]
-    url = 'http://www.skylife.co.kr/channel/epg/channelScheduleListJson.do'
+    url = 'http://www.skylife.co.kr/channel/epglist/channelScheduleListJson.do'
     for k in range(period):
         day = today + datetime.timedelta(days=k)
         params = {'area': 'in', 'inFd_channel_id': ServiceId, 'inairdate': day.strftime('%Y-%m-%d'), 'indate_type': 'now'}
@@ -441,6 +441,7 @@ def GetEPGFromSKY(ChannelInfo):
             response = requests.post(url, data=params, headers=ua, timeout=timeout)
             response.raise_for_status()
             json_data = response.text
+            print(json_data)
             try:
                 data = json.loads(json_data, encoding='utf-8')
                 if (len(data['scheduleListIn']) == 0) :

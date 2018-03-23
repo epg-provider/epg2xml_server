@@ -412,8 +412,6 @@ function getEPG() {
             GetEPGFromNaver($ChannelInfo);
         elseif($ChannelSource == 'ISCS') :
             GetEPGFromIscs($ChannelInfo);
-        elseif($ChannelSource == 'HCN') :
-            GetEPGFromHcn($ChannelInfo);
         elseif($ChannelSource == 'POOQ') :
             GetEPGFromPooq($ChannelInfo);
         elseif($ChannelSource == 'EVERYON') :
@@ -1036,63 +1034,6 @@ function GetEPGFromIscs($ChannelInfo) {
         }
     endforeach;
     $epginfo=  array_map("unserialize", array_unique(array_map("serialize", $epginfo)));
-    if($epginfo) epgzip($epginfo);
-}
-
-// Get EPG data from Hcn
-function GetEPGFromHcn($ChannelInfo) {
-    $ChannelId = $ChannelInfo[0];
-    $ChannelName = $ChannelInfo[1];
-    $ServiceId =  $ChannelInfo[3];
-    $epginfo = array();
-    foreach(range(1, $GLOBALS['period']) as $k) :
-        $url = "http://m.hcn.co.kr/sch_ScheduleList.action";
-        $day = date("Y-m-d", strtotime("+".($k - 1)." days"));
-        $params = array(
-            'ch_id' => $ServiceId,
-            'onairdate' => $day,
-            '_' => _microtime()
-        );
-        $params = http_build_query($params);
-        $method = "GET";
-       try {
-            $response = getWeb($url, $params, $method);
-            if ($response === False && $GLOBALS['debug']) :
-                printError($ChannelName.HTTP_ERROR);
-            else :
-                $response = mb_convert_encoding($response, "HTML-ENTITIES", "UTF-8");
-                $dom = new DomDocument;
-                libxml_use_internal_errors(True);
-                if($dom->loadHTML($response)):
-                    $xpath = new DomXPath($dom);
-                    $query = "//li[@class!='noData']";
-                    $rows = $xpath->query($query);
-                    foreach($rows as $row) :
-                        $startTime = $endTime = $programName = $subprogramName = $desc = $actors = $producers = $category = $episode = "";
-                        $rebroadcast = False;
-                        $rating = 0;
-                        $startTime = trim($xpath->query("span[@class='progTime']", $row)->item(0)->nodeValue) ?: "";
-                        $startTime = date("YmdHis", strtotime($day." ".$startTime));
-                        $programName = trim($xpath->query("span[@class='progTitle']", $row)->item(0)->nodeValue) ?: "";
-                        $images = $row->getElementsByTagName('img');
-                        foreach($images as $image):
-                            preg_match('/re\.png/', $image->getAttribute('src'), $rebroad);
-                            if($rebroad != NULL) $rebroadcast = True;
-                            preg_match('/.*plus([\d,]+)\.png/', $image->getAttribute('src'), $grade);
-                            if($grade != NULL) $rating = $grade[1];
-                        endforeach;
-                        //ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
-                        $epginfo[] = array($ChannelId, $startTime, $programName, $subprogramName, $desc, $actors, $producers, $category, $episode, $rebroadcast, $rating);
-                        usleep(1000);
-                    endforeach;
-                else :
-                    if($GLOBALS['debug']) printError($ChannelName.CONTENT_ERROR);
-                endif;
-            endif;
-        } catch (Exception $e) {
-            if($GLOBALS['debug']) printError($e->getMessage());
-        }
-    endforeach;
     if($epginfo) epgzip($epginfo);
 }
 

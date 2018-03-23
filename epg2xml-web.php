@@ -3,9 +3,9 @@
 @date_default_timezone_set('Asia/Seoul');
 error_reporting(E_ALL ^ E_NOTICE);
 @set_time_limit(0);
-define("VERSION", "1.2.5p2");
+define("VERSION", "1.2.5p3");
 $debug = False;
-$ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'";
+$ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116'";
 $timeout = 5;
 define("CHANNEL_ERROR", " 존재하지 않는 채널입니다.");
 define("CONTENT_ERROR ", " EPG 정보가 없습니다.");
@@ -1800,6 +1800,7 @@ function getWeb($url, $params, $method) {
     curl_setopt($ch, CURLOPT_HEADER, False);
     curl_setopt($ch, CURLOPT_FAILONERROR, True);
     curl_setopt($ch, CURLOPT_USERAGENT, $GLOBALS['ua']);
+
     $response = curl_exec($ch);
     if(curl_error($ch) && $GLOBALS['debug']) printError($url." ".curl_error($ch));
     curl_close($ch);

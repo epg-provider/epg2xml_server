@@ -122,6 +122,7 @@ https://github.com/wonipapa/epg2xml/wiki/FAQ
   - SKB 함수 수정
   - SKB 함수 수정(p1)
   - SKY 함수 수정(p2)
+  - HCN 함수 수정(p3)
 ### Version 1.2.4
   - ISCS 함수 수정
   - SKB 함수 수정(p1)

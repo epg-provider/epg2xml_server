@@ -44,10 +44,10 @@ if not sys.version_info[:2] == (2, 7):
     sys.exit()
 
 # Set variable
-__version__ = '1.2.5p2'
+__version__ = '1.2.5p3'
 debug = False
 today = datetime.date.today()
-ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
+ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116', 'accept': '*/*'}
 timeout = 5
 htmlparser = 'lxml'
 CHANNEL_ERROR = ' 존재하지 않는 채널입니다.'

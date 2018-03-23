@@ -44,10 +44,10 @@ if not sys.version_info[:2] == (2, 7):
     sys.exit()
 
 # Set variable
-__version__ = '1.2.5p2'
+__version__ = '1.2.5p3'
 debug = False
 today = datetime.date.today()
-ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36', 'accept': '*/*'}
+ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116', 'accept': '*/*'}
 timeout = 5
 htmlparser = 'lxml'
 CHANNEL_ERROR = ' 존재하지 않는 채널입니다.'
@@ -132,8 +132,6 @@ def getEpg():
             GetEPGFromNaver(ChannelInfo)
         elif ChannelSource == 'ISCS':
             GetEPGFromIscs(ChannelInfo)
-        elif ChannelSource == 'HCN':
-            GetEPGFromHcn(ChannelInfo)
         elif ChannelSource == 'POOQ':
             GetEPGFromPooq(ChannelInfo)
         elif ChannelSource == 'EVERYON':
@@ -577,52 +575,6 @@ def GetEPGFromIscs(ChannelInfo):
             if not i in epginfo2:
                 epginfo2.append(i)
         epginfo = epginfo2
-        epgzip(epginfo)
-
-# Get EPG data from HCN
-def GetEPGFromHcn(ChannelInfo):
-    ChannelId = ChannelInfo[0]
-    ChannelName = ChannelInfo[1]
-    ServiceId =  ChannelInfo[3]
-    epginfo = []
-    url = 'http://m.hcn.co.kr/sch_ScheduleList.action'
-    for k in range(period):
-        day = today + datetime.timedelta(days=k)
-        params = {'ch_id': ServiceId, 'onairdate': day, '_':  int(time.time()*1000)}
-        try:
-            response = requests.get(url, params=params, headers=ua, timeout=timeout)
-            response.raise_for_status()
-            html_data = response.content
-            data = html_data
-            strainer = SoupStrainer('li')
-            soup = BeautifulSoup(data, htmlparser, parse_only=strainer, from_encoding='utf-8')
-            html =  soup.find_all('li') if soup.find_all('li') else ''
-            if(html) :
-                for row in html:
-                    startTime = endTime = programName = subprogramName = desc = actors = producers = category = episode = ''
-                    rebroadcast = False
-                    rating = 0
-                    if 'noData' in row['class']:
-                        continue
-                    startTime = str(day) + ' ' + row.find('span', {'class':'progTime'}).text.strip()
-                    startTime = datetime.datetime.strptime(startTime, '%Y-%m-%d %H:%M')
-                    startTime = startTime.strftime('%Y%m%d%H%M%S')
-                    programName = row.find('span', {'class':'progTitle'}).text.decode('string_escape').strip()
-                    for image in row.find_all('img', {'class':'vM'}, alt=True):
-                        rebroad = re.match('(재방송)',image['alt'].decode('string_escape').strip())
-                        if not (rebroad is None): rebroadcast = True
-                        grade = re.match('([\d,]+)',image['alt'])
-                        if not (grade is None): rating = int(grade.group(1))
-                    #ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating
-                    epginfo.append([ChannelId, startTime, programName, subprogramName, desc, actors, producers, category, episode, rebroadcast, rating])
-                    time.sleep(0.001)
-        except ValueError:
-            if(debug): printError(ChannelName + CONTENT_ERROR)
-            else: pass
-        except (requests.exceptions.RequestException) as e:
-            if(debug): printError(ChannelName + str(e))
-            else: pass
-    if(epginfo) :
         epgzip(epginfo)
 
 # Get EPG data from POOQ

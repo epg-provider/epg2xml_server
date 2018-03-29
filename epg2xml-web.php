@@ -406,8 +406,6 @@ function getEPG() {
             GetEPGFromSK($ChannelInfo);
         elseif($ChannelSource == 'SKB') :
             GetEPGFromSKB($ChannelInfo);
-        elseif($ChannelSource == 'SKY') :
-            GetEPGFromSKY($ChannelInfo);
         elseif($ChannelSource == 'NAVER') :
             GetEPGFromNaver($ChannelInfo);
         elseif($ChannelSource == 'ISCS') :
@@ -801,93 +799,6 @@ function GetEPGFromSKB($ChannelInfo) {
         }
     endforeach;
     if($epginfo) epgzip($epginfo);
-}
-
-// Get EPG data from SKY
-function GetEPGFromSKY($ChannelInfo) {
-    $ChannelId = $ChannelInfo[0];
-    $ChannelName = $ChannelInfo[1];
-    $ServiceId =  $ChannelInfo[3];
-    foreach(range(1, $GLOBALS['period']) as $k) :
-        $url = "http://www.skylife.co.kr/channel/epglist/channelScheduleListJson.do";
-        $day = date("Y-m-d", strtotime("+".($k - 1)." days"));
-        $params = array(
-            'area' => 'in',
-            'inFd_channel_id' => $ServiceId,
-            'inairdate' => $day,
-            'indate_type' => 'now'
-        );
-        $params = http_build_query($params);
-        $method = "POST";
-        try {
-            $response = getWeb($url, $params, $method);
-            if ($response === False && $GLOBALS['debug']) :
-                printError($ChannelName.HTTP_ERROR);
-            else :
-                try {
-                    $data = json_decode($response, TRUE);
-                    if(json_last_error() != JSON_ERROR_NONE) throw new Exception(JSON_SYNTAX_ERROR);
-                    if(count($data['scheduleListIn']) == 0) :
-                        if($GLOBALS['debug']) :
-                            printError($ChannelName.CHANNEL_ERROR);
-                        endif;
-                    else :
-                        $programs = $data['scheduleListIn'];
-                        foreach($programs as $program) :
-                            $startTime = $endTime = $programName = $subprogramName = $desc = $actors = $producers = $category = $episode = "";
-                            $rebroadcast = False;
-                            $rating = 0;
-                            $programName = htmlspecialchars_decode($program['program_name']) ?: "";
-                            $subprogramName = str_replace(array('lt;', 'gt;', 'amp;'), array('<', '>', '&'),$program['program_subname']) ?: "";
-                            preg_match('/(.*) \(?(\d+부)\)?/', $programName, $matches);
-                            if ($matches != NULL) :
-                                if(isset($matches[1])) $programName = trim($matches[1]) ?: "";
-                                if(isset($matches[2])) $subprogramName = trim($matches[2]." ".$subprogramName) ?: "";
-                            endif;
-                            $startTime = $program['starttime'];
-                            $endTime = $program['endtime'];
-                            $actors = trim(str_replace('...', '',$program['cast']), ', ') ?: "";
-                            $producers = trim(str_replace('...', '',$program['dirt']), ', ') ?: "";
-                            $description = str_replace(array('lt;', 'gt;', 'amp;'), array('<', '>', '&'),$program['description']) ?: "";
-                            $summary = str_replace(array('lt;', 'gt;', 'amp;'), array('<', '>', '&'),$program['summary']) ?: "";
-                            $desc = $description ?: "";
-                            if($desc) :
-                                if($summary):
-                                    $desc = $desc."\n".$summary;
-                                endif;
-                            else :
-                                $desc = $summary;
-                            endif;
-                            $category = $program['program_category1'];
-                            $episode = $program['episode_id'] ?: "";
-                            $rebroadcast = $program['rebroad']== "Y" ? True : False;
-                            $rating = $program['grade'] ?: 0;
-                            $programdata = array(
-                                'channelId'=> $ChannelId,
-                                'startTime' => $startTime,
-                                'endTime' => $endTime,
-                                'programName' => $programName,
-                                'subprogramName'=> $subprogramName,
-                                'desc' => $desc,
-                                'actors' => $actors,
-                                'producers' => $producers,
-                                'category' => $category,
-                                'episode' => $episode,
-                                'rebroadcast' => $rebroadcast,
-                                'rating' => $rating
-                            );
-                            writeProgram($programdata);
-                            usleep(1000);
-                        endforeach;
-                    endif;
-                } catch(Exception $e) {
-                    if($GLOBALS['debug']) printError($e->getMessage());
-                }
-            endif;
-        } catch (Exception $e) {
-            if($GLOBALS['debug']) printError($e->getMessage());
-        }
-    endforeach;
 }
 
 // Get EPG data from Naver

@@ -44,7 +44,7 @@ if not sys.version_info[:2] == (2, 7):
     sys.exit()
 
 # Set variable
-__version__ = '1.2.5p3'
+__version__ = '1.2.5p4'
 debug = False
 today = datetime.date.today()
 ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116', 'accept': '*/*'}
@@ -126,8 +126,6 @@ def getEpg():
             GetEPGFromSK(ChannelInfo)
         elif ChannelSource == 'SKB':
             GetEPGFromSKB(ChannelInfo)
-        elif ChannelSource == 'SKY':
-            GetEPGFromSKY(ChannelInfo)
         elif ChannelSource == 'NAVER':
             GetEPGFromNaver(ChannelInfo)
         elif ChannelSource == 'ISCS':
@@ -425,58 +423,6 @@ def GetEPGFromSKB(ChannelInfo):
             else: pass
     if(epginfo) :
         epgzip(epginfo)
-
-# Get EPG data from SKY
-def GetEPGFromSKY(ChannelInfo):
-    ChannelId = ChannelInfo[0]
-    ChannelName = ChannelInfo[1]
-    ServiceId =  ChannelInfo[3]
-    url = 'http://www.skylife.co.kr/channel/epglist/channelScheduleListJson.do'
-    for k in range(period):
-        day = today + datetime.timedelta(days=k)
-        params = {'area': 'in', 'inFd_channel_id': ServiceId, 'inairdate': day.strftime('%Y-%m-%d'), 'indate_type': 'now'}
-        try:
-            response = requests.post(url, data=params, headers=ua, timeout=timeout)
-            response.raise_for_status()
-            json_data = response.text
-            try:
-                data = json.loads(json_data, encoding='utf-8')
-                if (len(data['scheduleListIn']) == 0) :
-                    if(debug): printError(ChannelName + CONTENT_ERROR)
-                    else: pass
-                else :
-                    programs = data['scheduleListIn']
-                    for program in programs :
-                        startTime = endTime = programName = subprogramName = desc = actors = producers = category = episode = ''
-                        rebroadcast = False
-                        rating = 0
-                        programName = unescape(program['program_name']).replace('lt;','<').replace('gt;','>').replace('amp;','&') if program['program_name'] else ''
-                        subprogramName = unescape(program['program_subname']).replace('lt;','<').replace('gt;','>').replace('amp;','&') if program['program_subname'] else ''
-                        startTime = program['starttime']
-                        endTime = program['endtime']
-                        actors = program['cast'].replace('...','').strip(', ') if program['cast'] else ''
-                        producers = program['dirt'].replace('...','').strip(', ') if program['dirt'] else ''
-                        description = unescape(program['description']).replace('lt;','<').replace('gt;','>').replace('amp;','&') if program['description'] else ''
-                        summary = unescape(program['summary']).replace('lt;','<').replace('gt;','>').replace('amp;','&') if program['summary'] else ''
-                        desc = description if description else ''
-                        if desc:
-                            if summary : desc = desc + '\n' + summary
-                        else: 
-                            desc = summary
-                        category = program['program_category1']
-                        episode = program['episode_id'] if program['episode_id'] else ''
-                        if episode : episode = int(episode)
-                        rebroadcast = True if program['rebroad']== 'Y' else False
-                        rating = int(program['grade']) if program['grade'] else 0
-                        programdata = {'channelId':ChannelId, 'startTime':startTime, 'endTime':endTime, 'programName':programName, 'subprogramName':subprogramName, 'desc':desc, 'actors':actors, 'producers':producers, 'category':category, 'episode':episode, 'rebroadcast':rebroadcast, 'rating':rating}
-                        writeProgram(programdata)
-                        time.sleep(0.001)
-            except ValueError:
-                if(debug): printError(ChannelName + CONTENT_ERROR)
-                else: pass
-        except (requests.exceptions.RequestException) as e:
-            if(debug): printError(ChannelName + str(e))
-            else: pass
 
 # Get EPG data from Naver
 def GetEPGFromNaver(ChannelInfo):

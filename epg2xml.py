@@ -439,7 +439,6 @@ def GetEPGFromSKY(ChannelInfo):
             response = requests.post(url, data=params, headers=ua, timeout=timeout)
             response.raise_for_status()
             json_data = response.text
-            print(json_data)
             try:
                 data = json.loads(json_data, encoding='utf-8')
                 if (len(data['scheduleListIn']) == 0) :

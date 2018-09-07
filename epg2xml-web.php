@@ -7,6 +7,7 @@ define("VERSION", "1.2.6");
 $debug = False;
 $ua = "'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116'";
 $timeout = 5;
+$req_timeout = 10;
 define("CHANNEL_ERROR", " 존재하지 않는 채널입니다.");
 define("CONTENT_ERROR ", " EPG 정보가 없습니다.");
 define("HTTP_ERROR", " EPG 정보를 가져오는데 문제가 있습니다.");
@@ -913,6 +914,7 @@ function getWeb($url, $params, $method) {
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, True);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $GLOBALS['timeout']);
+    curl_setopt($ch, CURLOPT_TIMEOUT, $GLOBALS['req_timeout']);
     curl_setopt($ch, CURLOPT_HEADER, False);
     curl_setopt($ch, CURLOPT_FAILONERROR, True);
     curl_setopt($ch, CURLOPT_USERAGENT, $GLOBALS['ua']);

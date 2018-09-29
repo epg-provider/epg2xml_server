@@ -27,6 +27,9 @@ COPY ./epg2xml.json /conf/epg2xml.json
 RUN chmod +x /app/compose/cron/update-epg2xml.sh
 RUN cp -pr /app/compose/cron/update-epg2xml.sh /etc/periodic/hourly/update-epg2xml
 
+# timezone KST
+RUN echo "Asia/Seoul" >  /etc/timezone
+
 # supervisord config file
 COPY ./compose/supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 

@@ -1,12 +1,13 @@
 FROM python:2.7.15-alpine
 
 COPY ./requirements.txt /app/requirements.txt
-RUN apk add --no-cached vim procps supervisor busybox busybox-extras libxslt
+RUN apk add --no-cached vim procps supervisor busybox busybox-extras libxslt tzdata
 RUN apk add --no-cache --virtual .build-deps musl-dev g++ gcc libxslt-dev \
     && pip install --no-cache-dir -r /app/requirements.txt \
     && apk del .build-deps
 
 ENV IPTV_SYSTEM KT
+ENV TZ Asia/Seoul
 
 # epg2xml
 COPY . /app
